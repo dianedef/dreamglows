@@ -1,6 +1,7 @@
 import planningStyles from './planning-view.css';
 import listViewStyles from './planning/list-view.css';
 import weekViewStyles from './planning/week-view.css';
+import dailyViewStyles from './daily-view.css';
 
 export function registerStyles(viewType: string) {
     const styleEl = document.createElement('style');
@@ -33,9 +34,14 @@ export function registerStyles(viewType: string) {
             background: var(--interactive-accent);
             color: var(--text-on-accent);
         }
-        ${viewType === 'list' ? listViewStyles : weekViewStyles}
 
+        /* Toujours inclure les styles de base */
         ${planningStyles}
+        
+        /* Inclure les styles spécifiques à la vue */
+        ${weekViewStyles}
+        ${viewType === 'list' ? listViewStyles : ''}
+        ${viewType === 'daily' ? dailyViewStyles : ''}
     `;
     document.head.appendChild(styleEl);
 }

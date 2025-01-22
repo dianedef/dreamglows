@@ -1,7 +1,10 @@
 <template>
     <div class="goalflowz-notes-week" :class="{ 'compact-view': isCompactView }">
         <div class="week-header">
-            <div v-for="day in displayedDays" :key="day.date" class="day-header">
+            <div v-for="day in displayedDays" 
+                 :key="day.date" 
+                 class="day-header"
+                 :class="{ 'is-today': day.isToday }">
                 {{ formatDay(day.date) }}
                 <span v-if="isCompactView && day.isWeekend" class="weekend-label">
                     & {{ formatDay(day.date.plus({ days: 1 })) }}
@@ -9,22 +12,27 @@
             </div>
         </div>
         <div class="week-content">
-            <div v-for="day in displayedDays" :key="day.date" class="day-content">
+            <div v-for="day in displayedDays" 
+                 :key="day.date" 
+                 class="day-content"
+                 :class="{ 'is-today': day.isToday }">
                 <div v-if="getDayNotes(day.date, day.isWeekend).length > 0" class="day-notes">
                     <div v-for="note in getDayNotes(day.date, day.isWeekend)" 
                          :key="note.path" 
-                         class="note-card"
+                         class="goalflowz-week-note-item"
                          @click="$emit('toggle-note', note.path)">
-                        <div class="note-title">{{ note.title }}</div>
-                        <div v-if="isExpanded(note.path)" class="note-details">
-                            <div class="note-tasks">
-                                <div v-for="task in note.tasks" 
-                                     :key="task.id" 
-                                     class="task-item">
-                                    <input type="checkbox" 
-                                           :checked="task.done"
-                                           @change="$emit('toggle-task', note, task)">
-                                    <span>{{ task.label }}</span>
+                        <div class="goalflowz-week-note-header">
+                            <div class="note-title">{{ note.title }}</div>
+                            <div v-if="isExpanded(note.path)" class="note-details">
+                                <div class="note-tasks">
+                                    <div v-for="task in note.tasks" 
+                                         :key="task.id" 
+                                         class="task-item">
+                                        <input type="checkbox" 
+                                               :checked="task.done"
+                                               @change="$emit('toggle-task', note, task)">
+                                        <span>{{ task.label }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -124,8 +132,8 @@ const getDayNotes = (date: DateTime, isWeekend = false) => {
                 path: file.path,
                 title: file.basename,
                 status: goalflowz.status || 'todo',
-                created: file.stat.ctime,
-                lastUpdated: file.stat.mtime,
+                created: new Date(file.stat.ctime).toISOString(),
+                lastUpdated: new Date(file.stat.mtime).toISOString(),
                 wordCount: 0,
                 tasks: goalflowz.tasks || []
             } as Note;
@@ -136,7 +144,7 @@ const getDayNotes = (date: DateTime, isWeekend = false) => {
     })
     .filter((note): note is Note => {
         if (!note) return false;
-        const noteDate = DateTime.fromMillis(note.created);
+        const noteDate = DateTime.fromISO(note.created);
         if (isWeekend) {
             // Pour le week-end, inclure samedi et dimanche
             return noteDate.hasSame(date, 'day') || 
@@ -152,89 +160,3 @@ const isExpanded = (path: string) => {
 
 defineExpose({ isCompactView });
 </script>
-
-<style>
-.goalflowz-notes-week {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
-}
-
-.week-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0.5rem;
-}
-
-.day-header {
-    padding: 0.5rem;
-    text-align: center;
-    font-weight: bold;
-    background: var(--background-secondary);
-    border-radius: 4px;
-}
-
-.week-content {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 0.5rem;
-    min-height: 200px;
-}
-
-.day-content {
-    padding: 0.5rem;
-    background: var(--background-primary-alt);
-    border-radius: 4px;
-    min-height: 100%;
-}
-
-.note-card {
-    margin-bottom: 0.5rem;
-    padding: 0.5rem;
-    background: var(--background-secondary);
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.note-card:hover {
-    background: var(--background-modifier-hover);
-}
-
-.no-notes {
-    text-align: center;
-    color: var(--text-muted);
-    padding: 1rem;
-}
-
-.note-tasks {
-    margin-top: 0.5rem;
-}
-
-.task-item {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    padding: 0.25rem 0;
-}
-
-.day-header.is-today {
-    background: var(--interactive-accent);
-    color: var(--text-on-accent);
-}
-
-.day-content.is-today {
-    border: 2px solid var(--interactive-accent);
-}
-
-.goalflowz-notes-week.compact-view .week-header,
-.goalflowz-notes-week.compact-view .week-content {
-    grid-template-columns: repeat(3, 1fr);
-}
-
-.weekend-label {
-    display: block;
-    font-size: 0.9em;
-    opacity: 0.8;
-}
-</style> 

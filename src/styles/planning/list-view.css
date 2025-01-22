@@ -1,27 +1,25 @@
-export default `
-    .goalflowz-articles-list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
+.goalflowz-notes-list {
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+}
 
-    .goalflowz-no-content {
-        text-align: center;
-        padding: 32px;
-        color: var(--text-muted);
-    }
+.goalflowz-no-content {
+   text-align: center;
+   padding: 32px;
+   color: var(--text-muted);
+}
 
-    .goalflowz-article-item {
-        padding: 16px;
-        background: var(--background-primary);
-        border: 1px solid var(--background-modifier-border);
-        border-radius: 8px;
-        transition: all 0.2s ease;
-        cursor: pointer;
-    }
+.goalflowz-note-item {
+   padding: 16px;
+   background: var(--background-primary);
+   border: 1px solid var(--background-modifier-border);
+   border-radius: 8px;
+   transition: all 0.2s ease;
+   cursor: pointer;
+}
 
-    .goalflowz-article-item:hover {
-        transform: translateX(4px);
-        border-color: var(--text-accent);
-    }
-`; 
+.goalflowz-note-item:hover {
+   transform: translateX(4px);
+   border-color: var(--text-accent);
+}

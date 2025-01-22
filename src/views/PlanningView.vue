@@ -83,6 +83,7 @@
         />
         <WeekViewNotes 
             v-else-if="viewType === 'week' && currentWeek"
+            ref="weekViewRef"
             :week-data="currentWeek"
             :expanded-notes="expandedNotes"
             :app="app"
@@ -126,7 +127,7 @@ const newTaskLabels = ref<{ [key: string]: string }>({});
 const viewType = ref('list');
 const currentDate = ref(DateTime.now());
 const currentWeek = ref<WeekNotes | null>(null);
-const weekViewRef = ref<{ isCompactView: boolean } | null>(null);
+const weekViewRef = ref<InstanceType<typeof WeekViewNotes> | null>(null);
 
 // Ajout du computed pour les tâches par défaut
 const defaultTasks = computed(() => settingsStore.getDefaultTasks);
@@ -490,22 +491,3 @@ onUnmounted(() => {
 });
 </script>
 
-<style>
-.week-navigation {
-    /* ... styles existants ... */
-}
-
-.view-toggle {
-    margin-left: 1rem;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    background: var(--interactive-accent);
-    color: var(--text-on-accent);
-    border: none;
-    cursor: pointer;
-}
-
-.view-toggle:hover {
-    background: var(--interactive-accent-hover);
-}
-</style> 
