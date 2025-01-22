@@ -1,0 +1,303 @@
+.goalflowz-progress-bar-container {
+    width: 100px;
+    height: 8px;
+    background: var(--background-modifier-border);
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    margin-right: 1rem;
+}
+
+.goalflowz-progress-bar {
+    height: 100%;
+    background: var(--text-accent);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.goalflowz-progress-text {
+    position: absolute;
+    right: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.7em;
+    white-space: nowrap;
+}
+
+/* Styles pour les tâches */
+.goalflowz-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    padding: 8px 0;
+}
+
+.goalflowz-task-item {
+    width: 100%;
+    padding: 0 8px;
+}
+
+.goalflowz-task-item-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.goalflowz-task-item-content:hover {
+    background-color: var(--background-modifier-hover);
+    transform: translateX(4px);
+}
+
+.goalflowz-task-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--text-muted);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.goalflowz-task-checkbox.checked {
+    background-color: var(--text-accent);
+    border-color: var(--text-accent);
+}
+
+.goalflowz-task-item-content:hover .goalflowz-task-checkbox:not(.checked) {
+    border-color: var(--text-accent);
+    transform: scale(1.1);
+}
+
+.goalflowz-task-label {
+    flex: 1;
+    transition: all 0.2s ease;
+    padding: 4px 0;
+}
+
+.goalflowz-task-label.done {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+.goalflowz-task-item-content:hover .goalflowz-task-label:not(.done) {
+    color: var(--text-accent);
+}
+
+.goalflowz-task-delete {
+    opacity: 0;
+    color: var(--text-muted);
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.goalflowz-task-item-content:hover .goalflowz-task-delete {
+    opacity: 1;
+}
+
+.goalflowz-task-delete:hover {
+    color: var(--text-error);
+    background-color: var(--background-modifier-error);
+    transform: scale(1.1);
+}
+
+.goalflowz-task-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.goalflowz-task-action-button {
+    opacity: 0;
+    padding: 4px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    background: var(--background-modifier-border);
+    color: var(--text-normal);
+}
+
+.goalflowz-task-item-content:hover .goalflowz-task-action-button {
+    opacity: 1;
+}
+
+.goalflowz-task-action-button:hover {
+    transform: scale(1.1);
+}
+
+.goalflowz-task-action-button.optimizer:hover {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.goalflowz-task-action-button.generator:hover {
+    background: var(--text-accent);
+    color: var(--text-on-accent);
+}
+
+.goalflowz-planning-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 16px;
+    gap: 16px;
+    overflow-y: auto;
+}
+
+.goalflowz-planning-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    background: var(--background-secondary);
+    border-radius: 8px;
+}
+
+.goalflowz-search-row input {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.goalflowz-filters-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.goalflowz-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.goalflowz-filter-group label {
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+.goalflowz-filter-group select {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+}
+
+.goalflowz-sort-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.goalflowz-sort-direction {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--background-modifier-border);
+    background: var(--background-primary);
+    cursor: pointer;
+}
+
+.goalflowz-articles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.goalflowz-no-content {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-muted);
+}
+
+.goalflowz-article-item {
+    padding: 16px;
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.goalflowz-article-item:hover {
+    transform: translateX(4px);
+    border-color: var(--text-accent);
+}
+
+.goalflowz-article-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.goalflowz-article-title {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.goalflowz-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.goalflowz-article-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 0.8em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.goalflowz-article-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: none;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.goalflowz-status-todo {
+    background: var(--background-modifier-error);
+    color: var(--text-error);
+}
+
+.goalflowz-status-todo option {
+    background: var(--background-primary);
+    color: white;
+}
+
+.goalflowz-status-in-progress {
+    background: var(--background-modifier-warning);
+    color: var(--text-warning);
+}
+
+.goalflowz-status-in-progress option {
+    background: var(--background-primary);
+    color: white;
+}
+
+.goalflowz-status-done {
+    background: var(--background-modifier-success);
+    color: var(--text-success);
+}
+
+.goalflowz-status-done option {
+    background: var(--background-primary);
+    color: white;
+}
