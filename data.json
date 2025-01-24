@@ -30,12 +30,14 @@
   ],
   "openAIKey": "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",
   "openRouterKey": "",
-  "lastActiveTab": "planning",
+  "lastActiveTab": "goals",
   "recentGoals": [],
+  "notesPath": "Journal",
+  "folderStructure": "flat",
+  "notesFormat": "1",
+  "noteTemplate": "# {{title}}\n\n## Objectif\n\n## Tâches\n\n## Notes",
   "googleApiKey": "",
   "searchEngineId": "",
   "serpApiKey": "",
-  "recentArticles": [],
-  "notesPath": "Journal",
-  "notesFormat": "1"
+  "recentArticles": []
 }

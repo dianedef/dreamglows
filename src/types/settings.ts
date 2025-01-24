@@ -19,6 +19,11 @@ export interface GoalFlowzSettings {
         article: string;
         date: string;
     }>;
+    notesPath: string;
+    folderStructure: 'flat' | 'monthly';
+    notesFormat: '1' | '2' | 'custom';
+    customNotesFormat?: string;
+    noteTemplate: string;
 }
 
 export interface DefaultTask {
@@ -44,5 +49,9 @@ export const DEFAULT_SETTINGS: GoalFlowzSettings = {
     openAIKey: "",
     openRouterKey: "",
     lastActiveTab: "goals",
-    recentGoals: []
+    recentGoals: [],
+    notesPath: "notes",
+    folderStructure: "flat",
+    notesFormat: "1",
+    noteTemplate: "# {{title}}\n\n## Objectif\n\n## Tâches\n\n## Notes"
 }; 

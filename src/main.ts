@@ -1,10 +1,11 @@
-import { Plugin, WorkspaceLeaf, TFile, Notice, View } from 'obsidian';
+import { Plugin, WorkspaceLeaf, TFile, Notice, ItemView } from 'obsidian';
 import { createApp } from 'vue';
 import MainView from './views/MainView.vue';
 import { registerStyles, unregisterStyles } from './styles/RegisterStyles';
 import { MetadataService } from './services/MetadataService';
 import { pinia } from './stores';
 import { useSettingsStore } from './stores/settingsStore';
+import { useGoalsStore } from './stores/goalsStore';
 import type { GoalFlowzSettings } from './types/settings';
 import { DEFAULT_SETTINGS } from './types/settings';
 import { GoalFlowzSettingsTab } from './services/SettingsTabService';
@@ -13,14 +14,12 @@ import { TimeManagementService } from './services/TimeManagementService';
 
 const VIEW_TYPE_GOALFLOWZ = 'goalflowz-view';
 
-class GoalFlowzView extends View {
+class GoalFlowzView extends ItemView {
     private vueApp: any;
-    private container: HTMLElement;
     private plugin: GoalFlowz;
 
     constructor(leaf: WorkspaceLeaf, plugin: GoalFlowz) {
         super(leaf);
-        this.container = this.containerEl.createDiv('goalflowz-container');
         this.plugin = plugin;
     }
 
@@ -32,21 +31,28 @@ class GoalFlowzView extends View {
         return 'GoalFlowz';
     }
 
+    getIcon(): string {
+        return 'target';
+    }
+
     async onOpen() {
+        const container = this.containerEl.children[1];
+        container.empty();
+        container.createEl("div", { cls: "goalflowz-container" });
+
         // Créer une nouvelle instance Vue pour cette vue
         this.vueApp = createApp(MainView, {
             contentFiles: this.app.vault.getMarkdownFiles(),
             app: this.app
         });
         this.vueApp.use(pinia);
-        this.vueApp.mount(this.container);
+        this.vueApp.mount(container.children[0]);
     }
 
     async onClose() {
         if (this.vueApp) {
             this.vueApp.unmount();
         }
-        this.container.empty();
     }
 }
 
@@ -54,19 +60,21 @@ export default class GoalFlowz extends Plugin {
     settings: GoalFlowzSettings;
     metadataService: MetadataService;
     settingsStore: ReturnType<typeof useSettingsStore>;
+    goalsStore: ReturnType<typeof useGoalsStore>;
     private notesGenerator: NotesGeneratorService;
     private timeManager: TimeManagementService;
 
     async onload() {
         await this.loadSettings();
         
-        // Initialiser Pinia et le store
+        // Initialiser Pinia et les stores
         const tempApp = createApp({});
         tempApp.use(pinia);
         
-        // Maintenant on peut initialiser le store
         this.settingsStore = useSettingsStore();
         this.settingsStore.updateSettings(this.settings);
+        
+        this.goalsStore = useGoalsStore();
         
         // Initialise le service avec MetadataCache
         this.metadataService = new MetadataService(
@@ -101,7 +109,7 @@ export default class GoalFlowz extends Plugin {
             }
         });
 
-        registerStyles();
+        registerStyles('list');
 
         // Sauvegarder les settings quand ils changent dans le store
         this.register(
