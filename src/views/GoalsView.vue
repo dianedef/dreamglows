@@ -38,27 +38,31 @@ const createTimelineItems = (goals: Goal[]) => {
     group: goal.category || 'Sans catégorie',
     content: `
       <div class="goalflowz-timeline-item">
-        <div class="goalflowz-timeline-item-title">${goal.title}</div>
-        <div class="goalflowz-timeline-item-progress">
-          <div class="goalflowz-progress-bar" style="width: ${goal.progress}%"></div>
+        <div class="goalflowz-timeline-item-header">
+          <div class="goalflowz-timeline-item-status goalflowz-status-${goal.status}">
+            ${goal.status === 'todo' ? 'À faire' : goal.status === 'in-progress' ? 'En cours' : 'Terminé'}
+          </div>
+          <div class="goalflowz-timeline-item-priority goalflowz-priority-${goal.priority}">
+            ${goal.priority === 'high' ? '⚡ Haute' : goal.priority === 'medium' ? '◆ Moyenne' : '○ Basse'}
+          </div>
         </div>
+        <div class="goalflowz-timeline-item-title">${goal.title}</div>
+        <div class="goalflowz-timeline-item-progress-container">
+          <div class="goalflowz-timeline-item-progress">
+            <div class="goalflowz-progress-bar" style="width: ${goal.progress}%"></div>
+          </div>
+          <span class="goalflowz-progress-text">${goal.progress}%</span>
+        </div>
+        ${goal.tags?.length ? `
+          <div class="goalflowz-timeline-item-tags">
+            ${goal.tags.map(tag => `<span class="goalflowz-tag">#${tag}</span>`).join(' ')}
+          </div>
+        ` : ''}
       </div>
     `,
     start: new Date(goal.startDate),
     end: goal.dueDate ? new Date(goal.dueDate) : undefined,
-    className: `goalflowz-priority-${goal.priority} goalflowz-status-${goal.status}`,
-    title: `
-      <div class="goalflowz-timeline-tooltip">
-        <h3>${goal.title}</h3>
-        <p>${goal.description || 'Aucune description'}</p>
-        <div class="goalflowz-tooltip-meta">
-          <span>Priorité: ${goal.priority}</span>
-          <span>Statut: ${goal.status}</span>
-          <span>Progression: ${goal.progress}%</span>
-        </div>
-        ${goal.tags?.length ? `<div class="goalflowz-tooltip-tags">${goal.tags.map(tag => `#${tag}`).join(' ')}</div>` : ''}
-      </div>
-    `
+    className: `goalflowz-priority-${goal.priority} goalflowz-status-${goal.status}`
   }));
 };
 
@@ -115,13 +119,35 @@ onMounted(() => {
 
   // Gérer les événements de la timeline
   timeline.on('doubleClick', (properties: any) => {
+    console.log('Timeline double-click properties:', properties);
     if (properties.item) {
+      // Double-clic sur un objectif existant
       const goalId = properties.item;
       const goal = goalsStore.goals.find(g => g.id === goalId);
       if (goal) {
         const modal = new GoalModal(props.app, goal);
         modal.open();
       }
+    } else {
+      // Double-clic sur la timeline ou une catégorie
+      const modal = new GoalModal(props.app);
+      
+      // Préremplir les valeurs via le store
+      if (properties.time || properties.snappedTime) {
+        const clickedDate = properties.snappedTime || properties.time.getTime();
+        console.log('Double-click sur timeline, date cliquée:', new Date(clickedDate));
+        modalStore.setInitialGoalData({
+          startDate: new Date(clickedDate).toISOString().split('T')[0]
+        });
+      } else if (properties.group) {
+        console.log('Double-click sur groupe:', properties.group);
+        modalStore.setInitialGoalData({
+          category: properties.group,
+          startDate: new Date().toISOString().split('T')[0]
+        });
+      }
+      
+      modal.open();
     }
   });
 

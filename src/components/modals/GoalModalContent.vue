@@ -176,6 +176,7 @@
 import { ref, computed, inject, onMounted } from 'vue';
 import { useGoalsStore } from '@/stores/goalsStore';
 import type { Goal } from '@/types/goals';
+import { useModalStore } from '@/stores/modalStore';
 
 const props = defineProps<{
   editingGoal?: Goal;
@@ -183,6 +184,7 @@ const props = defineProps<{
 
 const goalsStore = useGoalsStore();
 const closeModal = inject('closeModal') as () => void;
+const modalStore = useModalStore();
 
 const isEditing = computed(() => !!props.editingGoal);
 const showNewCategoryInput = ref(false);
@@ -230,10 +232,15 @@ const formData = ref<Partial<Goal>>({
   subGoalIds: []
 });
 
-// Initialiser le formulaire avec les valeurs de l'objectif à modifier
+// Initialiser le formulaire avec les valeurs de l'objectif à modifier ou les valeurs initiales
 onMounted(() => {
   if (props.editingGoal) {
     formData.value = { ...props.editingGoal };
+  } else if (modalStore.initialGoalData) {
+    formData.value = {
+      ...formData.value,  // Garder les valeurs par défaut
+      ...modalStore.initialGoalData  // Écraser avec les valeurs initiales
+    };
   }
 });
 

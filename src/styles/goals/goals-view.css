@@ -22,87 +22,118 @@
   background: var(--background-primary);
   border-radius: 4px;
   box-shadow: var(--shadow-s);
+  min-width: 200px;
 }
 
-.goalflowz-timeline-item-title {
-  font-weight: 600;
-  margin-bottom: 4px;
+.goalflowz-timeline-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.goalflowz-timeline-item-status,
+.goalflowz-timeline-item-priority {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+/* Styles pour les statuts */
+.goalflowz-timeline-item-status {
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.goalflowz-status-todo {
+  background: var(--background-modifier-error);
+  color: var(--text-error);
+}
+
+.goalflowz-status-in-progress {
+  background: var(--background-modifier-warning);
+  color: var(--text-warning);
+}
+
+.goalflowz-status-done {
+  background: var(--background-modifier-success);
+  color: var(--text-success);
+}
+
+/* Styles pour les priorités */
+.goalflowz-timeline-item-priority {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.goalflowz-priority-high {
+  color: var(--text-error);
+}
+
+.goalflowz-priority-medium {
+  color: var(--text-warning);
+}
+
+.goalflowz-priority-low {
+  color: var(--text-success);
+}
+
+/* Styles pour la barre de progression */
+.goalflowz-timeline-item-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .goalflowz-timeline-item-progress {
-  height: 4px;
-  background: rgba(0,0,0,0.1);
-  border-radius: 2px;
+  flex: 1;
+  height: 6px;
+  background: var(--background-modifier-border);
+  border-radius: 3px;
+  overflow: hidden;
 }
 
 .goalflowz-progress-bar {
   height: 100%;
-  background: var(--primary-color);
-  border-radius: 2px;
+  background: var(--text-accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
 }
 
-/* Styles pour les priorités */
-.goalflowz-priority-high { border-left: 4px solid #ff4757; }
-.goalflowz-priority-medium { border-left: 4px solid #ffa502; }
-.goalflowz-priority-low { border-left: 4px solid #2ed573; }
-
-/* Styles pour les statuts */
-.goalflowz-status-todo { opacity: 0.7; }
-.goalflowz-status-in-progress { background: rgba(var(--primary-color-rgb), 0.1); }
-.goalflowz-status-done { background: rgba(46, 213, 115, 0.1); }
-
-/* Style du bouton d'ajout */
-.goalflowz-add-goal-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 4px;
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.goalflowz-add-goal-btn:hover {
-  background: var(--interactive-accent-hover);
-  transform: translateY(-1px);
-}
-
-.goalflowz-add-goal-btn i {
-  font-size: 0.9em;
-}
-
-/* Styles pour les tooltips */
-.goalflowz-timeline-tooltip {
-  padding: 8px;
-  max-width: 300px;
-}
-
-.goalflowz-timeline-tooltip h3 {
-  margin: 0 0 8px 0;
-  font-size: 1em;
-  color: var(--text-normal);
-}
-
-.goalflowz-timeline-tooltip p {
-  margin: 0 0 8px 0;
-  font-size: 0.9em;
-  color: var(--text-muted);
-}
-
-.goalflowz-tooltip-meta {
-  display: flex;
-  gap: 8px;
+.goalflowz-progress-text {
   font-size: 0.8em;
   color: var(--text-muted);
-  margin-bottom: 4px;
+  min-width: 40px;
+  text-align: right;
 }
 
-.goalflowz-tooltip-tags {
+/* Styles pour les tags */
+.goalflowz-timeline-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.goalflowz-tag {
   font-size: 0.8em;
   color: var(--text-accent);
+  background: var(--background-modifier-hover);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Animation au survol */
+.goalflowz-timeline-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-m);
+}
+
+.goalflowz-timeline-item:hover .goalflowz-progress-bar {
+  background: var(--interactive-accent);
 }
 
 /* Styles pour les groupes et axes de temps */
@@ -218,4 +249,58 @@
 
 .vis-item.vis-range.vis-drag-center {
   border-color: var(--text-accent);
+}
+
+/* Style du bouton d'ajout */
+.goalflowz-add-goal-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.goalflowz-add-goal-btn:hover {
+  background: var(--interactive-accent-hover);
+  transform: translateY(-1px);
+}
+
+.goalflowz-add-goal-btn i {
+  font-size: 0.9em;
+}
+
+/* Styles pour les tooltips */
+.goalflowz-timeline-tooltip {
+  padding: 8px;
+  max-width: 300px;
+}
+
+.goalflowz-timeline-tooltip h3 {
+  margin: 0 0 8px 0;
+  font-size: 1em;
+  color: var(--text-normal);
+}
+
+.goalflowz-timeline-tooltip p {
+  margin: 0 0 8px 0;
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+.goalflowz-tooltip-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 0.8em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.goalflowz-tooltip-tags {
+  font-size: 0.8em;
+  color: var(--text-accent);
 } 
