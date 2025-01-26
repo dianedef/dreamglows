@@ -19,6 +19,9 @@
 
 .goalflowz-timeline-item {
   padding: 8px;
+  background: var(--background-primary);
+  border-radius: 4px;
+  box-shadow: var(--shadow-s);
 }
 
 .goalflowz-timeline-item-title {
@@ -69,4 +72,150 @@
 
 .goalflowz-add-goal-btn i {
   font-size: 0.9em;
+}
+
+/* Styles pour les tooltips */
+.goalflowz-timeline-tooltip {
+  padding: 8px;
+  max-width: 300px;
+}
+
+.goalflowz-timeline-tooltip h3 {
+  margin: 0 0 8px 0;
+  font-size: 1em;
+  color: var(--text-normal);
+}
+
+.goalflowz-timeline-tooltip p {
+  margin: 0 0 8px 0;
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+.goalflowz-tooltip-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 0.8em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.goalflowz-tooltip-tags {
+  font-size: 0.8em;
+  color: var(--text-accent);
+}
+
+/* Styles pour les groupes et axes de temps */
+.vis-label {
+  font-weight: 600;
+  color: var(--text-normal);
+  padding: 8px 12px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  box-shadow: var(--shadow-s);
+}
+
+.vis-labelset .vis-label {
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--text-accent);
+  background: var(--background-secondary);
+  border-left: 3px solid var(--text-accent);
+  margin: 4px 8px;
+}
+
+.vis-labelset .vis-label:hover {
+  background: var(--background-modifier-hover);
+}
+
+.vis-time-axis .vis-text {
+  color: var(--text-normal);
+  font-weight: 500;
+  font-size: 0.9em;
+  padding: 4px 8px;
+  background: var(--background-primary);
+  border-radius: 4px;
+  box-shadow: var(--shadow-s);
+}
+
+.vis-time-axis .vis-grid.vis-major {
+  border-color: var(--background-modifier-border);
+}
+
+.vis-time-axis .vis-grid.vis-minor {
+  border-color: var(--background-modifier-border-hover);
+}
+
+.vis-panel.vis-center {
+  border-color: var(--background-modifier-border);
+}
+
+.vis-panel.vis-left {
+  border-color: var(--background-modifier-border);
+}
+
+/* Amélioration du contraste pour les groupes */
+.vis-group {
+  border-color: var(--background-modifier-border);
+  background: var(--background-primary);
+}
+
+.vis-group:nth-child(odd) {
+  background: var(--background-secondary);
+}
+
+.vis-group:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* Styles pour les contrôles de zoom */
+.goalflowz-timeline-controls {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+  z-index: 1;
+}
+
+.goalflowz-timeline-control {
+  padding: 8px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.goalflowz-timeline-control:hover {
+  background: var(--background-modifier-hover);
+  transform: scale(1.1);
+}
+
+/* Amélioration des items de la timeline */
+.vis-item {
+  border-radius: 4px;
+  border-width: 1px;
+  transition: all 0.2s ease;
+}
+
+.vis-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-s);
+}
+
+.vis-item.vis-selected {
+  border-color: var(--text-accent);
+  box-shadow: 0 0 0 2px var(--text-accent-hover);
+}
+
+/* Styles pour le drag & drop */
+.vis-item.vis-drag-center {
+  background: var(--background-modifier-success);
+}
+
+.vis-item.vis-range.vis-drag-center {
+  border-color: var(--text-accent);
 } 

@@ -1,0 +1,171 @@
+.goalflowz-modal-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--background-modifier-cover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.goalflowz-modal {
+    background: var(--background-primary);
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-l);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.goalflowz-modal-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.goalflowz-modal-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.goalflowz-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.goalflowz-modal-close:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.goalflowz-modal-content {
+    padding: var(--size-4-4);
+    overflow-y: auto;
+}
+
+.goalflowz-form-group {
+    margin-bottom: var(--size-4-4);
+}
+
+.goalflowz-form-group label {
+    display: block;
+    margin-bottom: var(--size-2-2);
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
+}
+
+.goalflowz-form-group input,
+.goalflowz-form-group select,
+.goalflowz-form-group textarea {
+    width: 100%;
+    padding: var(--size-2-3);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+    color: var(--text-normal);
+}
+
+.goalflowz-form-group input:focus,
+.goalflowz-form-group select:focus,
+.goalflowz-form-group textarea:focus {
+    border-color: var(--interactive-accent);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+.goalflowz-form-row {
+    display: flex;
+    gap: var(--size-4-4);
+    margin-bottom: var(--size-4-4);
+}
+
+.goalflowz-form-row .goalflowz-form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.goalflowz-tags-input {
+    display: flex;
+    flex-direction: column;
+    gap: var(--size-2-3);
+}
+
+.goalflowz-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-2-2);
+}
+
+.goalflowz-tag {
+    background: var(--background-modifier-hover);
+    padding: var(--size-2-2) var(--size-2-3);
+    border-radius: var(--radius-s);
+    display: flex;
+    align-items: center;
+    gap: var(--size-2-2);
+    font-size: var(--font-ui-smaller);
+}
+
+.goalflowz-tag button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0 var(--size-2-1);
+    border-radius: var(--radius-xs);
+}
+
+.goalflowz-tag button:hover {
+    color: var(--text-error);
+    background: var(--background-modifier-error);
+}
+
+.goalflowz-modal-footer {
+    padding: var(--size-4-4);
+    border-top: 1px solid var(--background-modifier-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--size-2-3);
+}
+
+.goalflowz-btn-primary,
+.goalflowz-btn-secondary {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s ease;
+}
+
+.goalflowz-btn-primary {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.goalflowz-btn-primary:hover {
+    background: var(--interactive-accent-hover);
+}
+
+.goalflowz-btn-secondary {
+    background: var(--background-modifier-border);
+    color: var(--text-muted);
+}
+
+.goalflowz-btn-secondary:hover {
+    background: var(--background-modifier-hover);
+    color: var(--text-normal);
+} 

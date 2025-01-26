@@ -1,16 +1,21 @@
-import { Plugin, WorkspaceLeaf, TFile, Notice, ItemView } from 'obsidian';
+import { Plugin, WorkspaceLeaf, TFile, Notice, ItemView, App, Modal } from 'obsidian';
 import { createApp } from 'vue';
+import { createPinia } from 'pinia';
 import MainView from './views/MainView.vue';
 import { registerStyles, unregisterStyles } from './styles/RegisterStyles';
 import { MetadataService } from './services/MetadataService';
 import { pinia } from './stores';
 import { useSettingsStore } from './stores/settingsStore';
 import { useGoalsStore } from './stores/goalsStore';
+import type { Goal } from './types/goals';
 import type { GoalFlowzSettings } from './types/settings';
 import { DEFAULT_SETTINGS } from './types/settings';
 import { GoalFlowzSettingsTab } from './services/SettingsTabService';
 import { NotesGeneratorService } from './services/NotesGeneratorService';
 import { TimeManagementService } from './services/TimeManagementService';
+import { useModalStore } from './stores/modalStore';
+import { GoalsView } from './views/GoalsView';
+import GoalModalContent from './components/modals/GoalModalContent.vue';
 
 const VIEW_TYPE_GOALFLOWZ = 'goalflowz-view';
 
@@ -45,7 +50,11 @@ class GoalFlowzView extends ItemView {
             contentFiles: this.app.vault.getMarkdownFiles(),
             app: this.app
         });
+        
+        // Utiliser Pinia
         this.vueApp.use(pinia);
+        
+        // Monter l'application
         this.vueApp.mount(container.children[0]);
     }
 
@@ -56,13 +65,68 @@ class GoalFlowzView extends ItemView {
     }
 }
 
+export class GoalModal extends Modal {
+    private vueApp: any;
+    private editingGoal: Goal | null;
+
+    constructor(app: App, goal?: Goal) {
+        super(app);
+        this.editingGoal = goal || null;
+        console.log('GoalModal: Constructor called', { editingGoal: this.editingGoal });
+    }
+
+    onOpen() {
+        console.log('GoalModal: Opening modal');
+        const { contentEl } = this;
+        contentEl.empty();
+        
+        // Ajouter le titre
+        contentEl.createEl('h2', { text: this.editingGoal ? 'Modifier l\'objectif' : 'Nouvel objectif', cls: 'goalflowz-modal-title' });
+        
+        // Ajouter le contenu
+        const contentContainer = contentEl.createDiv({ cls: 'goalflowz-modal-container' });
+        
+        // Créer et monter l'app Vue
+        this.vueApp = createApp(GoalModalContent, {
+            editingGoal: this.editingGoal
+        });
+        this.vueApp.use(pinia);
+        
+        // Injecter la méthode de fermeture
+        this.vueApp.provide('closeModal', () => {
+            console.log('GoalModal: Closing from Vue app');
+            this.close();
+        });
+        
+        // Monter l'app Vue
+        this.vueApp.mount(contentContainer);
+        console.log('GoalModal: Vue app mounted');
+    }
+
+    onClose() {
+        try {
+            console.log('GoalModal: Starting cleanup');
+            if (this.vueApp) {
+                this.vueApp.unmount();
+                console.log('GoalModal: Vue app unmounted');
+            }
+            const { contentEl } = this;
+            contentEl.empty();
+            console.log('GoalModal: Content cleared');
+        } catch (error) {
+            console.error('GoalModal: Error during cleanup:', error);
+        }
+    }
+}
+
 export default class GoalFlowz extends Plugin {
-    settings: GoalFlowzSettings;
-    metadataService: MetadataService;
-    settingsStore: ReturnType<typeof useSettingsStore>;
-    goalsStore: ReturnType<typeof useGoalsStore>;
-    private notesGenerator: NotesGeneratorService;
-    private timeManager: TimeManagementService;
+    settings!: GoalFlowzSettings;
+    metadataService!: MetadataService;
+    settingsStore!: ReturnType<typeof useSettingsStore>;
+    goalsStore!: ReturnType<typeof useGoalsStore>;
+    modalStore!: ReturnType<typeof useModalStore>;
+    private notesGenerator!: NotesGeneratorService;
+    private timeManager!: TimeManagementService;
 
     async onload() {
         await this.loadSettings();
@@ -75,24 +139,26 @@ export default class GoalFlowz extends Plugin {
         this.settingsStore.updateSettings(this.settings);
         
         this.goalsStore = useGoalsStore();
+        await this.goalsStore.initializeService(this.app);
         
-        // Initialise le service avec MetadataCache
+        this.modalStore = useModalStore();
+        this.modalStore.initialize(this.app);
+        
+        // Initialise les services
         this.metadataService = new MetadataService(
             this.app.vault,
             this.app.metadataCache
         );
-
         this.notesGenerator = new NotesGeneratorService(this.app, this.settings);
         this.timeManager = new TimeManagementService(this.app, this.settings);
 
-        // Enregistre la vue personnalisée
+        // Enregistre la vue principale
         this.registerView(
             VIEW_TYPE_GOALFLOWZ,
             (leaf) => new GoalFlowzView(leaf, this)
         );
 
-        this.addSettingTab(new GoalFlowzSettingsTab(this.app, this));
-
+        // Ajouter les commandes
         this.addCommand({
             id: 'open-goalflowz',
             name: 'Ouvrir GoalFlowz',
@@ -101,17 +167,26 @@ export default class GoalFlowz extends Plugin {
         });
 
         this.addCommand({
-            id: 'update-notes-new-year',
-            name: 'Mettre à jour les notes pour la nouvelle année',
-            callback: async () => {
-                const currentYear = new Date().getFullYear();
-                await this.timeManager.updateNotesForNewYear(currentYear);
-            }
+            id: 'new-goal',
+            name: 'Nouvel objectif',
+            callback: () => {
+                console.log('Command: Opening goal modal');
+                const modal = new GoalModal(this.app);
+                modal.open();
+            },
+            hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "G" }]
         });
 
-        registerStyles('list');
+        // Ajouter le ruban
+        this.addRibbonIcon('target', 'GoalFlowz', () => this.openGoalFlowz());
 
-        // Sauvegarder les settings quand ils changent dans le store
+        // Ajouter l'onglet de paramètres
+        this.addSettingTab(new GoalFlowzSettingsTab(this.app, this));
+
+        // Enregistrer les styles
+        registerStyles('all');
+
+        // Sauvegarder les settings quand ils changent
         this.register(
             this.settingsStore.$subscribe((mutation, state) => {
                 this.settings = state.settings;
@@ -134,12 +209,9 @@ export default class GoalFlowz extends Plugin {
 
     private async openGoalFlowz() {
         const workspace = this.app.workspace;
-        
-        // Vérifie si la vue est déjà ouverte
         let leaf = workspace.getLeavesOfType(VIEW_TYPE_GOALFLOWZ)[0];
         
         if (!leaf) {
-            // Crée une nouvelle feuille dans la zone droite
             const newLeaf = workspace.getRightLeaf(false);
             if (newLeaf) {
                 await newLeaf.setViewState({
@@ -150,26 +222,8 @@ export default class GoalFlowz extends Plugin {
             }
         }
         
-        // Active la feuille
         if (leaf) {
             workspace.revealLeaf(leaf);
-        }
-    }
-
-    private async updateSEOMetadata() {
-        const activeFile = this.app.workspace.getActiveFile();
-        if (!activeFile) {
-            new Notice('Aucun fichier actif');
-            return;
-        }
-
-        try {
-            const seoMetadata = await this.metadataService.generateSEOMetadata(activeFile);
-            await this.metadataService.updateMetadata(activeFile, seoMetadata);
-            new Notice('Métadonnées SEO mises à jour avec succès');
-        } catch (error) {
-            console.error('Erreur lors de la mise à jour des métadonnées:', error);
-            new Notice('Erreur lors de la mise à jour des métadonnées');
         }
     }
 

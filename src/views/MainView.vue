@@ -32,6 +32,7 @@
             :contentFiles="contentFiles"
             :app="app"
         />
+        <GoalModal />
     </div>
 </template>
 
@@ -42,6 +43,7 @@ import GoalsView from './GoalsView.vue';
 import PlanningView from './PlanningView.vue';
 import TrackingView from './TrackingView.vue';
 import StatsView from './StatsView.vue';
+import GoalModal from '@/components/modals/GoalModal.vue';
 import { useSettingsStore } from '../stores/settingsStore';
 
 const props = defineProps<{
@@ -59,17 +61,17 @@ const setActiveTab = (tab: string) => {
     settingsStore.updateSettings({ lastActiveTab: tab });
 };
 
+const handleViewChange = ((event: CustomEvent) => {
+    activeTab.value = event.detail;
+}) as EventListener;
+
 // Écouter l'événement de changement de vue
 onMounted(() => {
-  window.addEventListener('view-change', ((event: CustomEvent) => {
-    activeTab.value = event.detail;
-  }) as EventListener);
+    window.addEventListener('view-change', handleViewChange);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('view-change', ((event: CustomEvent) => {
-    activeTab.value = event.detail;
-  }) as EventListener);
+    window.removeEventListener('view-change', handleViewChange);
 });
 
 const currentComponent = computed(() => {

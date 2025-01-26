@@ -3,7 +3,7 @@
     <div class="goalflowz-goals-header">
       <h2>Objectifs</h2>
       <div class="goalflowz-goals-controls">
-        <button @click="addNewGoal" class="goalflowz-add-goal-btn">
+        <button @click="openNewGoalModal" class="goalflowz-add-goal-btn">
           <i class="fas fa-plus"></i> Nouvel objectif
         </button>
       </div>
@@ -14,10 +14,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { Timeline, DataSet } from 'vis-timeline/standalone';
 import type { Goal } from '@/types/goals';
 import { useGoalsStore } from '@/stores/goalsStore';
+import { useModalStore } from '@/stores/modalStore';
+import { GoalModal } from '@/main';
 
 const props = defineProps<{
   contentFiles: any[];
@@ -25,6 +27,7 @@ const props = defineProps<{
 }>();
 
 const goalsStore = useGoalsStore();
+const modalStore = useModalStore();
 const timelineContainer = ref<HTMLElement | null>(null);
 let timeline: Timeline | null = null;
 
@@ -32,6 +35,7 @@ let timeline: Timeline | null = null;
 const createTimelineItems = (goals: Goal[]) => {
   return goals.map(goal => ({
     id: goal.id,
+    group: goal.category || 'Sans catégorie',
     content: `
       <div class="goalflowz-timeline-item">
         <div class="goalflowz-timeline-item-title">${goal.title}</div>
@@ -42,7 +46,28 @@ const createTimelineItems = (goals: Goal[]) => {
     `,
     start: new Date(goal.startDate),
     end: goal.dueDate ? new Date(goal.dueDate) : undefined,
-    className: `goalflowz-priority-${goal.priority} goalflowz-status-${goal.status}`
+    className: `goalflowz-priority-${goal.priority} goalflowz-status-${goal.status}`,
+    title: `
+      <div class="goalflowz-timeline-tooltip">
+        <h3>${goal.title}</h3>
+        <p>${goal.description || 'Aucune description'}</p>
+        <div class="goalflowz-tooltip-meta">
+          <span>Priorité: ${goal.priority}</span>
+          <span>Statut: ${goal.status}</span>
+          <span>Progression: ${goal.progress}%</span>
+        </div>
+        ${goal.tags?.length ? `<div class="goalflowz-tooltip-tags">${goal.tags.map(tag => `#${tag}`).join(' ')}</div>` : ''}
+      </div>
+    `
+  }));
+};
+
+// Créer les groupes pour la timeline
+const createTimelineGroups = (goals: Goal[]) => {
+  const categories = new Set(goals.map(goal => goal.category || 'Sans catégorie'));
+  return Array.from(categories).map(category => ({
+    id: category,
+    content: category
   }));
 };
 
@@ -51,6 +76,7 @@ onMounted(() => {
   if (!timelineContainer.value) return;
 
   const items = new DataSet(createTimelineItems(goalsStore.goals));
+  const groups = new DataSet(createTimelineGroups(goalsStore.goals));
   
   const options = {
     orientation: 'top',
@@ -62,33 +88,97 @@ onMounted(() => {
     groupOrder: 'content',
     tooltip: {
       followMouse: true,
-      overflowMethod: 'cap'
+      overflowMethod: 'cap' as const
+    },
+    onMove: (item: any, callback: any) => {
+      const goal = goalsStore.goals.find(g => g.id === item.id);
+      if (goal) {
+        const updatedGoal = {
+          ...goal,
+          startDate: item.start.toISOString().split('T')[0],
+          dueDate: item.end?.toISOString().split('T')[0]
+        };
+        goalsStore.updateGoal(updatedGoal);
+      }
+      callback(item);
+    },
+    onMoving: (item: any, callback: any) => {
+      callback(item);
+    },
+    snap: (date: Date) => {
+      const hour = 60 * 60 * 1000;
+      return Math.round(date.getTime() / hour) * hour;
     }
   };
 
-  timeline = new Timeline(timelineContainer.value, items, options);
+  timeline = new Timeline(timelineContainer.value, items, groups, options);
+
+  // Gérer les événements de la timeline
+  timeline.on('doubleClick', (properties: any) => {
+    if (properties.item) {
+      const goalId = properties.item;
+      const goal = goalsStore.goals.find(g => g.id === goalId);
+      if (goal) {
+        const modal = new GoalModal(props.app, goal);
+        modal.open();
+      }
+    }
+  });
+
+  timeline.on('select', (properties: any) => {
+    // On peut utiliser cet événement pour d'autres interactions si nécessaire
+  });
+
+  timeline.on('rangechanged', () => {
+    // Sauvegarder la plage de dates visible si nécessaire
+  });
+
+  // Ajouter des contrôles de zoom
+  const zoomIn = () => timeline?.zoomIn(0.5);
+  const zoomOut = () => timeline?.zoomOut(0.5);
+  const moveLeft = () => {
+    const currentWindow = timeline?.getWindow();
+    if (currentWindow) {
+      const interval = currentWindow.end.getTime() - currentWindow.start.getTime();
+      timeline?.moveTo(new Date(currentWindow.start.getTime() - interval * 0.3));
+    }
+  };
+  const moveRight = () => {
+    const currentWindow = timeline?.getWindow();
+    if (currentWindow) {
+      const interval = currentWindow.end.getTime() - currentWindow.start.getTime();
+      timeline?.moveTo(new Date(currentWindow.start.getTime() + interval * 0.3));
+    }
+  };
+
+  // Ajouter des raccourcis clavier
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === '+') zoomIn();
+    if (e.ctrlKey && e.key === '-') zoomOut();
+    if (e.ctrlKey && e.key === 'ArrowLeft') moveLeft();
+    if (e.ctrlKey && e.key === 'ArrowRight') moveRight();
+  });
 });
 
 // Mise à jour quand les goals changent
 watch(() => goalsStore.goals, (newGoals) => {
   if (!timeline) return;
   const items = new DataSet(createTimelineItems(newGoals));
+  const groups = new DataSet(createTimelineGroups(newGoals));
   timeline.setItems(items);
+  timeline.setGroups(groups);
 }, { deep: true });
 
-const addNewGoal = () => {
-  const newGoal: Goal = {
-    id: crypto.randomUUID(),
-    title: "Nouvel objectif",
-    description: "",
-    startDate: new Date().toISOString(),
-    status: 'todo',
-    tasks: [],
-    priority: 'medium',
-    subGoalIds: [],
-    progress: 0
-  };
-  
-  goalsStore.addGoal(newGoal);
+// Nettoyage de la timeline
+onUnmounted(() => {
+    if (timeline) {
+        timeline.destroy();
+        timeline = null;
+    }
+});
+
+const openNewGoalModal = () => {
+  const modal = new GoalModal(props.app);
+  modal.open();
 };
 </script> 
