@@ -152,7 +152,7 @@ onMounted(() => {
     orientation: 'top',
     zoomable: true,
     stack: true,
-    height: '600px',
+    height: '100%',
     horizontalScroll: true,
     verticalScroll: true,
     groupOrder: 'content',
@@ -160,6 +160,25 @@ onMounted(() => {
       followMouse: true,
       overflowMethod: 'cap' as const,
       delay: 100
+    },
+    // Configuration pour masquer les heures de nuit
+    hiddenDates: [
+      {
+        start: `2024-01-01 ${settingsStore.settings.timelineEndHour || '23:00'}:00`,
+        end: `2024-01-02 ${settingsStore.settings.timelineStartHour || '08:00'}:00`,
+        repeat: 'daily' as const
+      }
+    ],
+    // Configuration du format d'affichage des heures
+    format: {
+      minorLabels: {
+        minute: settingsStore.settings.timeFormat === '12h' ? 'hh:mm A' : 'HH:mm',
+        hour: settingsStore.settings.timeFormat === '12h' ? 'hh:mm A' : 'HH:mm',
+        weekday: 'dddd',
+        day: 'D',
+        month: 'MMM',
+        year: 'YYYY'
+      }
     },
     template: function (item: any) {
       return item.content;
@@ -274,6 +293,40 @@ watch(() => goalsStore.goals, (newGoals) => {
   timeline.setGroups(groups);
 }, { deep: true });
 
+// Mise à jour quand les paramètres de la timeline changent
+watch(
+  () => [
+    settingsStore.settings.timelineStartHour,
+    settingsStore.settings.timelineEndHour,
+    settingsStore.settings.timeFormat
+  ],
+  () => {
+    if (!timeline) return;
+    
+    // Mettre à jour les options de la timeline
+    timeline.setOptions({
+      hiddenDates: [
+        {
+          start: `2024-01-01 ${settingsStore.settings.timelineEndHour}:00`,
+          end: `2024-01-02 ${settingsStore.settings.timelineStartHour}:00`,
+          repeat: 'daily' as const
+        }
+      ],
+      format: {
+        minorLabels: {
+          minute: settingsStore.settings.timeFormat === '12h' ? 'hh:mm A' : 'HH:mm',
+          hour: settingsStore.settings.timeFormat === '12h' ? 'hh:mm A' : 'HH:mm',
+          weekday: 'dddd',
+          day: 'D',
+          month: 'MMM',
+          year: 'YYYY'
+        }
+      }
+    });
+  },
+  { deep: true }
+);
+
 // Nettoyage de la timeline
 onUnmounted(() => {
     if (timeline) {
@@ -287,43 +340,3 @@ const openNewGoalModal = () => {
   modal.open();
 };
 </script>
-
-<style>
-.goalflowz-content {
-  display: flex;
-  position: relative;
-  height: 100%;
-}
-
-.goalflowz-timeline-container {
-  height: 100%;
-  overflow: hidden;
-}
-
-.goalflowz-task-container {
-  height: 100%;
-  overflow-y: auto;
-}
-
-.goalflowz-resize-handle {
-  width: 4px;
-  background-color: var(--background-modifier-border);
-  cursor: ew-resize;
-  position: relative;
-}
-
-.goalflowz-resize-handle:hover {
-  background-color: var(--interactive-accent);
-}
-
-.goalflowz-resize-handle::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 2px;
-  height: 20px;
-  background-color: var(--text-muted);
-}
-</style>

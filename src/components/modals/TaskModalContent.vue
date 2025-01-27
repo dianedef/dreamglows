@@ -1,13 +1,17 @@
 <template>
-  <div class="goalflowz-task-modal">
+  <form @submit.prevent="save" class="goalflowz-task-modal">
     <div class="goalflowz-modal-field">
       <label>Titre</label>
-      <input v-model="taskData.title" type="text" placeholder="Titre de la tâche" />
+      <input v-model="taskData.title" type="text" placeholder="Titre de la tâche" required />
     </div>
 
     <div class="goalflowz-modal-field">
       <label>Description</label>
-      <textarea v-model="taskData.description" placeholder="Description de la tâche"></textarea>
+      <textarea 
+        v-model="taskData.description" 
+        placeholder="Description de la tâche"
+        @keydown.enter.exact.prevent="save"
+      ></textarea>
     </div>
 
     <div class="goalflowz-modal-field">
@@ -45,17 +49,17 @@
                 :key="tag" 
                 class="goalflowz-tag">
             #{{ tag }}
-            <button @click="removeTag(tag)" class="goalflowz-tag-remove">×</button>
+            <button type="button" @click="removeTag(tag)" class="goalflowz-tag-remove">×</button>
           </span>
         </div>
       </div>
     </div>
 
     <div class="goalflowz-modal-actions">
-      <button @click="save" class="goalflowz-modal-save">Enregistrer</button>
-      <button v-if="isEditing" @click="deleteTask" class="goalflowz-modal-delete">Supprimer</button>
+      <button type="submit" class="goalflowz-modal-save">Enregistrer</button>
+      <button v-if="isEditing" type="button" @click="deleteTask" class="goalflowz-modal-delete">Supprimer</button>
     </div>
-  </div>
+  </form>
 </template>
 
 <script setup lang="ts">

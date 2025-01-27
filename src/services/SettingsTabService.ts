@@ -140,8 +140,45 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
         // Section Goals
         containerEl.createEl('h3', { text: '🎯 Objectifs' });
 
+        // Timeline settings
+        containerEl.createEl('h4', { text: 'Timeline' });
+        
+        new Setting(containerEl)
+            .setName('Heure de début')
+            .setDesc('Heure de début de la journée dans la timeline')
+            .addText(text => text
+                .setPlaceholder('08:00')
+                .setValue(this.plugin.settings.timelineStartHour || '08:00')
+                .onChange(async (value) => {
+                    this.plugin.settings.timelineStartHour = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Heure de fin')
+            .setDesc('Heure de fin de la journée dans la timeline')
+            .addText(text => text
+                .setPlaceholder('23:00')
+                .setValue(this.plugin.settings.timelineEndHour || '23:00')
+                .onChange(async (value) => {
+                    this.plugin.settings.timelineEndHour = value;
+                    await this.plugin.saveSettings();
+                }));
+
+        new Setting(containerEl)
+            .setName('Format horaire')
+            .setDesc('Format d\'affichage des heures dans la timeline')
+            .addDropdown(dropdown => dropdown
+                .addOption('24h', '24h (ex: 14:30)')
+                .addOption('12h', '12h (ex: 2:30 PM)')
+                .setValue(this.plugin.settings.timeFormat)
+                .onChange(async (value: '12h' | '24h') => {
+                    this.plugin.settings.timeFormat = value;
+                    await this.plugin.saveSettings();
+                }));
+
         // Couleurs de fréquence
-        containerEl.createEl('h3', { text: 'Couleurs de fréquence' });
+        containerEl.createEl('h4', { text: 'Couleurs de fréquence' });
 
         new Setting(containerEl)
             .setName('Haute fréquence')

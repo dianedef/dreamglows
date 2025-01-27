@@ -1,14 +1,17 @@
 .goalflowz-goals-view {
-  padding: 20px;
-  height: 100%;
+  height: calc(100vh - 40px - 40px); /* 40px pour les marges Obsidian + 40px pour le padding total (20px * 2) */
   display: flex;
   flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .goalflowz-content {
   display: flex;
   position: relative;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .goalflowz-goals-header {
@@ -16,16 +19,70 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-shrink: 0;
 }
 
 .goalflowz-timeline-container {
   height: 100%;
   overflow: hidden;
+  flex-shrink: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .goalflowz-task-container {
   height: 100%;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Styles pour le conteneur de la liste des tâches */
+.goalflowz-task-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  min-height: 0; /* Important pour que le scroll fonctionne correctement */
+}
+
+.goalflowz-task-list-header,
+.goalflowz-task-stats,
+.goalflowz-task-search,
+.goalflowz-task-filters {
+  flex-shrink: 0;
+  margin-bottom: 0.5rem; /* Réduit l'espacement */
+}
+
+.goalflowz-tasks-container {
+  flex: 1;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem; /* Réduit le padding */
+  background: var(--background-primary);
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  min-height: 0; /* Important pour que le scroll fonctionne correctement */
+}
+
+.goalflowz-tasks-container:hover {
+  background: var(--background-primary-alt);
+  border-color: var(--interactive-accent);
+}
+
+.goalflowz-tasks-container:empty::after {
+  content: "Double-cliquez pour ajouter une tâche";
+  display: block;
+  text-align: center;
+  color: var(--text-muted);
+  padding: 2rem;
+  font-style: italic;
 }
 
 .goalflowz-resize-handle {

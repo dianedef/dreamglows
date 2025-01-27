@@ -104,24 +104,3 @@ const handleDelete = () => {
   }
 };
 </script>
-
-<style scoped>
-.color-input-reset {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  width: 50px;
-  height: 50px;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-}
-.color-input-reset::-webkit-color-swatch {
-  border-radius: 4px;
-  border: 1px solid var(--background-modifier-border);
-}
-.color-input-reset::-moz-color-swatch {
-  border-radius: 4px;
-  border: 1px solid var(--background-modifier-border);
-}
-</style> 

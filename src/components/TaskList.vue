@@ -51,14 +51,18 @@
       </select>
     </div>
 
-    <div class="goalflowz-tasks-container">
+    <div 
+      class="goalflowz-tasks-container"
+      @dblclick.self="openNewTaskModal"
+    >
       <div v-for="task in sortedAndFilteredTasks" 
            :key="task.id" 
            class="goalflowz-task-item"
            :class="[
              'goalflowz-priority-' + task.priority,
              'goalflowz-status-' + task.status
-           ]">
+           ]"
+           @dblclick="editTask(task)">
         <div class="goalflowz-task-header">
           <div class="goalflowz-task-controls">
             <button 
@@ -70,12 +74,17 @@
             <button 
               class="goalflowz-task-edit-btn"
               @click="editTask(task)"
-              title="Modifier">
-              <i class="fas fa-pencil"></i>
+              title="Modifier la tâche">
+              ✍️
             </button>
           </div>
           <div class="goalflowz-task-priority">
-            {{ getPriorityLabel(task.priority) }}
+            <button 
+              class="goalflowz-task-priority-btn"
+              @click="cyclePriority(task)"
+              :title="getNextPriorityLabel(task.priority)">
+              {{ getPriorityLabel(task.priority) }}
+            </button>
           </div>
         </div>
         <div class="goalflowz-task-title">{{ task.title }}</div>
@@ -171,8 +180,8 @@ const getStatusLabel = (status: TaskStatus) => {
 
 const getStatusEmoji = (status: TaskStatus) => {
   const emojis = {
-    'todo': '⭕',
-    'in-progress': '▶️',
+    'todo': '💤',
+    'in-progress': '🔥',
     'done': '✅'
   };
   return emojis[status];
@@ -205,6 +214,26 @@ const getPriorityLabel = (priority: TaskPriority) => {
     'low': '○ Basse'
   };
   return labels[priority];
+};
+
+const getNextPriority = (priority: TaskPriority): TaskPriority => {
+  const priorityOrder = {
+    'high': 'medium',
+    'medium': 'low',
+    'low': 'high'
+  } as const;
+  return priorityOrder[priority];
+};
+
+const getNextPriorityLabel = (priority: TaskPriority) => {
+  return `Changer en priorité ${getPriorityLabel(getNextPriority(priority)).toLowerCase()}`;
+};
+
+const cyclePriority = (task: Task) => {
+  tasksStore.updateTask({
+    ...task,
+    priority: getNextPriority(task.priority)
+  });
 };
 
 const formatDate = (date: string) => {

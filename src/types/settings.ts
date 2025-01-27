@@ -25,6 +25,9 @@ export interface GoalFlowzSettings {
     customNotesFormat?: string;
     noteTemplate: string;
     lastMainWidth: number;
+    timelineStartHour: string;
+    timelineEndHour: string;
+    timeFormat: '12h' | '24h';
 }
 
 export interface DefaultTask {
@@ -55,5 +58,8 @@ export const DEFAULT_SETTINGS: GoalFlowzSettings = {
     folderStructure: "flat",
     notesFormat: "1",
     noteTemplate: "# {{title}}\n\n## Objectif\n\n## Tâches\n\n## Notes",
-    lastMainWidth: 50
+    lastMainWidth: 50,
+    timelineStartHour: "08:00",
+    timelineEndHour: "23:00",
+    timeFormat: "24h"
 }; 
