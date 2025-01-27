@@ -24,7 +24,7 @@
           <i class="fas fa-bullseye"></i>
           <div class="goalflowz-card-text">
             <div class="goalflowz-card-title">{{ nextGoal.title }}</div>
-            <div class="goalflowz-card-subtitle">
+            <div class="goalflowz-card-subtitle" v-if="nextGoal.dueDate">
               Échéance : {{ formatDate(nextGoal.dueDate) }}
             </div>
           </div>
@@ -37,7 +37,7 @@
           <i class="fas fa-trophy"></i>
           <div class="goalflowz-card-text">
             <div class="goalflowz-card-title">{{ lastCompletedGoal.title }}</div>
-            <div class="goalflowz-card-subtitle">
+            <div class="goalflowz-card-subtitle" v-if="lastCompletedGoal.completedDate">
               Complété le {{ formatDate(lastCompletedGoal.completedDate) }}
             </div>
           </div>
@@ -58,7 +58,6 @@
     <!-- Trackers d'habitudes -->
     <div class="goalflowz-habits-section">
       <div class="goalflowz-section-header">
-        <h3>Habitudes du jour</h3>
         <div class="goalflowz-completion-rate">
           {{ dayStats.completionRate.toFixed(0) }}% complété
         </div>
@@ -88,18 +87,15 @@
           </div>
         </div>
       </div>
-    </div>
 
     <!-- Humeur et énergie -->
-    <div class="goalflowz-mood-section">
       <div class="goalflowz-mood-row">
         <div class="goalflowz-mood-item">
-          <label>Humeur</label>
           <div class="goalflowz-mood-buttons">
             <button 
-              v-for="level in 5" 
+              v-for="level in [1,2,3,4,5]" 
               :key="'mood-'+level"
-              @click="setMood(level)"
+              @click="setMood(level as 1 | 2 | 3 | 4 | 5)"
               :class="{ active: dayStats.mood === level }"
               class="goalflowz-mood-btn"
             >
@@ -109,12 +105,11 @@
         </div>
 
         <div class="goalflowz-mood-item">
-          <label>Niveau d'énergie</label>
           <div class="goalflowz-mood-buttons">
             <button 
-              v-for="level in 5" 
+              v-for="level in [1,2,3,4,5]" 
               :key="'energy-'+level"
-              @click="setEnergyLevel(level)"
+              @click="setEnergyLevel(level as 1 | 2 | 3 | 4 | 5)"
               :class="{ active: dayStats.energyLevel === level }"
               class="goalflowz-energy-btn"
             >
@@ -145,8 +140,56 @@ import { useGoalsStore } from '@/stores/goalsStore';
 import { useTasksStore } from '@/stores/tasksStore';
 import type { Habit } from '@/types/habits';
 
+// Utilitaire de gestion des dates
+const dateUtils = {
+  formatDate: (date: string | DateTime | null): string => {
+    try {
+      if (!date) return '';
+      if (date instanceof DateTime) {
+        return date.toFormat('yyyy-MM-dd');
+      }
+      return DateTime.fromISO(date).toFormat('yyyy-MM-dd');
+    } catch (error) {
+      console.warn('Erreur de formatage de date:', error);
+      return '';
+    }
+  },
+  
+  formatDisplayDate: (date: string | DateTime | null): string => {
+    try {
+      if (!date) return '';
+      if (date instanceof DateTime) {
+        return date.setLocale('fr').toLocaleString({
+          day: 'numeric',
+          month: 'long'
+        });
+      }
+      return DateTime.fromISO(date).setLocale('fr').toLocaleString({
+        day: 'numeric',
+        month: 'long'
+      });
+    } catch (error) {
+      console.warn('Erreur de formatage de date d\'affichage:', error);
+      return '';
+    }
+  },
+
+  toDateTime: (date: string | DateTime | null): DateTime => {
+    try {
+      if (!date) return DateTime.now();
+      if (date instanceof DateTime) return date;
+      return DateTime.fromISO(date);
+    } catch (error) {
+      console.warn('Erreur de conversion de date:', error);
+      return DateTime.now();
+    }
+  }
+};
+
+// Configuration du composant
 const props = defineProps<{
   app: any;
+  contentFiles?: any[];
 }>();
 
 const habitsStore = useHabitsStore();
@@ -156,59 +199,86 @@ const tasksStore = useTasksStore();
 const currentDate = ref(DateTime.now());
 const dayNotes = ref('');
 
-// Computed properties
+// Computed properties avec gestion d'erreurs
 const formattedDate = computed(() => {
-  return currentDate.value.setLocale('fr').toLocaleString({
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+  try {
+    return currentDate.value.setLocale('fr').toLocaleString({
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  } catch (error) {
+    console.warn('Erreur de formatage de la date courante:', error);
+    return '';
+  }
 });
 
 const isToday = computed(() => {
-  const today = DateTime.now();
-  return currentDate.value.hasSame(today, 'day');
+  try {
+    const today = DateTime.now();
+    return currentDate.value.hasSame(today, 'day');
+  } catch (error) {
+    console.warn('Erreur de comparaison de dates:', error);
+    return false;
+  }
 });
 
 const activeHabits = computed(() => habitsStore.activeHabits);
 
-const dayStats = computed(() => 
-  habitsStore.getDayStats(currentDate.value.toISOString().split('T')[0])
-);
+const dayStats = computed(() => {
+  try {
+    return habitsStore.getDayStats(dateUtils.formatDate(currentDate.value));
+  } catch (error) {
+    console.warn('Erreur de récupération des stats:', error);
+    return { completionRate: 0, mood: 0, energyLevel: 0, notes: '' };
+  }
+});
 
 const nextGoal = computed(() => {
   const goals = goalsStore.goals
     .filter(g => g.status !== 'done' && g.dueDate)
-    .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime());
+    .sort((a, b) => DateTime.fromISO(a.dueDate || '').toMillis() - DateTime.fromISO(b.dueDate || '').toMillis());
   return goals[0];
 });
 
 const lastCompletedGoal = computed(() => {
   const goals = goalsStore.goals
     .filter(g => g.status === 'done')
-    .sort((a, b) => new Date(b.completedDate!).getTime() - new Date(a.completedDate!).getTime());
+    .sort((a, b) => DateTime.fromISO(b.completedDate || '').toMillis() - DateTime.fromISO(a.completedDate || '').toMillis());
   return goals[0];
 });
 
 const nextTask = computed(() => {
   const tasks = tasksStore.getTasks
-    .filter(t => !t.done && t.date)
-    .sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime());
+    .filter(t => !t.status.toLowerCase().includes('done') && t.date)
+    .sort((a, b) => DateTime.fromISO(a.date || '').toMillis() - DateTime.fromISO(b.date || '').toMillis());
   return tasks[0];
 });
 
-// Methods
+// Methods avec gestion d'erreurs
 const previousDay = () => {
-  currentDate.value = currentDate.value.minus({ days: 1 });
+  try {
+    currentDate.value = currentDate.value.minus({ days: 1 });
+  } catch (error) {
+    console.warn('Erreur de navigation jour précédent:', error);
+  }
 };
 
 const nextDay = () => {
-  currentDate.value = currentDate.value.plus({ days: 1 });
+  try {
+    currentDate.value = currentDate.value.plus({ days: 1 });
+  } catch (error) {
+    console.warn('Erreur de navigation jour suivant:', error);
+  }
 };
 
 const goToToday = () => {
-  currentDate.value = DateTime.now();
+  try {
+    currentDate.value = DateTime.now();
+  } catch (error) {
+    console.warn('Erreur de navigation aujourd\'hui:', error);
+  }
 };
 
 const formatDate = (date: string) => {
@@ -218,25 +288,44 @@ const formatDate = (date: string) => {
   });
 };
 
-const isHabitCompleted = (habitId: string) => {
-  const date = currentDate.value.toISOString().split('T')[0];
-  const log = habitsStore.getDayLogs(date).find(l => l.habitId === habitId);
-  return log?.completed || false;
+const isHabitCompleted = (habitId: string): boolean => {
+  try {
+    const date = dateUtils.formatDate(currentDate.value);
+    const log = habitsStore.getDayLogs(date).find(l => l.habitId === habitId);
+    return log?.completed || false;
+  } catch (error) {
+    console.warn('Erreur de vérification d\'habitude:', error);
+    return false;
+  }
 };
 
-const getHabitValue = (habitId: string) => {
-  const date = currentDate.value.toISOString().split('T')[0];
-  const log = habitsStore.getDayLogs(date).find(l => l.habitId === habitId);
-  return log?.value;
+const getHabitValue = (habitId: string): number => {
+  try {
+    const date = dateUtils.formatDate(currentDate.value);
+    const log = habitsStore.getDayLogs(date).find(l => l.habitId === habitId);
+    return log?.value || 0;
+  } catch (error) {
+    console.warn('Erreur de récupération de valeur d\'habitude:', error);
+    return 0;
+  }
 };
 
-const getHabitStreak = (habitId: string) => {
-  return habitsStore.getHabitStreak(habitId);
+const getHabitStreak = (habitId: string): number => {
+  try {
+    return habitsStore.getHabitStreak(habitId) || 0;
+  } catch (error) {
+    console.warn('Erreur de récupération du streak:', error);
+    return 0;
+  }
 };
 
 const toggleHabit = (habitId: string) => {
-  const date = currentDate.value.toISOString().split('T')[0];
-  habitsStore.toggleHabit(habitId, date);
+  try {
+    const date = dateUtils.formatDate(currentDate.value);
+    habitsStore.toggleHabit(habitId, date, undefined, props.app);
+  } catch (error) {
+    console.warn('Erreur de basculement d\'habitude:', error);
+  }
 };
 
 const openValueInput = async (habit: Habit) => {
@@ -248,8 +337,8 @@ const openValueInput = async (habit: Habit) => {
   if (value !== null) {
     const numValue = parseFloat(value);
     if (!isNaN(numValue)) {
-      const date = currentDate.value.toISOString().split('T')[0];
-      habitsStore.toggleHabit(habit.id, date, numValue);
+      const date = dateUtils.formatDate(currentDate.value);
+      habitsStore.toggleHabit(habit.id, date, numValue, props.app);
     }
   }
 };
@@ -265,30 +354,53 @@ const getEnergyEmoji = (level: number) => {
 };
 
 const setMood = (level: 1 | 2 | 3 | 4 | 5) => {
-  const date = currentDate.value.toISOString().split('T')[0];
-  habitsStore.setDayMood(date, level);
+  try {
+    const date = dateUtils.formatDate(currentDate.value);
+    habitsStore.setDayMood(date, level);
+    habitsStore.syncWithDailyNote(date, props.app);
+  } catch (error) {
+    console.warn('Erreur lors de la définition de l\'humeur:', error);
+  }
 };
 
 const setEnergyLevel = (level: 1 | 2 | 3 | 4 | 5) => {
-  const date = currentDate.value.toISOString().split('T')[0];
-  habitsStore.setDayEnergyLevel(date, level);
+  try {
+    const date = dateUtils.formatDate(currentDate.value);
+    habitsStore.setDayEnergyLevel(date, level);
+    habitsStore.syncWithDailyNote(date, props.app);
+  } catch (error) {
+    console.warn('Erreur lors de la définition du niveau d\'énergie:', error);
+  }
 };
 
 const updateNotes = () => {
-  const date = currentDate.value.toISOString().split('T')[0];
-  habitsStore.setDayNotes(date, dayNotes.value);
+  try {
+    const date = dateUtils.formatDate(currentDate.value);
+    habitsStore.setDayNotes(date, dayNotes.value);
+    habitsStore.syncWithDailyNote(date, props.app);
+  } catch (error) {
+    console.warn('Erreur lors de la mise à jour des notes:', error);
+  }
 };
 
-// Watchers
+// Watchers avec gestion d'erreurs
 watch(currentDate, () => {
-  const date = currentDate.value.toISOString().split('T')[0];
-  dayNotes.value = habitsStore.getDayStats(date).notes || '';
+  try {
+    const date = dateUtils.formatDate(currentDate.value);
+    dayNotes.value = habitsStore.getDayStats(date).notes || '';
+  } catch (error) {
+    console.warn('Erreur de mise à jour des notes:', error);
+  }
 });
 
-// Initialisation
+// Initialisation avec gestion d'erreurs
 onMounted(() => {
-  habitsStore.initializeDefaultHabits();
-  const date = currentDate.value.toISOString().split('T')[0];
-  dayNotes.value = habitsStore.getDayStats(date).notes || '';
+  try {
+    habitsStore.initializeDefaultHabits();
+    const date = dateUtils.formatDate(currentDate.value);
+    dayNotes.value = habitsStore.getDayStats(date).notes || '';
+  } catch (error) {
+    console.warn('Erreur d\'initialisation:', error);
+  }
 });
 </script>

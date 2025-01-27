@@ -8,6 +8,7 @@ import taskListStyles from './goals/task-list.css';
 import taskModalStyles from './goals/task-modal-content.css';
 import dayViewStyles from './day-view.css';
 import categoryModalStyles from './goals/category-modal-content.css';
+import statsViewStyles from './stats/stats-view.css';
 
 export function registerStyles(viewType: string) {
     const styleEl = document.createElement('style');
@@ -19,7 +20,9 @@ export function registerStyles(viewType: string) {
         ${goalsModalStyles}
         ${taskListStyles}
         ${taskModalStyles}
+        ${dayViewStyles}
         ${categoryModalStyles}
+        ${statsViewStyles}
 
         /* Styles spécifiques à la vue */
         ${weekViewStyles}

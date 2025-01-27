@@ -14,9 +14,6 @@ export const useSettingsStore = defineStore('settings', {
     getters: {
         getDefaultTasks: (state) => state.settings.defaultTasks,
         getApiKeys: (state) => ({
-            googleApiKey: state.settings.googleApiKey,
-            searchEngineId: state.settings.searchEngineId,
-            serpApiKey: state.settings.serpApiKey,
             openAIKey: state.settings.openAIKey,
             openRouterKey: state.settings.openRouterKey
         }),

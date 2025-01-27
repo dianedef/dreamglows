@@ -21,6 +21,7 @@ export interface GoalFlowzSettings {
     }>;
     notesPath: string;
     folderStructure: 'flat' | 'monthly';
+    monthLanguage: 'fr' | 'en';
     notesFormat: '1' | '2' | 'custom';
     customNotesFormat?: string;
     noteTemplate: string;
@@ -55,7 +56,8 @@ export const DEFAULT_SETTINGS: GoalFlowzSettings = {
     lastActiveTab: "goals",
     recentGoals: [],
     notesPath: "notes",
-    folderStructure: "flat",
+    folderStructure: "monthly",
+    monthLanguage: "fr",
     notesFormat: "1",
     noteTemplate: "# {{title}}\n\n## Objectif\n\n## Tâches\n\n## Notes",
     lastMainWidth: 50,

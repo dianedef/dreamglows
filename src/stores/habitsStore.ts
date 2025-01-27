@@ -34,7 +34,7 @@ export const useHabitsStore = defineStore('habits', {
             },
         
         getHabitStreak: (state) => (habitId: string) => {
-            const today = DateTime.now().toISOString().split('T')[0];
+            const today = DateTime.now().toFormat('yyyy-MM-dd');
             return state.dayStats[today]?.streaks[habitId] || 0;
         }
     },
@@ -55,8 +55,8 @@ export const useHabitsStore = defineStore('habits', {
             }
         },
 
-        toggleHabit(habitId: string, date: string, value?: number) {
-            const today = date || DateTime.now().toISOString().split('T')[0];
+        async toggleHabit(habitId: string, date: string, value?: number, app?: any) {
+            const today = date || DateTime.now().toFormat('yyyy-MM-dd');
             const existingLog = this.logs.find(
                 log => log.habitId === habitId && log.date === today
             );
@@ -74,6 +74,11 @@ export const useHabitsStore = defineStore('habits', {
             }
 
             this.updateDayStats(today);
+
+            // Synchroniser avec la note journalière si app est fourni
+            if (app) {
+                await this.syncWithDailyNote(today, app);
+            }
         },
 
         updateDayStats(date: string) {
@@ -88,7 +93,7 @@ export const useHabitsStore = defineStore('habits', {
                 let currentDate = DateTime.fromISO(date);
 
                 while (true) {
-                    const dateStr = currentDate.toISOString().split('T')[0];
+                    const dateStr = currentDate.toFormat('yyyy-MM-dd');
                     const log = this.logs.find(
                         l => l.habitId === habit.id && l.date === dateStr
                     );
@@ -110,7 +115,10 @@ export const useHabitsStore = defineStore('habits', {
                 totalHabits: activeHabits.length,
                 completionRate: activeHabits.length ? 
                     (completedHabits / activeHabits.length) * 100 : 0,
-                streaks
+                streaks,
+                mood: this.dayStats[date]?.mood,
+                energyLevel: this.dayStats[date]?.energyLevel,
+                notes: this.dayStats[date]?.notes
             };
         },
 
@@ -181,6 +189,86 @@ export const useHabitsStore = defineStore('habits', {
                     this.addHabit(habit);
                 }
             });
+        },
+
+        async syncWithDailyNote(date: string, app: any) {
+            try {
+                const settings = app.plugins.plugins.goalflowz.settings;
+                const formattedDate = DateTime.fromISO(date);
+                
+                // Construire le chemin de la note en fonction de la structure
+                let notePath = settings.notesPath;
+                if (settings.folderStructure === 'monthly') {
+                    const monthName = formattedDate.setLocale(settings.monthLanguage).toFormat('MMMM');
+                    notePath = `${notePath}/${monthName}`;
+                }
+
+                // Construire le nom du fichier selon le format choisi
+                let fileName;
+                if (settings.notesFormat === 'custom' && settings.customNotesFormat) {
+                    fileName = formattedDate.toFormat(settings.customNotesFormat);
+                } else {
+                    const day = formattedDate.day;
+                    const monthName = formattedDate.setLocale(settings.monthLanguage).toFormat('MMMM');
+                    fileName = `📓 ${day}${day === 1 ? 'er' : ''} ${monthName}`;
+                }
+
+                const filePath = `${notePath}/${fileName}.md`;
+                
+                // Récupérer ou créer la note du jour
+                let dailyNote = app.vault.getAbstractFileByPath(filePath);
+                if (!dailyNote) {
+                    // Si la note n'existe pas, on la crée avec le template
+                    const template = settings.noteTemplate
+                        .replace('{day}', formattedDate.day.toString())
+                        .replace('{suffix}', formattedDate.day === 1 ? 'er' : '')
+                        .replace('{month}', formattedDate.setLocale(settings.monthLanguage).toFormat('MMMM'))
+                        .replace('{MM}', formattedDate.toFormat('MM'))
+                        .replace('{DD}', formattedDate.toFormat('dd'));
+                    
+                    dailyNote = await app.vault.create(filePath, template);
+                }
+
+                // Lire le contenu actuel
+                let content = await app.vault.read(dailyNote);
+
+                // Préparer le contenu des habitudes
+                const dayLogs = this.getDayLogs(date);
+                const stats = this.getDayStats(date);
+                
+                const habitsContent = `
+## Habitudes du jour
+- Taux de complétion : ${stats.completionRate.toFixed(0)}%
+${this.activeHabits.map(habit => {
+    const log = dayLogs.find(l => l.habitId === habit.id);
+    const status = log?.completed ? '✅' : '⭕';
+    const value = log?.value ? ` (${log.value}${habit.unit || ''})` : '';
+    const streak = stats.streaks[habit.id] ? ` 🔥 ${stats.streaks[habit.id]} jours` : '';
+    return `- ${status} ${habit.icon} ${habit.name}${value}${streak}`;
+}).join('\n')}
+
+${stats.mood ? `Humeur : ${['😢', '😕', '😐', '😊', '😄'][stats.mood - 1]}` : ''}
+${stats.energyLevel ? `Énergie : ${'🔋'.repeat(stats.energyLevel)}` : ''}
+
+${stats.notes ? `Notes : ${stats.notes}` : ''}
+`;
+
+                // Vérifier si une section habitudes existe déjà
+                const habitsSectionRegex = /## Habitudes du jour[\s\S]*?(?=\n## |$)/;
+                if (content.match(habitsSectionRegex)) {
+                    // Mettre à jour la section existante
+                    content = content.replace(habitsSectionRegex, habitsContent);
+                } else {
+                    // Ajouter la nouvelle section à la fin
+                    content += '\n' + habitsContent;
+                }
+
+                // Sauvegarder la note mise à jour
+                await app.vault.modify(dailyNote, content);
+
+            } catch (error) {
+                console.warn('Erreur lors de la synchronisation avec la note journalière:', error);
+            }
         }
     }
 }); 

@@ -1,10 +1,7 @@
-export interface Task {
-    id: string;
-    label: string;
-    done: boolean;
-    linkToOptimizer?: boolean;
-    linkToGenerator?: boolean;
-}
+export * from './tasks';
+export * from './notes';
+export * from './goals';
+export * from './settings';
 
 export interface Note {
     path: string;

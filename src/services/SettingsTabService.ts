@@ -31,17 +31,35 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
                 }));
 
         // Structure des dossiers
+        containerEl.createEl('h3', { text: 'Organisation des notes' });
+
         new Setting(containerEl)
             .setName('Organisation des notes')
             .setDesc('Choisissez comment organiser vos notes')
             .addDropdown(dropdown => dropdown
-                .addOption('flat', 'Structure plate (toutes les notes dans le même dossier)')
                 .addOption('monthly', 'Par mois (ex: Janvier/notes)')
-                .setValue(this.plugin.settings.folderStructure || 'flat')
+                .addOption('flat', 'Structure plate (toutes les notes dans le même dossier)')
+                .setValue(this.plugin.settings.folderStructure || 'monthly')
                 .onChange(async (value) => {
                     this.plugin.settings.folderStructure = value;
                     await this.plugin.saveSettings();
+                    this.display(); // Rafraîchir pour afficher/masquer les options de langue
                 }));
+
+        // Option de langue pour les mois (uniquement si monthly est sélectionné)
+        if (this.plugin.settings.folderStructure === 'monthly') {
+            new Setting(containerEl)
+                .setName('Langue des mois')
+                .setDesc('Choisissez la langue pour les noms des mois')
+                .addDropdown(dropdown => dropdown
+                    .addOption('fr', 'Français (ex: Janvier)')
+                    .addOption('en', 'Anglais (ex: January)')
+                    .setValue(this.plugin.settings.monthLanguage || 'fr')
+                    .onChange(async (value) => {
+                        this.plugin.settings.monthLanguage = value;
+                        await this.plugin.saveSettings();
+                    }));
+        }
 
         // Bouton de génération
         new Setting(containerEl)

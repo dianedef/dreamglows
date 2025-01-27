@@ -10,15 +10,18 @@ importers:
     dependencies:
       '@langchain/core':
         specifier: ^0.1.63
-        version: 0.1.63(openai@4.80.0(zod@3.24.1))
+        version: 0.1.63(openai@4.80.1(zod@3.24.1))
       '@langchain/openai':
         specifier: ^0.0.14
         version: 0.0.14
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
+      chart.js:
+        specifier: ^4.4.7
+        version: 4.4.7
       crypto-browserify:
-        specifier: ^3.12.0
+        specifier: ^3.12.1
         version: 3.12.1
       date-fns:
         specifier: ^3.6.0
@@ -27,7 +30,7 @@ importers:
         specifier: ^3.3.0
         version: 3.3.0
       luxon:
-        specifier: ^3.4.4
+        specifier: ^3.5.0
         version: 3.5.0
       obsidian:
         specifier: ^1.7.2
@@ -67,11 +70,11 @@ importers:
         specifier: ^3.4.2
         version: 3.4.2
       '@types/node':
-        specifier: ^16.18.124
-        version: 16.18.124
+        specifier: ^16.18.125
+        version: 16.18.125
       '@vitejs/plugin-vue':
         specifier: ^4.6.2
-        version: 4.6.2(vite@4.5.9(@types/node@16.18.124))(vue@3.5.13(typescript@4.9.5))
+        version: 4.6.2(vite@4.5.9(@types/node@16.18.125))(vue@3.5.13(typescript@4.9.5))
       rimraf:
         specifier: ^5.0.10
         version: 5.0.10
@@ -83,7 +86,7 @@ importers:
         version: 4.9.5
       vite:
         specifier: ^4.5.9
-        version: 4.5.9(@types/node@16.18.124)
+        version: 4.5.9(@types/node@16.18.125)
 
 packages:
 
@@ -95,13 +98,13 @@ packages:
     resolution: {integrity: sha512-Ed61U6XJc3CVRfkERJWDz4dJwKe7iLmmJsbOGu9wSloNSFttHV0I8g6UAgb7qnK5ly5bGLPd4oXZlxCdANBOWQ==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/parser@7.26.5':
-    resolution: {integrity: sha512-SRJ4jYmXRqV1/Xc+TIVG84WjHBXKlxO9sHQnA2Pf12QQEAp1LOh6kDzNHXcUnbH1QI0FDoPPVOt+vyUDucxpaw==}
+  '@babel/parser@7.26.7':
+    resolution: {integrity: sha512-kEvgGGgEjRUutvdVvZhbn/BxVt+5VSpwXz1j3WYXQbXDo8KzFOPNG2GQbdAiNq8g6wn1yKk7C/qrke03a84V+w==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  '@babel/types@7.26.5':
-    resolution: {integrity: sha512-L6mZmwFDK6Cjh1nRCLXpa6no13ZIioJDz7mdkzHv399pThrTa/k0nUlNaenOeh2kWu/iaOQYElEpKPUswUa9Vg==}
+  '@babel/types@7.26.7':
+    resolution: {integrity: sha512-t8kDRGrKXyp6+tjUh7hw2RLyclsW4TRoRvRHtSyAX9Bb5ldlFh+90YAYY6awRXrlB4G5G2izNeGySpATlFzmOg==}
     engines: {node: '>=6.9.0'}
 
   '@codemirror/state@6.5.1':
@@ -253,6 +256,9 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.0':
     resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
 
+  '@kurkle/color@0.3.4':
+    resolution: {integrity: sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w==}
+
   '@langchain/core@0.1.63':
     resolution: {integrity: sha512-+fjyYi8wy6x1P+Ee1RWfIIEyxd9Ee9jksEwvrggPwwI/p45kIDTdYTblXsM13y4mNWTiACyLSdbwnPaxxdoz+w==}
     engines: {node: '>=18'}
@@ -310,11 +316,11 @@ packages:
   '@types/node-fetch@2.6.12':
     resolution: {integrity: sha512-8nneRWKCg3rMtF69nLQJnOYUcbafYeFSjqkw3jCRLsqkWFlHaoQrr5mXmofFGOx3DKn7UfmBMyov8ySvLRVldA==}
 
-  '@types/node@16.18.124':
-    resolution: {integrity: sha512-8ADCm5WzM/IpWxjs1Jhtwo6j+Fb8z4yr/CobP5beUUPdyCI0mg87/bqQYxNcqnhZ24Dc9RME8SQWu5eI/FmSGA==}
+  '@types/node@16.18.125':
+    resolution: {integrity: sha512-w7U5ojboSPfZP4zD98d+/cjcN2BDW6lKH2M0ubipt8L8vUC7qUAC6ENKGSJL4tEktH2Saw2K4y1uwSjyRGKMhw==}
 
-  '@types/node@18.19.71':
-    resolution: {integrity: sha512-evXpcgtZm8FY4jqBSN8+DmOTcVkkvTmAayeo4Wf3m1xAruyVGzGuDh/Fb/WWX2yLItUiho42ozyJjB0dw//Tkw==}
+  '@types/node@18.19.74':
+    resolution: {integrity: sha512-HMwEkkifei3L605gFdV+/UwtpxP6JSzM+xFk2Ia6DNFSwSVBRh9qp5Tgf4lNFOMfPVuU0WnkcWpXZpgn5ufO4A==}
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
@@ -448,6 +454,10 @@ packages:
   camelcase@6.3.0:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
+
+  chart.js@4.4.7:
+    resolution: {integrity: sha512-pwkcKfdzTMAU/+jNosKhNL2bHtJc/sSmYgVbuGTEDhzkrhmyihmP7vUc/5ZK9WopidMDHNe3Wm7jOd/WhuHWuw==}
+    engines: {pnpm: '>=8'}
 
   cipher-base@1.0.6:
     resolution: {integrity: sha512-3Ek9H3X6pj5TgenXYtNWdaBon1tgYCaebd+XPg0keyjEbEfkD4KkmAxkQ/i1vYvxdcT5nscLBfq9VJRmCBcFSw==}
@@ -769,8 +779,8 @@ packages:
   once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
 
-  openai@4.80.0:
-    resolution: {integrity: sha512-5TqdNQgjOMxo3CkCvtjzuSwuznO/o3q5aak0MTy6IjRvPtvVA1wAFGJU3eZT1JHzhs2wFb/xtDG0o6Y/2KGCfw==}
+  openai@4.80.1:
+    resolution: {integrity: sha512-+6+bbXFwbIE88foZsBEt36bPkgZPdyFN82clAXG61gnHb2gXdZApDyRrcAHqEtpYICywpqaNo57kOm9dtnb7Cw==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -1108,11 +1118,11 @@ snapshots:
 
   '@babel/helper-validator-identifier@7.25.9': {}
 
-  '@babel/parser@7.26.5':
+  '@babel/parser@7.26.7':
     dependencies:
-      '@babel/types': 7.26.5
+      '@babel/types': 7.26.7
 
-  '@babel/types@7.26.5':
+  '@babel/types@7.26.7':
     dependencies:
       '@babel/helper-string-parser': 7.25.9
       '@babel/helper-validator-identifier': 7.25.9
@@ -1208,13 +1218,15 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.0': {}
 
-  '@langchain/core@0.1.63(openai@4.80.0(zod@3.24.1))':
+  '@kurkle/color@0.3.4': {}
+
+  '@langchain/core@0.1.63(openai@4.80.1(zod@3.24.1))':
     dependencies:
       ansi-styles: 5.2.0
       camelcase: 6.3.0
       decamelize: 1.2.0
       js-tiktoken: 1.0.16
-      langsmith: 0.1.68(openai@4.80.0(zod@3.24.1))
+      langsmith: 0.1.68(openai@4.80.1(zod@3.24.1))
       ml-distance: 4.0.1
       mustache: 4.2.0
       p-queue: 6.6.2
@@ -1227,9 +1239,9 @@ snapshots:
 
   '@langchain/openai@0.0.14':
     dependencies:
-      '@langchain/core': 0.1.63(openai@4.80.0(zod@3.24.1))
+      '@langchain/core': 0.1.63(openai@4.80.1(zod@3.24.1))
       js-tiktoken: 1.0.16
-      openai: 4.80.0(zod@3.24.1)
+      openai: 4.80.1(zod@3.24.1)
       zod: 3.24.1
       zod-to-json-schema: 3.24.1(zod@3.24.1)
     transitivePeerDependencies:
@@ -1282,12 +1294,12 @@ snapshots:
 
   '@types/node-fetch@2.6.12':
     dependencies:
-      '@types/node': 16.18.124
+      '@types/node': 16.18.125
       form-data: 4.0.1
 
-  '@types/node@16.18.124': {}
+  '@types/node@16.18.125': {}
 
-  '@types/node@18.19.71':
+  '@types/node@18.19.74':
     dependencies:
       undici-types: 5.26.5
 
@@ -1301,14 +1313,14 @@ snapshots:
 
   '@types/uuid@10.0.0': {}
 
-  '@vitejs/plugin-vue@4.6.2(vite@4.5.9(@types/node@16.18.124))(vue@3.5.13(typescript@4.9.5))':
+  '@vitejs/plugin-vue@4.6.2(vite@4.5.9(@types/node@16.18.125))(vue@3.5.13(typescript@4.9.5))':
     dependencies:
-      vite: 4.5.9(@types/node@16.18.124)
+      vite: 4.5.9(@types/node@16.18.125)
       vue: 3.5.13(typescript@4.9.5)
 
   '@vue/compiler-core@3.5.13':
     dependencies:
-      '@babel/parser': 7.26.5
+      '@babel/parser': 7.26.7
       '@vue/shared': 3.5.13
       entities: 4.5.0
       estree-walker: 2.0.2
@@ -1321,7 +1333,7 @@ snapshots:
 
   '@vue/compiler-sfc@3.5.13':
     dependencies:
-      '@babel/parser': 7.26.5
+      '@babel/parser': 7.26.7
       '@vue/compiler-core': 3.5.13
       '@vue/compiler-dom': 3.5.13
       '@vue/compiler-ssr': 3.5.13
@@ -1455,6 +1467,10 @@ snapshots:
       ieee754: 1.2.1
 
   camelcase@6.3.0: {}
+
+  chart.js@4.4.7:
+    dependencies:
+      '@kurkle/color': 0.3.4
 
   cipher-base@1.0.6:
     dependencies:
@@ -1710,7 +1726,7 @@ snapshots:
 
   keycharm@0.4.0: {}
 
-  langsmith@0.1.68(openai@4.80.0(zod@3.24.1)):
+  langsmith@0.1.68(openai@4.80.1(zod@3.24.1)):
     dependencies:
       '@types/uuid': 10.0.0
       commander: 10.0.1
@@ -1719,7 +1735,7 @@ snapshots:
       semver: 7.6.3
       uuid: 10.0.0
     optionalDependencies:
-      openai: 4.80.0(zod@3.24.1)
+      openai: 4.80.1(zod@3.24.1)
 
   lru-cache@10.4.3: {}
 
@@ -1812,9 +1828,9 @@ snapshots:
     dependencies:
       wrappy: 1.0.2
 
-  openai@4.80.0(zod@3.24.1):
+  openai@4.80.1(zod@3.24.1):
     dependencies:
-      '@types/node': 18.19.71
+      '@types/node': 18.19.74
       '@types/node-fetch': 2.6.12
       abort-controller: 3.0.0
       agentkeepalive: 4.6.0
@@ -2061,13 +2077,13 @@ snapshots:
       '@egjs/hammerjs': 2.0.17
       component-emitter: 1.3.1
 
-  vite@4.5.9(@types/node@16.18.124):
+  vite@4.5.9(@types/node@16.18.125):
     dependencies:
       esbuild: 0.18.20
       postcss: 8.5.1
       rollup: 3.29.5
     optionalDependencies:
-      '@types/node': 16.18.124
+      '@types/node': 16.18.125
       fsevents: 2.3.3
 
   vue-demi@0.14.10(vue@3.5.13(typescript@4.9.5)):

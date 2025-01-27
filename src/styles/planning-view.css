@@ -154,8 +154,50 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: 16px;
-    gap: 16px;
+    overflow: hidden;
+}
+
+.goalflowz-planning-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--background-secondary);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.goalflowz-planning-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+    color: var(--text-normal);
+}
+
+.goalflowz-planning-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.goalflowz-planning-controls button {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+    cursor: pointer;
+}
+
+.goalflowz-planning-controls button:hover {
+    background: var(--background-primary-alt);
+}
+
+.goalflowz-planning-controls span {
+    padding: 0.25rem 0.5rem;
+    color: var(--text-muted);
+}
+
+.goalflowz-planning-content {
+    flex: 1;
     overflow-y: auto;
 }
 

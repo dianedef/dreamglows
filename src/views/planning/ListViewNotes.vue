@@ -8,9 +8,9 @@
             :key="note.path" 
             class="goalflowz-note-item"
             :class="{ 'expanded': expandedNotes.includes(note.path) }"
-            @click="$emit('toggle-note', note.path, $event)">
+            @click="toggleNote(note.path, $event)">
             <div class="goalflowz-note-header">
-                <h3 class="goalflowz-note-title" @click.stop="openFile(note.path)" style="cursor: pointer;">
+                <h3 class="goalflowz-note-title" @click.stop="openFile(note.path, $event)" style="cursor: pointer;">
                     {{ note.title }}
                 </h3>
                 <div class="goalflowz-header-right">
@@ -21,17 +21,13 @@
                         ></div>
                         <span class="goalflowz-progress-text">{{ getProgressPercentage(note.tasks) }}%</span>
                     </div>
-                    <select 
-                        class="goalflowz-note-status" 
-                        :class="'goalflowz-status-' + note.status"
-                        v-model="note.status"
-                        @change="updateStatus(note, $event)"
-                        @click.stop
-                    >
-                        <option value="todo">À faire</option>
-                        <option value="in-progress">En cours</option>
-                        <option value="done">Terminé</option>
-                    </select>
+                    <div class="goalflowz-note-status">
+                        <select :value="note.status" @change="updateStatus(note, $event)">
+                            <option value="todo">À faire</option>
+                            <option value="in-progress">En cours</option>
+                            <option value="done">Terminé</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="goalflowz-note-meta">
@@ -39,57 +35,33 @@
                 <span>Dernière modification: {{ formatDate(note.lastUpdated) }}</span>
                 <span>Mots: {{ note.wordCount }}</span>
             </div>
-            <div v-show="expandedNotes.includes(note.path)" class="goalflowz-tasks-list" v-if="note.tasks">
-                <div v-for="task in note.tasks" :key="task.id" class="goalflowz-task-item">
-                    <div 
-                        class="goalflowz-task-item-content"
-                        @click.stop="toggleTask(note, task)"
-                    >
-                        <div 
-                            class="goalflowz-task-checkbox" 
-                            :class="{ checked: task.done }"
-                        ></div>
-                        <span class="goalflowz-task-label" :class="{ done: task.done }">
-                            {{ task.label }}
-                        </span>
-                        <div class="goalflowz-task-actions">
-                            <button 
-                                v-if="task.linkToOptimizer" 
-                                class="goalflowz-task-action-button optimizer"
-                                @click.stop="openOptimizer(note)"
-                                title="Ouvrir l'optimiseur SEO"
-                            >
-                                🎯 Optimiser
-                            </button>
-                            <button 
-                                v-if="task.linkToGenerator" 
-                                class="goalflowz-task-action-button generator"
-                                @click.stop="addToGenerator(note)"
-                                title="Ajouter au générateur d'articles"
-                            >
-                                ✍️ Générer
-                            </button>
-                            <div 
-                                class="goalflowz-task-delete"
-                                @click.stop="deleteTask(note, task)"
-                                title="Supprimer la tâche"
-                            >
-                                🗑️
+            <div v-if="expandedNotes.includes(note.path)" class="goalflowz-note-content">
+                <div class="goalflowz-note-tasks">
+                    <div class="goalflowz-tasks-header">
+                        <h4>Tâches ({{ getProgressPercentage(note.tasks) }}%)</h4>
+                    </div>
+                    
+                    <div class="goalflowz-tasks-list">
+                        <div v-for="task in note.tasks" 
+                             :key="task.id" 
+                             class="goalflowz-task-item">
+                            <div class="goalflowz-task-controls">
+                                <input type="checkbox" 
+                                       :checked="task.done"
+                                       @change="toggleTask(note, task)">
+                                <button @click="deleteTask(note, task)" 
+                                        class="goalflowz-delete-task">×</button>
                             </div>
+                            <span class="goalflowz-task-label">{{ task.label }}</span>
                         </div>
                     </div>
-                </div>
-                <div class="goalflowz-task-item">
-                    <div class="goalflowz-task-item-content">
-                        <div class="goalflowz-task-checkbox"></div>
-                        <input 
-                            type="text" 
-                            placeholder="Nouvelle tâche... (Entrée pour ajouter)"
-                            v-model="newTaskLabels[note.path]"
-                            @keyup.enter="addNewTask(note)"
-                            @click.stop
-                            style="flex: 1; margin: 0; padding: 4px 8px;"
-                        >
+
+                    <div class="goalflowz-new-task">
+                        <input type="text" 
+                               v-model="newTaskLabels[note.path]" 
+                               placeholder="Nouvelle tâche..."
+                               @keyup.enter="addNewTask(note)">
+                        <button @click="addNewTask(note)">+</button>
                     </div>
                 </div>
             </div>
@@ -110,14 +82,15 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    'toggle-note': [path: string, event: Event];
-    'toggle-task': [note: Note, task: Task];
-    'delete-task': [note: Note, task: Task];
-    'add-task': [note: Note, label: string];
-    'update-status': [note: Note, status: string];
+    (e: 'toggle-task', note: Note, task: Task): void;
+    (e: 'delete-task', note: Note, task: Task): void;
+    (e: 'add-task', note: Note, label: string): void;
+    (e: 'update-status', note: Note, newStatus: 'todo' | 'in-progress' | 'done'): void;
+    (e: 'open-file', path: string, event: Event): void;
+    (e: 'toggle-note', path: string, event: Event): void;
 }>();
 
-const newTaskLabels = ref<{ [key: string]: string }>({});
+const newTaskLabels = ref<Record<string, string>>({});
 
 // Fonctions nécessaires
 const formatDate = (date: string) => {
@@ -125,16 +98,13 @@ const formatDate = (date: string) => {
 };
 
 const getProgressPercentage = (tasks: Task[]) => {
-    if (!tasks || tasks.length === 0) return 0;
+    if (!tasks.length) return 0;
     const completed = tasks.filter(t => t.done).length;
     return Math.round((completed / tasks.length) * 100);
 };
 
-const openFile = (path: string) => {
-    const file = props.app.vault.getAbstractFileByPath(path);
-    if (file) {
-        props.app.workspace.getLeaf().openFile(file);
-    }
+const openFile = (path: string, event: Event) => {
+    emit('open-file', path, event);
 };
 
 const toggleTask = (note: Note, task: Task) => {
@@ -154,8 +124,12 @@ const addNewTask = (note: Note) => {
 };
 
 const updateStatus = (note: Note, event: Event) => {
-    const status = (event.target as HTMLSelectElement).value;
+    const status = (event.target as HTMLSelectElement).value as 'todo' | 'in-progress' | 'done';
     emit('update-status', note, status);
+};
+
+const toggleNote = (path: string, event: Event) => {
+    emit('toggle-note', path, event);
 };
 
 const openOptimizer = (note: Note) => {

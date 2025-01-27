@@ -1,4 +1,3 @@
-
 .goalflowz-day-view {
   height: 100%;
   padding: 1rem;
@@ -100,6 +99,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .goalflowz-habit-card {
@@ -148,13 +148,6 @@
   cursor: pointer;
 }
 
-.goalflowz-mood-section {
-  background-color: var(--background-primary);
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid var(--background-modifier-border);
-}
-
 .goalflowz-mood-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -174,14 +167,18 @@
 
 .goalflowz-mood-btn,
 .goalflowz-energy-btn {
-  flex: 1;
-  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: var(--background-primary-alt);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
-  background: none;
   cursor: pointer;
   transition: all 0.2s;
   font-size: 1.2em;
+  width: 100%;
+  margin-bottom: 0.5rem;
 }
 
 .goalflowz-mood-btn:hover,
@@ -191,9 +188,9 @@
 
 .goalflowz-mood-btn.active,
 .goalflowz-energy-btn.active {
-  background-color: var(--interactive-accent);
+  background-color: var(--interactive-success);
   color: var(--text-on-accent);
-  border-color: var(--interactive-accent);
+  border-color: var(--interactive-success);
 }
 
 .goalflowz-notes-section {

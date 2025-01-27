@@ -1,99 +1,26 @@
 <template>
     <div class="goalflowz-planning-view">
-        <div class="goalflowz-planning-filters">
-            <div class="goalflowz-search-row">
-                <input 
-                    type="text" 
-                    v-model="searchQuery" 
-                    placeholder="Rechercher une note..."
-                >
-            </div>
-            <div class="goalflowz-filters-row">
-                <div class="goalflowz-filter-group">
-                    <label>Statut</label>
-                    <select v-model="statusFilter">
-                        <option value="">Tous les statuts</option>
-                        <option value="todo">À faire</option>
-                        <option value="in-progress">En cours</option>
-                        <option value="done">Terminé</option>
-                    </select>
-                </div>
-                <div class="goalflowz-filter-group">
-                    <label>Trier par</label>
-                    <div class="goalflowz-sort-controls">
-                        <select v-model="sortBy">
-                            <option value="title">Titre</option>
-                            <option value="created">Date de création</option>
-                            <option value="lastUpdated">Dernière modification</option>
-                            <option value="wordCount">Nombre de mots</option>
-                            <option value="progress">Progression</option>
-                        </select>
-                        <button 
-                            class="goalflowz-sort-direction" 
-                            @click.stop="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'"
-                            :title="sortDirection === 'asc' ? 'Ordre croissant' : 'Ordre décroissant'"
-                        >
-                            {{ sortDirection === 'asc' ? '↑' : '↓' }}
-                        </button>
-                    </div>
-                </div>
-                <div class="goalflowz-filter-group">
-                    <label>Dossier</label>
-                    <select v-model="folderFilter">
-                        <option value="">Tous les dossiers</option>
-                        <option v-for="folder in availableFolders" 
-                            :key="folder" 
-                            :value="folder"
-                        >
-                            {{ formatFolderPath(folder) }}
-                        </option>
-                    </select>
-                </div>
-                <div class="goalflowz-filter-group">
-                    <label>Vue</label>
-                    <select v-model="viewType">
-                        <option value="list">Liste</option>
-                        <option value="week">Semaine</option>
-                    </select>
-                </div>
+        <div class="goalflowz-planning-header">
+            <h2>Planning</h2>
+            <div class="goalflowz-planning-controls">
+                <button @click="previousWeek">◀</button>
+                <span>{{ weekLabel }}</span>
+                <button @click="nextWeek">▶</button>
             </div>
         </div>
 
-        <div class="week-navigation" v-if="currentWeek">
-            <button @click="previousWeek">←</button>
-            <span>Semaine {{ currentWeek.weekNumber }}</span>
-            <button @click="nextWeek">→</button>
-            <button 
-                class="view-toggle"
-                @click="toggleWeekView"
-                :title="weekViewRef?.isCompactView ? 'Vue détaillée' : 'Vue compacte'"
-            >
-                {{ weekViewRef?.isCompactView ? '7j' : '3j' }}
-            </button>
-        </div>
-
-        <ListViewNotes 
-            v-if="viewType === 'list'"
-            :notes="filteredNotes"
-            :expanded-notes="expandedNotes"
-            @toggle-note="toggleNote"
-            @toggle-task="toggleTask"
-            @delete-task="deleteTask"
-            @add-task="addNewTask"
-        />
-        <WeekViewNotes 
-            v-else-if="viewType === 'week' && currentWeek"
-            ref="weekViewRef"
-            :week-data="currentWeek"
-            :expanded-notes="expandedNotes"
-            :app="app"
-            @toggle-note="toggleNote"
-            @toggle-task="toggleTask"
-            @delete-task="deleteTask"
-            @add-task="addNewTask"
-        />
-        <div v-else class="loading">
-            Chargement...
+        <div class="goalflowz-planning-content">
+            <ListViewNotes 
+                :notes="weekNotes" 
+                :expanded-notes="expandedNotes"
+                :app="app"
+                @toggle-task="toggleTask"
+                @delete-task="deleteTask"
+                @add-task="addNewTask"
+                @update-status="updateStatus"
+                @open-file="openFile"
+                @toggle-note="toggleNote"
+            />
         </div>
     </div>
 </template>
@@ -108,7 +35,7 @@ import ListViewNotes from './planning/ListViewNotes.vue';
 import WeekViewNotes from './planning/WeekViewNotes.vue';
 import { DateTime } from 'luxon';
 import type { WeekNotes } from '../services/TimeManagementService';
-import type { Note } from '../../types';
+import type { Note, Task, TaskPriority, TaskStatus } from '../types';
 
 const props = defineProps<{
     contentFiles: TFile[],
@@ -126,7 +53,7 @@ const sortDirection = ref<'asc' | 'desc'>('asc');
 const newTaskLabels = ref<{ [key: string]: string }>({});
 const viewType = ref('list');
 const currentDate = ref(DateTime.now());
-const currentWeek = ref<WeekNotes | null>(null);
+const currentWeek = ref<WeekData | null>(null);
 const weekViewRef = ref<InstanceType<typeof WeekViewNotes> | null>(null);
 
 // Ajout du computed pour les tâches par défaut
@@ -234,7 +161,7 @@ const updateNoteStatus = async (note: Note, newStatus: 'todo' | 'in-progress' | 
             frontmatter.goalflowz.status = newStatus;
         }
 
-        await props.app.fileManager.processFrontMatter(file, (fm) => {
+        await props.app.fileManager.processFrontMatter(file, (fm: any) => {
             fm.goalflowz = frontmatter.goalflowz;
         });
 
@@ -245,17 +172,18 @@ const updateNoteStatus = async (note: Note, newStatus: 'todo' | 'in-progress' | 
 };
 
 const toggleNote = (path: string, event: Event) => {
-    const index = expandedNotes.value.indexOf(path);
-    if (index === -1) {
-        expandedNotes.value.push(path);
+    if (expandedNotes.value.includes(path)) {
+        expandedNotes.value = expandedNotes.value.filter(p => p !== path);
     } else {
-        expandedNotes.value.splice(index, 1);
+        expandedNotes.value.push(path);
     }
 };
 
 const toggleTask = async (note: Note, task: Task) => {
     const oldDone = task.done;
     task.done = !task.done;
+    task.status = task.done ? 'done' : 'todo';
+    task.updatedAt = DateTime.now().toISO();
     
     try {
         const file = props.app.vault.getAbstractFileByPath(note.path);
@@ -270,25 +198,46 @@ const toggleTask = async (note: Note, task: Task) => {
         } else {
             const taskIndex = frontmatter.goalflowz.tasks?.findIndex((t: Task) => t.id === task.id);
             if (taskIndex >= 0) {
-                frontmatter.goalflowz.tasks[taskIndex].done = task.done;
+                frontmatter.goalflowz.tasks[taskIndex] = { ...task };
             } else {
                 frontmatter.goalflowz.tasks = frontmatter.goalflowz.tasks || [];
-                frontmatter.goalflowz.tasks.push(task);
+                frontmatter.goalflowz.tasks.push({ ...task });
             }
         }
 
-        await props.app.fileManager.processFrontMatter(file, (fm) => {
+        await props.app.fileManager.processFrontMatter(file, (fm: any) => {
             fm.goalflowz = frontmatter.goalflowz;
         });
     } catch (error) {
         console.error(`Erreur lors de la mise à jour des métadonnées dans ${note.path}:`, error);
         task.done = oldDone;
+        task.status = oldDone ? 'done' : 'todo';
     }
 };
 
-const updateStatus = async (note: Note, event: Event) => {
-    const newStatus = (event.target as HTMLSelectElement).value as 'todo' | 'in-progress' | 'done';
-    await updateNoteStatus(note, newStatus);
+const updateStatus = async (note: Note, newStatus: 'todo' | 'in-progress' | 'done') => {
+    try {
+        const file = props.app.vault.getAbstractFileByPath(note.path);
+        const cache = props.app.metadataCache.getFileCache(file);
+        let frontmatter = cache?.frontmatter || {};
+        
+        if (!frontmatter.goalflowz) {
+            frontmatter.goalflowz = {
+                tasks: note.tasks,
+                status: newStatus
+            };
+        } else {
+            frontmatter.goalflowz.status = newStatus;
+        }
+
+        await props.app.fileManager.processFrontMatter(file, (fm: any) => {
+            fm.goalflowz = frontmatter.goalflowz;
+        });
+
+        note.status = newStatus;
+    } catch (error) {
+        console.error(`Erreur lors de la mise à jour du statut dans ${note.path}:`, error);
+    }
 };
 
 const loadNotes = async () => {
@@ -314,14 +263,20 @@ const loadNotes = async () => {
                 // Utiliser les tâches par défaut du store
                 tasks = defaultTasks.value.map(defaultTask => ({
                     id: Math.random().toString(36).substr(2, 9),
+                    title: defaultTask.label,
                     label: defaultTask.label,
+                    description: '',
+                    priority: 'medium' as TaskPriority,
+                    status: 'todo' as TaskStatus,
                     done: false,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
                     linkToOptimizer: defaultTask.linkToOptimizer,
                     linkToGenerator: defaultTask.linkToGenerator
                 }));
                 
                 // Sauvegarder les tâches par défaut dans le frontmatter
-                await props.app.fileManager.processFrontMatter(file, (fm) => {
+                await props.app.fileManager.processFrontMatter(file, (fm: any) => {
                     fm.goalflowz = {
                         tasks: tasks,
                         status: 'todo'
@@ -348,20 +303,27 @@ const loadNotes = async () => {
     notes.value = loadedNotes;
 };
 
-async function openFile(path: string) {
+const openFile = (path: string, event: Event) => {
     const file = props.app.vault.getAbstractFileByPath(path);
     if (file) {
-        await props.app.workspace.getLeaf('tab').openFile(file);
+        props.app.workspace.getLeaf('tab').openFile(file);
     }
-}
+};
 
 const addNewTask = async (note: Note, label: string) => {
     if (!label.trim()) return;
 
     const newTask: Task = {
         id: Math.random().toString(36).substr(2, 9),
+        title: label,
         label: label,
+        description: '',
+        priority: 'medium',
+        status: 'todo',
         done: false,
+        tags: [],
+        createdAt: DateTime.now().toISO(),
+        updatedAt: DateTime.now().toISO(),
         linkToOptimizer: false,
         linkToGenerator: false
     };
@@ -371,7 +333,6 @@ const addNewTask = async (note: Note, label: string) => {
         const cache = props.app.metadataCache.getFileCache(file);
         let frontmatter = cache?.frontmatter || {};
         
-        // S'assurer que la structure est correcte
         if (!frontmatter.goalflowz) {
             frontmatter.goalflowz = {
                 tasks: [newTask],
@@ -383,15 +344,11 @@ const addNewTask = async (note: Note, label: string) => {
                 : [newTask];
         }
 
-        // Mettre à jour le frontmatter
-        await props.app.fileManager.processFrontMatter(file, (fm) => {
+        await props.app.fileManager.processFrontMatter(file, (fm: any) => {
             fm.goalflowz = frontmatter.goalflowz;
         });
 
-        // Mettre à jour l'article localement
         note.tasks = frontmatter.goalflowz.tasks;
-        
-        // Réinitialiser le champ de saisie
         newTaskLabels.value[note.path] = '';
     } catch (error) {
         console.error(`Erreur lors de l'ajout de la tâche dans ${note.path}:`, error);
@@ -404,20 +361,15 @@ const deleteTask = async (note: Note, task: Task) => {
         const cache = props.app.metadataCache.getFileCache(file);
         let frontmatter = cache?.frontmatter || {};
         
-        if (!frontmatter.goalflowz) {
-            return;
+        if (frontmatter.goalflowz?.tasks) {
+            frontmatter.goalflowz.tasks = frontmatter.goalflowz.tasks.filter((t: Task) => t.id !== task.id);
+            
+            await props.app.fileManager.processFrontMatter(file, (fm: any) => {
+                fm.goalflowz = frontmatter.goalflowz;
+            });
+            
+            note.tasks = frontmatter.goalflowz.tasks;
         }
-
-        // Filtrer la tâche à supprimer
-        frontmatter.goalflowz.tasks = frontmatter.goalflowz.tasks.filter((t: Task) => t.id !== task.id);
-        
-        // Mettre à jour le frontmatter
-        await props.app.fileManager.processFrontMatter(file, (fm) => {
-            fm.goalflowz = frontmatter.goalflowz;
-        });
-
-        // Mettre à jour l'article localement
-        note.tasks = note.tasks.filter(t => t.id !== task.id);
     } catch (error) {
         console.error(`Erreur lors de la suppression de la tâche dans ${note.path}:`, error);
     }
@@ -481,6 +433,17 @@ const toggleWeekView = () => {
     }
 };
 
+const weekLabel = computed(() => {
+    if (!currentWeek.value) return '';
+    const startDate = DateTime.fromISO(currentWeek.value.startDate);
+    const endDate = DateTime.fromISO(currentWeek.value.endDate);
+    return `${startDate.toFormat('dd/MM')} - ${endDate.toFormat('dd/MM')}`;
+});
+
+const weekNotes = computed(() => {
+    return currentWeek.value?.notes || [];
+});
+
 onMounted(() => {
     loadNotes();
     loadCurrentWeek();
@@ -489,5 +452,11 @@ onMounted(() => {
 onUnmounted(() => {
     // styleEl.remove();
 });
+
+interface WeekData {
+    startDate: string;
+    endDate: string;
+    notes: Note[];
+}
 </script>
 

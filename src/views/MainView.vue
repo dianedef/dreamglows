@@ -2,28 +2,28 @@
     <div class="goalflowz-container">
         <div class="goalflowz-view-switch">
             <button 
+                :class="{ active: activeTab === 'day' }"
+                @click="setActiveTab('day')"
+            >
+                📅 Aujourd'hui
+            </button>
+            <button 
                 :class="{ active: activeTab === 'goals' }"
                 @click="setActiveTab('goals')"
             >
-                Objectifs
+                🎯 Objectifs
             </button>
             <button 
                 :class="{ active: activeTab === 'planning' }"
                 @click="setActiveTab('planning')"
             >
-                Planning
-            </button>
-            <button 
-                :class="{ active: activeTab === 'tracking' }"
-                @click="setActiveTab('tracking')"
-            >
-                Suivi
+                📋 Planning
             </button>
             <button 
                 :class="{ active: activeTab === 'stats' }"
                 @click="setActiveTab('stats')"
             >
-                Statistiques
+                📊 Statistiques
             </button>
         </div>
 
@@ -40,9 +40,9 @@
 import { ref, computed, provide, onMounted, onUnmounted } from 'vue';
 import { App, TFile } from 'obsidian';
 import GoalsView from './GoalsView.vue';
-import PlanningView from './PlanningView.vue';
-import TrackingView from './TrackingView.vue';
 import StatsView from './StatsView.vue';
+import DayView from './DayView.vue';
+import PlanningView from './PlanningView.vue';
 import GoalModal from '@/components/modals/GoalModal.vue';
 import { useSettingsStore } from '../stores/settingsStore';
 
@@ -76,16 +76,16 @@ onUnmounted(() => {
 
 const currentComponent = computed(() => {
     switch (activeTab.value) {
+        case 'day':
+            return DayView;
         case 'goals':
             return GoalsView;
         case 'planning':
             return PlanningView;
-        case 'tracking':
-            return TrackingView;
         case 'stats':
             return StatsView;
         default:
-            return GoalsView;
+            return DayView;
     }
 });
 </script>

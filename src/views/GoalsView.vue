@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import { Timeline, DataSet } from 'vis-timeline/standalone';
 import type { Goal } from '@/types/goals';
 import { useGoalsStore } from '@/stores/goalsStore';
@@ -48,6 +48,8 @@ const props = defineProps<{
 const goalsStore = useGoalsStore();
 const modalStore = useModalStore();
 const settingsStore = useSettingsStore();
+console.log('Settings initiaux:', settingsStore.settings);
+
 const timelineContainer = ref<HTMLElement | null>(null);
 let timeline: Timeline | null = null;
 const tasksStore = useTasksStore();
@@ -56,7 +58,12 @@ const tasksStore = useTasksStore();
 const isResizing = ref(false);
 const startX = ref(0);
 const startWidth = ref(0);
-const mainWidth = ref(settingsStore.settings.lastMainWidth);
+const mainWidth = ref(50);
+
+// Initialiser la taille depuis les settings au montage du composant
+onMounted(() => {
+    mainWidth.value = settingsStore.settings.lastMainWidth;
+});
 
 const startResize = (e: MouseEvent) => {
     isResizing.value = true;
@@ -80,7 +87,6 @@ const handleResize = (e: MouseEvent) => {
     newWidth = Math.max(30, Math.min(70, newWidth));
     
     mainWidth.value = newWidth;
-    // Sauvegarder la nouvelle largeur dans les settings
     settingsStore.updateSettings({ lastMainWidth: newWidth });
 };
 
@@ -202,27 +208,16 @@ onMounted(() => {
   const items = new DataSet(createTimelineItems(goalsStore.goals));
   const groups = new DataSet(createTimelineGroups(goalsStore.goals));
   
+  
   const options = {
     orientation: 'top',
+    editable: true,  // Activer l'édition globalement
     zoomable: true,
     stack: true,
     height: '100%',
     horizontalScroll: true,
     verticalScroll: true,
     groupOrder: 'content',
-    // Options d'édition
-    editable: true,  // Activer l'édition globalement
-    manipulation: {
-      itemsAlwaysDraggable: true  // Permettre le drag & drop des items
-    },
-    // Configuration du drag
-    dragOptions: {
-      dragTime: true,      // Permettre le drag horizontal (temps)
-      dragGroup: true      // Permettre le drag vertical (groupes)
-    },
-    // Configuration du snap lors du déplacement
-    snap: null,  // Désactiver le snap pour un mouvement plus fluide
-    // Configuration des tooltips
     tooltip: {
       followMouse: true,
       overflowMethod: 'cap' as const,
@@ -251,7 +246,7 @@ onMounted(() => {
       return item.content;
     },
     groupTemplate: function(group: any) {
-      return `<div class="goalflowz-timeline-group">${group.content}</div>`;
+      return `<div class="goalflowz-timeline-group">${group?.content || 'Sans nom'}</div>`;
     },
     margin: {
       item: {
@@ -287,6 +282,10 @@ onMounted(() => {
     },
     onMoving: (item: any, callback: any) => {
       callback(item);
+    },
+    snap: (date: Date) => {
+      const hour = 60 * 60 * 1000;
+      return Math.round(date.getTime() / hour) * hour;
     }
   };
 
@@ -406,7 +405,14 @@ watch(
 // Nettoyage de la timeline
 onUnmounted(() => {
     if (timeline) {
-        timeline.destroy();
+        // Vider les groupes avant la destruction pour éviter l'erreur
+        try {
+            timeline.setGroups(new DataSet([]));
+            timeline.setItems(new DataSet([]));
+            timeline.destroy();
+        } catch (error) {
+            console.warn('Erreur lors de la destruction de la timeline:', error);
+        }
         timeline = null;
     }
 });
