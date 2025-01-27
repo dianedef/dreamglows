@@ -4,10 +4,8 @@
       <div class="goalflowz-modal-content">
         <div class="goalflowz-setting-item">
           <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">{{ isNewCategory ? 'Nouvelle catégorie' : 'Nom de la catégorie' }}</div>
-            <div class="goalflowz-setting-item-description">
-              {{ isNewCategory ? 'Créer une nouvelle catégorie' : 'Modifier le nom de la catégorie' }}
-            </div>
+            <div class="goalflowz-setting-item-name">Nom de la catégorie</div>
+            <div class="goalflowz-setting-item-description">Modifiez le nom de la catégorie</div>
           </div>
           <div class="goalflowz-setting-item-control">
             <input 
@@ -15,37 +13,37 @@
               class="text-input-reset"
               v-model="categoryName" 
               required
-              :placeholder="isNewCategory ? 'Nom de la nouvelle catégorie' : 'Nom de la catégorie'"
+              placeholder="Nom de la catégorie"
             >
           </div>
         </div>
 
-        <div v-if="!isNewCategory" class="goalflowz-setting-item">
+        <div class="goalflowz-setting-item">
           <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Sous-catégories</div>
-            <div class="goalflowz-setting-item-description">Gérer les sous-catégories</div>
+            <div class="goalflowz-setting-item-name">Description</div>
+            <div class="goalflowz-setting-item-description">Une description optionnelle pour la catégorie</div>
           </div>
           <div class="goalflowz-setting-item-control">
-            <div class="goalflowz-subcategories-list">
-              <div v-for="(subcat, index) in subcategories" :key="index" class="goalflowz-subcategory-item">
-                <input 
-                  type="text" 
-                  class="text-input-reset"
-                  v-model="subcategories[index]"
-                  placeholder="Nom de la sous-catégorie"
-                >
-                <button 
-                  type="button" 
-                  class="mod-warning" 
-                  @click="removeSubcategory(index)"
-                >×</button>
-              </div>
-              <button 
-                type="button" 
-                class="mod-cta" 
-                @click="addSubcategory"
-              >+ Ajouter une sous-catégorie</button>
-            </div>
+            <textarea 
+              class="text-input-reset"
+              v-model="description" 
+              placeholder="Description de la catégorie"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="goalflowz-setting-item">
+          <div class="goalflowz-setting-item-info">
+            <div class="goalflowz-setting-item-name">Couleur</div>
+            <div class="goalflowz-setting-item-description">Choisissez une couleur pour identifier la catégorie</div>
+          </div>
+          <div class="goalflowz-setting-item-control">
+            <input 
+              type="color" 
+              v-model="color"
+              class="color-input-reset"
+            >
           </div>
         </div>
       </div>
@@ -55,15 +53,15 @@
           Annuler
         </button>
         <button 
-          v-if="!isNewCategory"
+          v-if="isEditing" 
           type="button" 
           class="mod-error" 
           @click="handleDelete"
         >
-          Supprimer la catégorie
+          Supprimer
         </button>
         <button type="submit" class="mod-cta">
-          {{ isNewCategory ? 'Créer' : 'Enregistrer' }}
+          {{ isEditing ? 'Mettre à jour' : 'Créer' }}
         </button>
       </div>
     </div>
@@ -80,57 +78,50 @@ const props = defineProps<{
 }>();
 
 const goalsStore = useGoalsStore();
-const isNewCategory = computed(() => !props.category);
 
 const categoryName = ref(props.category);
-const subcategories = ref<string[]>([]);
+const description = ref('');
+const color = ref('#3498db');
 
-const addSubcategory = () => {
-  subcategories.value.push('');
-};
+const isEditing = computed(() => props.category !== '');
 
-const removeSubcategory = (index: number) => {
-  subcategories.value.splice(index, 1);
+const handleSubmit = () => {
+  if (isEditing.value) {
+    // Mettre à jour la catégorie dans tous les objectifs
+    goalsStore.updateCategory(props.category, categoryName.value);
+  }
+  props.closeModal();
 };
 
 const cancel = () => {
   props.closeModal();
 };
 
-const handleSubmit = async () => {
-  try {
-    if (isNewCategory.value) {
-      await goalsStore.addGoal({
-        id: crypto.randomUUID(),
-        title: 'Premier objectif',
-        startDate: new Date().toISOString().split('T')[0],
-        category: categoryName.value,
-        status: 'todo',
-        priority: 'medium',
-        progress: 0,
-        tags: [],
-        tasks: [],
-        subGoalIds: []
-      });
-      new Notice('Catégorie créée avec succès');
-    } else if (categoryName.value !== props.category) {
-      await goalsStore.updateCategory(props.category, categoryName.value);
-    }
+const handleDelete = () => {
+  if (confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ? Les objectifs associés ne seront pas supprimés mais n\'auront plus de catégorie.')) {
+    goalsStore.deleteCategory(props.category);
     props.closeModal();
-  } catch (error) {
-    console.error('CategoryModalContent: Error during submit:', error);
   }
 };
+</script>
 
-const handleDelete = async () => {
-  try {
-    const confirmDelete = confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ? Les objectifs seront déplacés dans "Sans catégorie".');
-    if (confirmDelete) {
-      await goalsStore.deleteCategory(props.category);
-      props.closeModal();
-    }
-  } catch (error) {
-    console.error('CategoryModalContent: Error during delete:', error);
-  }
-};
-</script> 
+<style scoped>
+.color-input-reset {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 50px;
+  height: 50px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+.color-input-reset::-webkit-color-swatch {
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+}
+.color-input-reset::-moz-color-swatch {
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+}
+</style> 

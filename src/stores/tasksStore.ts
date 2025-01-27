@@ -1,10 +1,17 @@
 import { defineStore } from 'pinia';
 import type { Task } from '@/types/tasks';
 import { v4 as uuidv4 } from 'uuid';
+import { StorageService } from '@/services/StorageService';
+
+interface TasksState {
+    tasks: Task[];
+    storageService: StorageService | null;
+}
 
 export const useTasksStore = defineStore('tasks', {
-    state: () => ({
-        tasks: [] as Task[]
+    state: (): TasksState => ({
+        tasks: [],
+        storageService: null
     }),
 
     getters: {
@@ -14,7 +21,23 @@ export const useTasksStore = defineStore('tasks', {
     },
 
     actions: {
-        addTask(taskData: Partial<Task>) {
+        initializeService(app: any) {
+            this.storageService = new StorageService(app);
+            this.loadTasks();
+        },
+
+        async loadTasks() {
+            if (!this.storageService) return;
+            const { tasks } = await this.storageService.loadData();
+            this.tasks = tasks;
+        },
+
+        async saveTasks() {
+            if (!this.storageService) return;
+            await this.storageService.saveData([], this.tasks); // On passe un tableau vide pour les goals
+        },
+
+        async addTask(taskData: Partial<Task>) {
             const newTask: Task = {
                 id: uuidv4(),
                 title: taskData.title || '',
@@ -27,9 +50,10 @@ export const useTasksStore = defineStore('tasks', {
                 updatedAt: new Date().toISOString()
             };
             this.tasks.push(newTask);
+            await this.saveTasks();
         },
 
-        updateTask(taskData: Partial<Task> & { id: string }) {
+        async updateTask(taskData: Partial<Task> & { id: string }) {
             const index = this.tasks.findIndex(task => task.id === taskData.id);
             if (index !== -1) {
                 this.tasks[index] = {
@@ -37,18 +61,21 @@ export const useTasksStore = defineStore('tasks', {
                     ...taskData,
                     updatedAt: new Date().toISOString()
                 };
+                await this.saveTasks();
             }
         },
 
-        deleteTask(id: string) {
+        async deleteTask(id: string) {
             const index = this.tasks.findIndex(task => task.id === id);
             if (index !== -1) {
                 this.tasks.splice(index, 1);
+                await this.saveTasks();
             }
         },
 
-        setTasks(tasks: Task[]) {
+        async setTasks(tasks: Task[]) {
             this.tasks = tasks;
+            await this.saveTasks();
         }
     }
 }); 

@@ -1,11 +1,13 @@
 import { defineStore } from 'pinia';
 import type { Goal } from '@/types/goals';
 import { GoalsService } from '@/services/GoalsService';
+import { StorageService } from '@/services/StorageService';
 import { Notice } from 'obsidian';
 
 interface GoalsState {
     goals: Goal[];
     goalsService: GoalsService | null;
+    storageService: StorageService | null;
     isLoading: boolean;
     lastLoadTime: number | null;
     isInitialized: boolean;
@@ -15,6 +17,7 @@ export const useGoalsStore = defineStore('goals', {
     state: (): GoalsState => ({
         goals: [],
         goalsService: null,
+        storageService: null,
         isLoading: false,
         lastLoadTime: null,
         isInitialized: false
@@ -36,7 +39,8 @@ export const useGoalsStore = defineStore('goals', {
             }
             
             this.goalsService = new GoalsService(app);
-            console.log('GoalsStore: Service created');
+            this.storageService = new StorageService(app);
+            console.log('GoalsStore: Services created');
             
             try {
                 await this.loadGoals(true);
@@ -50,7 +54,7 @@ export const useGoalsStore = defineStore('goals', {
 
         async loadGoals(force = false) {
             console.log('GoalsStore: Loading goals, force =', force);
-            if (!this.goalsService) {
+            if (!this.storageService) {
                 console.log('GoalsStore: No service available');
                 return;
             }
@@ -69,9 +73,9 @@ export const useGoalsStore = defineStore('goals', {
             try {
                 this.isLoading = true;
                 console.log('GoalsStore: Starting load');
-                const loadedGoals = await this.goalsService.loadGoals();
-                console.log('GoalsStore: Goals loaded:', loadedGoals);
-                this.goals = loadedGoals;
+                const { goals } = await this.storageService.loadData();
+                console.log('GoalsStore: Goals loaded:', goals);
+                this.goals = goals;
                 this.lastLoadTime = now;
             } catch (error) {
                 console.error('GoalsStore: Error loading goals:', error);
@@ -82,45 +86,50 @@ export const useGoalsStore = defineStore('goals', {
             }
         },
 
-        async addGoal(goal: Goal) {
-            console.log('GoalsStore: TEST - Simplification addGoal');
-            try {
-                // Test 1 : On ajoute juste en mémoire sans sauvegarder
-                this.goals.push(goal);
-                console.log('GoalsStore: Goal added to memory only');
-                new Notice('TEST - Objectif ajouté en mémoire uniquement');
-            } catch (error) {
-                console.error('GoalsStore: Error in simplified addGoal:', error);
-                new Notice('TEST - Erreur lors du test');
-            }
+        async saveGoals() {
+            if (!this.storageService) return;
+            await this.storageService.saveData(this.goals, []); // On passe un tableau vide pour les tasks
         },
 
-        async updateGoal(updatedGoal: Goal) {
-            if (!this.goalsService) return;
-            try {
-                await this.goalsService.saveGoal(updatedGoal);
-                const index = this.goals.findIndex(g => g.id === updatedGoal.id);
-                if (index !== -1) {
-                    this.goals[index] = updatedGoal;
-                }
+        async addGoal(goalData: Partial<Goal>) {
+            const newGoal: Goal = {
+                id: crypto.randomUUID(),
+                title: goalData.title || '',
+                description: goalData.description || '',
+                startDate: goalData.startDate || new Date().toISOString().split('T')[0],
+                dueDate: goalData.dueDate,
+                status: goalData.status || 'todo',
+                priority: goalData.priority || 'medium',
+                category: goalData.category,
+                progress: goalData.progress || 0,
+                tags: goalData.tags || [],
+                tasks: goalData.tasks || [],
+                subGoalIds: goalData.subGoalIds || []
+            };
+            this.goals.push(newGoal);
+            await this.saveGoals();
+            new Notice('Objectif ajouté avec succès');
+        },
+
+        async updateGoal(goalData: Partial<Goal> & { id: string }) {
+            const index = this.goals.findIndex(g => g.id === goalData.id);
+            if (index !== -1) {
+                this.goals[index] = {
+                    ...this.goals[index],
+                    ...goalData
+                };
+                await this.saveGoals();
                 new Notice('Objectif mis à jour avec succès');
-                await this.loadGoals(true);  // Recharger pour s'assurer de la cohérence
-            } catch (error) {
-                console.error('Error updating goal:', error);
-                new Notice('Erreur lors de la mise à jour de l\'objectif');
             }
         },
 
         async deleteGoal(goalId: string) {
-            if (!this.goalsService) return;
-            try {
-                await this.goalsService.deleteGoal(goalId);
-                this.goals = this.goals.filter(g => g.id !== goalId);
+            if (!this.storageService) return;
+            const index = this.goals.findIndex(g => g.id === goalId);
+            if (index !== -1) {
+                this.goals.splice(index, 1);
+                await this.saveGoals();
                 new Notice('Objectif supprimé avec succès');
-                await this.loadGoals(true);  // Recharger pour s'assurer de la cohérence
-            } catch (error) {
-                console.error('Error deleting goal:', error);
-                new Notice('Erreur lors de la suppression de l\'objectif');
             }
         },
 
@@ -132,15 +141,17 @@ export const useGoalsStore = defineStore('goals', {
                 const goalsToUpdate = this.goals.filter(g => g.category === oldName);
                 
                 for (const goal of goalsToUpdate) {
-                    await this.goalsService?.saveGoal({
+                    const updatedGoal = {
                         ...goal,
                         category: newName
-                    });
+                    };
+                    const index = this.goals.findIndex(g => g.id === goal.id);
+                    if (index !== -1) {
+                        this.goals[index] = updatedGoal;
+                    }
                 }
                 
-                // Recharger pour s'assurer de la cohérence
-                await this.loadGoals(true);
-                
+                await this.saveGoals();
                 new Notice('Catégorie renommée avec succès');
                 console.log('GoalsStore: Category updated');
             } catch (error) {

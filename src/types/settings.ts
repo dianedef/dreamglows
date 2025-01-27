@@ -24,6 +24,7 @@ export interface GoalFlowzSettings {
     notesFormat: '1' | '2' | 'custom';
     customNotesFormat?: string;
     noteTemplate: string;
+    lastMainWidth: number;
 }
 
 export interface DefaultTask {
@@ -53,5 +54,6 @@ export const DEFAULT_SETTINGS: GoalFlowzSettings = {
     notesPath: "notes",
     folderStructure: "flat",
     notesFormat: "1",
-    noteTemplate: "# {{title}}\n\n## Objectif\n\n## Tâches\n\n## Notes"
+    noteTemplate: "# {{title}}\n\n## Objectif\n\n## Tâches\n\n## Notes",
+    lastMainWidth: 50
 }; 

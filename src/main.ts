@@ -1,5 +1,5 @@
 import { Plugin, WorkspaceLeaf, TFile, Notice, ItemView, App, Modal } from 'obsidian';
-import { createApp } from 'vue';
+import { createApp, watch } from 'vue';
 import { createPinia } from 'pinia';
 import MainView from './views/MainView.vue';
 import { registerStyles, unregisterStyles } from './styles/RegisterStyles';
@@ -19,7 +19,6 @@ import GoalModalContent from './components/modals/GoalModalContent.vue';
 import CategoryModalContent from './components/modals/CategoryModalContent.vue';
 import { useTasksStore } from './stores/tasksStore';
 import { StorageService } from './services/StorageService';
-import { watch } from 'vue';
 import TaskModalContent from './components/modals/TaskModalContent.vue';
 import type { Task } from './types/tasks';
 
@@ -51,16 +50,32 @@ class GoalFlowzView extends ItemView {
         container.empty();
         container.createEl("div", { cls: "goalflowz-container" });
 
-        // Créer une nouvelle instance Vue pour cette vue
         this.vueApp = createApp(MainView, {
             contentFiles: this.app.vault.getMarkdownFiles(),
             app: this.app
         });
         
-        // Utiliser Pinia
         this.vueApp.use(pinia);
         
-        // Monter l'application
+        // Initialiser les stores
+        const tasksStore = useTasksStore();
+        const goalsStore = useGoalsStore();
+        const storageService = new StorageService(this.app);
+        
+        // Charger les données initiales
+        const { goals, tasks } = await storageService.loadData();
+        goalsStore.goals = goals;
+        tasksStore.tasks = tasks;
+        
+        // Configurer les watchers pour la sauvegarde automatique
+        watch(() => goalsStore.goals, async () => {
+            await storageService.saveData(goalsStore.goals, tasksStore.tasks);
+        }, { deep: true });
+        
+        watch(() => tasksStore.tasks, async () => {
+            await storageService.saveData(goalsStore.goals, tasksStore.tasks);
+        }, { deep: true });
+        
         this.vueApp.mount(container.children[0]);
     }
 
@@ -68,111 +83,6 @@ class GoalFlowzView extends ItemView {
         if (this.vueApp) {
             this.vueApp.unmount();
         }
-    }
-}
-
-class GoalModal extends Modal {
-    app: App;
-    goal: Goal | undefined;
-    vueApp: any = null;
-
-    constructor(app: App, goal?: Goal) {
-        super(app);
-        this.app = app;
-        this.goal = goal;
-    }
-
-    onOpen() {
-        const { contentEl } = this;
-        contentEl.createEl('h2', { text: this.goal ? 'Modifier l\'objectif' : 'Nouvel objectif' });
-        const modalContent = contentEl.createDiv('goalflowz-modal-content');
-        this.vueApp = createApp(GoalModalContent, {
-            goal: this.goal,
-            closeModal: () => this.close()
-        }).mount(modalContent);
-    }
-
-    onClose() {
-        if (this.vueApp) {
-            this.vueApp.$.appContext.app.unmount();
-            this.vueApp = null;
-        }
-        super.onClose();
-    }
-}
-
-export class CategoryModal extends Modal {
-    private app: App;
-    private category: string;
-    private vueApp: any = null;
-
-    constructor(app: App, category: string) {
-        super(app);
-        this.app = app;
-        this.category = category;
-        console.log('CategoryModal: Constructor called', { category });
-    }
-
-    onOpen() {
-        console.log('CategoryModal: Opening modal');
-        const { contentEl } = this;
-
-        // Titre de la modale
-        contentEl.createEl('h2', { text: 'Gérer la catégorie' });
-
-        // Créer un conteneur pour l'app Vue
-        const modalContent = contentEl.createDiv('goalflowz-modal-content');
-
-        // Monter l'app Vue
-        this.vueApp = createApp(CategoryModalContent, {
-            category: this.category,
-            closeModal: () => this.close()
-        }).mount(modalContent);
-
-        console.log('CategoryModal: Vue app mounted');
-    }
-
-    onClose() {
-        try {
-            if (this.vueApp) {
-                this.vueApp.$.appContext.app.unmount();
-                this.vueApp = null;
-            }
-        } catch (error) {
-            console.error('CategoryModal: Error during cleanup:', error);
-        } finally {
-            super.onClose();
-        }
-    }
-}
-
-class TaskModal extends Modal {
-    app: App;
-    task: Task | undefined;
-    vueApp: any = null;
-
-    constructor(app: App, task?: Task) {
-        super(app);
-        this.app = app;
-        this.task = task;
-    }
-
-    onOpen() {
-        const { contentEl } = this;
-        contentEl.createEl('h2', { text: this.task ? 'Modifier la tâche' : 'Nouvelle tâche' });
-        const modalContent = contentEl.createDiv('goalflowz-modal-content');
-        this.vueApp = createApp(TaskModalContent, {
-            task: this.task,
-            closeModal: () => this.close()
-        }).mount(modalContent);
-    }
-
-    onClose() {
-        if (this.vueApp) {
-            this.vueApp.$.appContext.app.unmount();
-            this.vueApp = null;
-        }
-        super.onClose();
     }
 }
 
@@ -186,6 +96,7 @@ export default class GoalFlowz extends Plugin {
     private timeManager!: TimeManagementService;
     private tasksStore!: ReturnType<typeof useTasksStore>;
     private pinia!: ReturnType<typeof createPinia>;
+    private view: GoalFlowzView | null = null;
 
     async onload() {
         await this.loadSettings();
@@ -212,14 +123,17 @@ export default class GoalFlowz extends Plugin {
         // Enregistre la vue principale
         this.registerView(
             VIEW_TYPE_GOALFLOWZ,
-            (leaf) => new GoalFlowzView(leaf, this)
+            (leaf) => {
+                this.view = new GoalFlowzView(leaf, this);
+                return this.view;
+            }
         );
 
         // Ajouter les commandes
         this.addCommand({
             id: 'open-goalflowz',
             name: 'Ouvrir GoalFlowz',
-            callback: () => this.openGoalFlowz(),
+            callback: () => this.activateView(),
             hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "O" }]
         });
 
@@ -235,7 +149,9 @@ export default class GoalFlowz extends Plugin {
         });
 
         // Ajouter le ruban
-        this.addRibbonIcon('target', 'GoalFlowz', () => this.openGoalFlowz());
+        this.addRibbonIcon('target', 'GoalFlowz', () => {
+            this.activateView();
+        });
 
         // Ajouter l'onglet de paramètres
         this.addSettingTab(new GoalFlowzSettingsTab(this.app, this));
@@ -269,6 +185,7 @@ export default class GoalFlowz extends Plugin {
 
     onunload() {
         unregisterStyles();
+        this.app.workspace.detachLeavesOfType(VIEW_TYPE_GOALFLOWZ);
     }
 
     async loadSettings() {
@@ -279,24 +196,23 @@ export default class GoalFlowz extends Plugin {
         await this.saveData(this.settings);
     }
 
-    private async openGoalFlowz() {
-        const workspace = this.app.workspace;
+    async activateView() {
+        const { workspace } = this.app;
+
         let leaf = workspace.getLeavesOfType(VIEW_TYPE_GOALFLOWZ)[0];
-        
         if (!leaf) {
             const newLeaf = workspace.getRightLeaf(false);
             if (newLeaf) {
                 await newLeaf.setViewState({
                     type: VIEW_TYPE_GOALFLOWZ,
-                    active: true
+                    active: true,
                 });
                 leaf = newLeaf;
+            } else {
+                throw new Error("Impossible de créer une nouvelle feuille de travail");
             }
         }
-        
-        if (leaf) {
-            workspace.revealLeaf(leaf);
-        }
+        workspace.revealLeaf(leaf);
     }
 
     async generateNotes(): Promise<void> {
@@ -304,5 +220,101 @@ export default class GoalFlowz extends Plugin {
     }
 }
 
-// Export des classes modales
-export { GoalModal, TaskModal };
+// Classes de base pour les modales
+class BaseModal extends Modal {
+    protected vueApp: any = null;
+
+    onClose() {
+        if (this.vueApp) {
+            this.vueApp.unmount();
+            this.vueApp = null;
+        }
+        super.onClose();
+    }
+}
+
+export class GoalModal extends BaseModal {
+    private goal?: Goal;
+
+    constructor(app: App, goal?: Goal) {
+        super(app);
+        this.goal = goal;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        
+        const modalContent = contentEl.createDiv('goalflowz-modal-content');
+        
+        const modalStore = useModalStore();
+        if (this.goal) {
+            modalStore.openGoalModal(this.goal);
+        } else {
+            modalStore.openGoalModal();
+        }
+
+        this.vueApp = createApp(GoalModalContent, {
+            editingGoal: this.goal
+        });
+
+        this.vueApp.use(pinia);
+        this.vueApp.provide('closeModal', () => this.close());
+        this.vueApp.mount(modalContent);
+    }
+
+    onClose() {
+        super.onClose();
+        const modalStore = useModalStore();
+        modalStore.closeGoalModal();
+    }
+}
+
+export class CategoryModal extends BaseModal {
+    private category: string;
+
+    constructor(app: App, category: string) {
+        super(app);
+        this.category = category;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        
+        const modalContent = contentEl.createDiv('goalflowz-modal-content');
+        
+        this.vueApp = createApp(CategoryModalContent, {
+            category: this.category,
+            closeModal: () => this.close()
+        });
+
+        this.vueApp.use(pinia);
+        this.vueApp.mount(modalContent);
+    }
+}
+
+export class TaskModal extends BaseModal {
+    private task?: Task;
+
+    constructor(app: App, task?: Task) {
+        super(app);
+        this.task = task;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        
+        const modalContent = contentEl.createDiv('goalflowz-modal-content');
+        
+        this.vueApp = createApp(TaskModalContent, {
+            task: this.task,
+            onSave: () => this.close(),
+            onClose: () => this.close()
+        });
+
+        this.vueApp.use(pinia);
+        this.vueApp.mount(modalContent);
+    }
+}

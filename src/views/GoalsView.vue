@@ -10,8 +10,21 @@
     </div>
     
     <div class="goalflowz-content">
-      <div ref="timelineContainer" class="goalflowz-timeline-container"></div>
-      <TaskList :app="props.app" />
+      <div 
+        ref="timelineContainer" 
+        class="goalflowz-timeline-container"
+        :style="{ width: `${mainWidth}%` }"
+      ></div>
+      <div 
+        class="goalflowz-resize-handle"
+        @mousedown="startResize"
+      ></div>
+      <div 
+        class="goalflowz-task-container"
+        :style="{ width: `${100 - mainWidth}%` }"
+      >
+        <TaskList :app="props.app" />
+      </div>
     </div>
   </div>
 </template>
@@ -22,6 +35,7 @@ import { Timeline, DataSet } from 'vis-timeline/standalone';
 import type { Goal } from '@/types/goals';
 import { useGoalsStore } from '@/stores/goalsStore';
 import { useModalStore } from '@/stores/modalStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { GoalModal, CategoryModal } from '@/main';
 import TaskList from '@/components/TaskList.vue';
 
@@ -32,8 +46,49 @@ const props = defineProps<{
 
 const goalsStore = useGoalsStore();
 const modalStore = useModalStore();
+const settingsStore = useSettingsStore();
 const timelineContainer = ref<HTMLElement | null>(null);
 let timeline: Timeline | null = null;
+
+// Gestion du redimensionnement
+const isResizing = ref(false);
+const startX = ref(0);
+const startWidth = ref(0);
+const mainWidth = ref(settingsStore.settings.lastMainWidth);
+
+const startResize = (e: MouseEvent) => {
+    isResizing.value = true;
+    startX.value = e.clientX;
+    startWidth.value = mainWidth.value;
+    document.addEventListener('mousemove', handleResize);
+    document.addEventListener('mouseup', stopResize);
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+};
+
+const handleResize = (e: MouseEvent) => {
+    if (!isResizing.value) return;
+    
+    const dx = e.clientX - startX.value;
+    const containerWidth = document.querySelector('.goalflowz-content')?.clientWidth || 0;
+    const percentageDelta = (dx / containerWidth) * 100;
+    
+    let newWidth = startWidth.value + percentageDelta;
+    // Limiter la largeur entre 30% et 70%
+    newWidth = Math.max(30, Math.min(70, newWidth));
+    
+    mainWidth.value = newWidth;
+    // Sauvegarder la nouvelle largeur dans les settings
+    settingsStore.updateSettings({ lastMainWidth: newWidth });
+};
+
+const stopResize = () => {
+    isResizing.value = false;
+    document.removeEventListener('mousemove', handleResize);
+    document.removeEventListener('mouseup', stopResize);
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+};
 
 // Conversion des goals en items pour la timeline
 const createTimelineItems = (goals: Goal[]) => {
@@ -41,32 +96,39 @@ const createTimelineItems = (goals: Goal[]) => {
     id: goal.id,
     group: goal.category || 'Sans catégorie',
     content: `
-      <div class="goalflowz-timeline-item">
-        <div class="goalflowz-timeline-item-header">
-          <div class="goalflowz-timeline-item-status goalflowz-status-${goal.status}">
-            ${goal.status === 'todo' ? 'À faire' : goal.status === 'in-progress' ? 'En cours' : 'Terminé'}
-          </div>
-          <div class="goalflowz-timeline-item-priority goalflowz-priority-${goal.priority}">
-            ${goal.priority === 'high' ? '⚡ Haute' : goal.priority === 'medium' ? '◆ Moyenne' : '○ Basse'}
-          </div>
-        </div>
-        <div class="goalflowz-timeline-item-title">${goal.title}</div>
-        <div class="goalflowz-timeline-item-progress-container">
-          <div class="goalflowz-timeline-item-progress">
-            <div class="goalflowz-progress-bar" style="width: ${goal.progress}%"></div>
-          </div>
-          <span class="goalflowz-progress-text">${goal.progress}%</span>
-        </div>
-        ${goal.tags?.length ? `
-          <div class="goalflowz-timeline-item-tags">
-            ${goal.tags.map(tag => `<span class="goalflowz-tag">#${tag}</span>`).join(' ')}
-          </div>
-        ` : ''}
+      <div class="goalflowz-timeline-item-title">
+        ${goal.title}
+        <span class="goalflowz-timeline-item-progress">${goal.progress}%</span>
       </div>
+      ${goal.tags?.length ? `
+        <div class="goalflowz-timeline-item-tags">
+          ${goal.tags.map(tag => `<span class="goalflowz-tag">#${tag}</span>`).join(' ')}
+        </div>
+      ` : ''}
     `,
     start: new Date(goal.startDate),
     end: goal.dueDate ? new Date(goal.dueDate) : undefined,
-    className: `goalflowz-priority-${goal.priority} goalflowz-status-${goal.status}`
+    type: goal.dueDate ? 'range' : 'box',
+    style: `
+      background-color: ${goal.status === 'todo' ? 'var(--background-primary)' : 
+                         goal.status === 'in-progress' ? 'var(--interactive-accent)' : 
+                         'var(--interactive-success)'};
+      border-color: ${goal.priority === 'high' ? 'var(--text-error)' : 
+                     goal.priority === 'medium' ? 'var(--text-warning)' : 
+                     'var(--text-success)'};
+      border-width: ${goal.priority === 'high' ? '2px' : '1px'};
+    `,
+    title: `
+      <div>
+        <strong>Statut:</strong> ${goal.status === 'todo' ? '⭕ À faire' : 
+                                 goal.status === 'in-progress' ? '▶️ En cours' : 
+                                 '✅ Terminé'}<br>
+        <strong>Priorité:</strong> ${goal.priority === 'high' ? '⚡ Haute' : 
+                                   goal.priority === 'medium' ? '◆ Moyenne' : 
+                                   '○ Basse'}<br>
+        <strong>Progression:</strong> ${goal.progress}%
+      </div>
+    `
   }));
 };
 
@@ -96,8 +158,22 @@ onMounted(() => {
     groupOrder: 'content',
     tooltip: {
       followMouse: true,
-      overflowMethod: 'cap' as const
+      overflowMethod: 'cap' as const,
+      delay: 100
     },
+    template: function (item: any) {
+      return item.content;
+    },
+    groupTemplate: function(group: any) {
+      return `<div class="goalflowz-timeline-group">${group.content}</div>`;
+    },
+    margin: {
+      item: {
+        horizontal: 10,
+        vertical: 5
+      }
+    },
+    showCurrentTime: true,
     onMove: (item: any, callback: any) => {
       const goal = goalsStore.goals.find(g => g.id === item.id);
       if (goal) {
@@ -211,3 +287,43 @@ const openNewGoalModal = () => {
   modal.open();
 };
 </script>
+
+<style>
+.goalflowz-content {
+  display: flex;
+  position: relative;
+  height: 100%;
+}
+
+.goalflowz-timeline-container {
+  height: 100%;
+  overflow: hidden;
+}
+
+.goalflowz-task-container {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.goalflowz-resize-handle {
+  width: 4px;
+  background-color: var(--background-modifier-border);
+  cursor: ew-resize;
+  position: relative;
+}
+
+.goalflowz-resize-handle:hover {
+  background-color: var(--interactive-accent);
+}
+
+.goalflowz-resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 20px;
+  background-color: var(--text-muted);
+}
+</style>
