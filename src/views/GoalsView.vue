@@ -38,6 +38,7 @@ import { useModalStore } from '@/stores/modalStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { GoalModal, CategoryModal } from '@/main';
 import TaskList from '@/components/TaskList.vue';
+import { useTasksStore } from '@/stores/tasksStore';
 
 const props = defineProps<{
   contentFiles: any[];
@@ -49,6 +50,7 @@ const modalStore = useModalStore();
 const settingsStore = useSettingsStore();
 const timelineContainer = ref<HTMLElement | null>(null);
 let timeline: Timeline | null = null;
+const tasksStore = useTasksStore();
 
 // Gestion du redimensionnement
 const isResizing = ref(false);
@@ -92,8 +94,11 @@ const stopResize = () => {
 
 // Conversion des goals en items pour la timeline
 const createTimelineItems = (goals: Goal[]) => {
-  return goals.map(goal => ({
-    id: goal.id,
+  const items = [];
+
+  // Ajouter les objectifs
+  items.push(...goals.map(goal => ({
+    id: `goal-${goal.id}`,
     group: goal.category || 'Sans catégorie',
     content: `
       <div class="goalflowz-timeline-item-title">
@@ -129,16 +134,65 @@ const createTimelineItems = (goals: Goal[]) => {
         <strong>Progression:</strong> ${goal.progress}%
       </div>
     `
-  }));
+  })));
+
+  // Ajouter les tâches
+  const tasks = tasksStore.getTasks;
+  items.push(...tasks.map(task => ({
+    id: `task-${task.id}`,
+    group: 'Tâches',
+    content: `
+      <div class="goalflowz-timeline-task">
+        <div class="goalflowz-timeline-task-title">
+          ${task.title}
+        </div>
+        ${task.tags?.length ? `
+          <div class="goalflowz-timeline-item-tags">
+            ${task.tags.map(tag => `<span class="goalflowz-tag">#${tag}</span>`).join(' ')}
+          </div>
+        ` : ''}
+      </div>
+    `,
+    start: task.date ? new Date(task.date) : new Date(),
+    type: 'box',
+    style: `
+      background-color: ${task.status === 'todo' ? 'var(--background-primary)' : 
+                         task.status === 'in-progress' ? 'var(--interactive-accent)' : 
+                         'var(--interactive-success)'};
+      border-color: ${task.priority === 'high' ? 'var(--text-error)' : 
+                     task.priority === 'medium' ? 'var(--text-warning)' : 
+                     'var(--text-success)'};
+      border-width: ${task.priority === 'high' ? '2px' : '1px'};
+    `,
+    title: `
+      <div>
+        <strong>Statut:</strong> ${task.status === 'todo' ? '⭕ À faire' : 
+                                 task.status === 'in-progress' ? '▶️ En cours' : 
+                                 '✅ Terminé'}<br>
+        <strong>Priorité:</strong> ${task.priority === 'high' ? '⚡ Haute' : 
+                                   task.priority === 'medium' ? '◆ Moyenne' : 
+                                   '○ Basse'}<br>
+      </div>
+    `
+  })));
+
+  return items;
 };
 
 // Créer les groupes pour la timeline
 const createTimelineGroups = (goals: Goal[]) => {
   const categories = new Set(goals.map(goal => goal.category || 'Sans catégorie'));
-  return Array.from(categories).map(category => ({
-    id: category,
-    content: category
-  }));
+  return [
+    ...Array.from(categories).map(category => ({
+      id: category,
+      content: category
+    })),
+    // Ajouter un groupe spécial pour les tâches
+    {
+      id: 'Tâches',
+      content: 'Tâches'
+    }
+  ];
 };
 
 // Initialisation de la timeline
@@ -156,6 +210,19 @@ onMounted(() => {
     horizontalScroll: true,
     verticalScroll: true,
     groupOrder: 'content',
+    // Options d'édition
+    editable: true,  // Activer l'édition globalement
+    manipulation: {
+      itemsAlwaysDraggable: true  // Permettre le drag & drop des items
+    },
+    // Configuration du drag
+    dragOptions: {
+      dragTime: true,      // Permettre le drag horizontal (temps)
+      dragGroup: true      // Permettre le drag vertical (groupes)
+    },
+    // Configuration du snap lors du déplacement
+    snap: null,  // Désactiver le snap pour un mouvement plus fluide
+    // Configuration des tooltips
     tooltip: {
       followMouse: true,
       overflowMethod: 'cap' as const,
@@ -194,23 +261,32 @@ onMounted(() => {
     },
     showCurrentTime: true,
     onMove: (item: any, callback: any) => {
-      const goal = goalsStore.goals.find(g => g.id === item.id);
-      if (goal) {
-        const updatedGoal = {
-          ...goal,
-          startDate: item.start.toISOString().split('T')[0],
-          dueDate: item.end?.toISOString().split('T')[0]
-        };
-        goalsStore.updateGoal(updatedGoal);
+      const [type, id] = item.id.split('-');
+      
+      if (type === 'goal') {
+        const goal = goalsStore.goals.find(g => g.id === id);
+        if (goal) {
+          const updatedGoal = {
+            ...goal,
+            startDate: item.start.toISOString().split('T')[0],
+            dueDate: item.end?.toISOString().split('T')[0]
+          };
+          goalsStore.updateGoal(updatedGoal);
+        }
+      } else if (type === 'task') {
+        const task = tasksStore.getTasks.find(t => t.id === id);
+        if (task) {
+          const updatedTask = {
+            ...task,
+            date: item.start.toISOString().split('T')[0]
+          };
+          tasksStore.updateTask(updatedTask);
+        }
       }
       callback(item);
     },
     onMoving: (item: any, callback: any) => {
       callback(item);
-    },
-    snap: (date: Date) => {
-      const hour = 60 * 60 * 1000;
-      return Math.round(date.getTime() / hour) * hour;
     }
   };
 
@@ -339,4 +415,11 @@ const openNewGoalModal = () => {
   const modal = new GoalModal(props.app);
   modal.open();
 };
+
+// Ajouter un watcher pour les tâches
+watch(() => tasksStore.getTasks, () => {
+  if (!timeline) return;
+  const items = new DataSet(createTimelineItems(goalsStore.goals));
+  timeline.setItems(items);
+}, { deep: true });
 </script>
