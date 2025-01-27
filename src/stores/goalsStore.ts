@@ -20,6 +20,13 @@ export const useGoalsStore = defineStore('goals', {
         isInitialized: false
     }),
 
+    getters: {
+        categories: (state) => {
+            const categories = new Set(state.goals.map(g => g.category || 'Sans catégorie'));
+            return Array.from(categories);
+        }
+    },
+
     actions: {
         async initializeService(app: any) {
             console.log('GoalsStore: Initializing service');
@@ -114,6 +121,56 @@ export const useGoalsStore = defineStore('goals', {
             } catch (error) {
                 console.error('Error deleting goal:', error);
                 new Notice('Erreur lors de la suppression de l\'objectif');
+            }
+        },
+
+        async updateCategory(oldName: string, newName: string) {
+            console.log('GoalsStore: Updating category', { oldName, newName });
+            
+            try {
+                // Mettre à jour tous les objectifs de cette catégorie
+                const goalsToUpdate = this.goals.filter(g => g.category === oldName);
+                
+                for (const goal of goalsToUpdate) {
+                    await this.goalsService?.saveGoal({
+                        ...goal,
+                        category: newName
+                    });
+                }
+                
+                // Recharger pour s'assurer de la cohérence
+                await this.loadGoals(true);
+                
+                new Notice('Catégorie renommée avec succès');
+                console.log('GoalsStore: Category updated');
+            } catch (error) {
+                console.error('Error updating category:', error);
+                new Notice('Erreur lors du renommage de la catégorie');
+            }
+        },
+
+        async deleteCategory(categoryName: string) {
+            console.log('GoalsStore: Deleting category', { categoryName });
+            
+            try {
+                // Déplacer tous les objectifs vers "Sans catégorie"
+                const goalsToUpdate = this.goals.filter(g => g.category === categoryName);
+                
+                for (const goal of goalsToUpdate) {
+                    await this.goalsService?.saveGoal({
+                        ...goal,
+                        category: 'Sans catégorie'
+                    });
+                }
+                
+                // Recharger pour s'assurer de la cohérence
+                await this.loadGoals(true);
+                
+                new Notice('Catégorie supprimée avec succès');
+                console.log('GoalsStore: Category deleted');
+            } catch (error) {
+                console.error('Error deleting category:', error);
+                new Notice('Erreur lors de la suppression de la catégorie');
             }
         }
     }

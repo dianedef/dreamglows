@@ -9,7 +9,10 @@
       </div>
     </div>
     
-    <div ref="timelineContainer" class="goalflowz-timeline-container"></div>
+    <div class="goalflowz-content">
+      <div ref="timelineContainer" class="goalflowz-timeline-container"></div>
+      <TaskList :app="props.app" />
+    </div>
   </div>
 </template>
 
@@ -19,7 +22,8 @@ import { Timeline, DataSet } from 'vis-timeline/standalone';
 import type { Goal } from '@/types/goals';
 import { useGoalsStore } from '@/stores/goalsStore';
 import { useModalStore } from '@/stores/modalStore';
-import { GoalModal } from '@/main';
+import { GoalModal, CategoryModal } from '@/main';
+import TaskList from '@/components/TaskList.vue';
 
 const props = defineProps<{
   contentFiles: any[];
@@ -128,25 +132,24 @@ onMounted(() => {
         const modal = new GoalModal(props.app, goal);
         modal.open();
       }
-    } else {
-      // Double-clic sur la timeline ou une catégorie
+    } else if (properties.what === 'group-axis') {
+      // Double-clic sur la zone des catégories (mais pas sur une catégorie)
+      console.log('Double-click sur la zone des catégories');
+      const modal = new CategoryModal(props.app, '');  // Catégorie vide = nouvelle catégorie
+      modal.open();
+    } else if (properties.group) {
+      // Double-clic sur une catégorie existante
+      console.log('Double-click sur groupe:', properties.group);
+      const modal = new CategoryModal(props.app, properties.group);
+      modal.open();
+    } else if (properties.time || properties.snappedTime) {
+      // Double-clic sur la timeline
       const modal = new GoalModal(props.app);
-      
-      // Préremplir les valeurs via le store
-      if (properties.time || properties.snappedTime) {
-        const clickedDate = properties.snappedTime || properties.time.getTime();
-        console.log('Double-click sur timeline, date cliquée:', new Date(clickedDate));
-        modalStore.setInitialGoalData({
-          startDate: new Date(clickedDate).toISOString().split('T')[0]
-        });
-      } else if (properties.group) {
-        console.log('Double-click sur groupe:', properties.group);
-        modalStore.setInitialGoalData({
-          category: properties.group,
-          startDate: new Date().toISOString().split('T')[0]
-        });
-      }
-      
+      const clickedDate = properties.snappedTime || properties.time.getTime();
+      console.log('Double-click sur timeline, date cliquée:', new Date(clickedDate));
+      modalStore.setInitialGoalData({
+        startDate: new Date(clickedDate).toISOString().split('T')[0]
+      });
       modal.open();
     }
   });
@@ -207,4 +210,4 @@ const openNewGoalModal = () => {
   const modal = new GoalModal(props.app);
   modal.open();
 };
-</script> 
+</script>

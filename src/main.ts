@@ -16,6 +16,12 @@ import { TimeManagementService } from './services/TimeManagementService';
 import { useModalStore } from './stores/modalStore';
 import { GoalsView } from './views/GoalsView';
 import GoalModalContent from './components/modals/GoalModalContent.vue';
+import CategoryModalContent from './components/modals/CategoryModalContent.vue';
+import { useTasksStore } from './stores/tasksStore';
+import { StorageService } from './services/StorageService';
+import { watch } from 'vue';
+import TaskModalContent from './components/modals/TaskModalContent.vue';
+import type { Task } from './types/tasks';
 
 const VIEW_TYPE_GOALFLOWZ = 'goalflowz-view';
 
@@ -65,57 +71,108 @@ class GoalFlowzView extends ItemView {
     }
 }
 
-export class GoalModal extends Modal {
-    private vueApp: any;
-    private editingGoal: Goal | null;
+class GoalModal extends Modal {
+    app: App;
+    goal: Goal | undefined;
+    vueApp: any = null;
 
     constructor(app: App, goal?: Goal) {
         super(app);
-        this.editingGoal = goal || null;
-        console.log('GoalModal: Constructor called', { editingGoal: this.editingGoal });
+        this.app = app;
+        this.goal = goal;
     }
 
     onOpen() {
-        console.log('GoalModal: Opening modal');
         const { contentEl } = this;
-        contentEl.empty();
-        
-        // Ajouter le titre
-        contentEl.createEl('h2', { text: this.editingGoal ? 'Modifier l\'objectif' : 'Nouvel objectif', cls: 'goalflowz-modal-title' });
-        
-        // Ajouter le contenu
-        const contentContainer = contentEl.createDiv({ cls: 'goalflowz-modal-container' });
-        
-        // Créer et monter l'app Vue
+        contentEl.createEl('h2', { text: this.goal ? 'Modifier l\'objectif' : 'Nouvel objectif' });
+        const modalContent = contentEl.createDiv('goalflowz-modal-content');
         this.vueApp = createApp(GoalModalContent, {
-            editingGoal: this.editingGoal
-        });
-        this.vueApp.use(pinia);
-        
-        // Injecter la méthode de fermeture
-        this.vueApp.provide('closeModal', () => {
-            console.log('GoalModal: Closing from Vue app');
-            this.close();
-        });
-        
+            goal: this.goal,
+            closeModal: () => this.close()
+        }).mount(modalContent);
+    }
+
+    onClose() {
+        if (this.vueApp) {
+            this.vueApp.$.appContext.app.unmount();
+            this.vueApp = null;
+        }
+        super.onClose();
+    }
+}
+
+export class CategoryModal extends Modal {
+    private app: App;
+    private category: string;
+    private vueApp: any = null;
+
+    constructor(app: App, category: string) {
+        super(app);
+        this.app = app;
+        this.category = category;
+        console.log('CategoryModal: Constructor called', { category });
+    }
+
+    onOpen() {
+        console.log('CategoryModal: Opening modal');
+        const { contentEl } = this;
+
+        // Titre de la modale
+        contentEl.createEl('h2', { text: 'Gérer la catégorie' });
+
+        // Créer un conteneur pour l'app Vue
+        const modalContent = contentEl.createDiv('goalflowz-modal-content');
+
         // Monter l'app Vue
-        this.vueApp.mount(contentContainer);
-        console.log('GoalModal: Vue app mounted');
+        this.vueApp = createApp(CategoryModalContent, {
+            category: this.category,
+            closeModal: () => this.close()
+        }).mount(modalContent);
+
+        console.log('CategoryModal: Vue app mounted');
     }
 
     onClose() {
         try {
-            console.log('GoalModal: Starting cleanup');
             if (this.vueApp) {
-                this.vueApp.unmount();
-                console.log('GoalModal: Vue app unmounted');
+                this.vueApp.$.appContext.app.unmount();
+                this.vueApp = null;
             }
-            const { contentEl } = this;
-            contentEl.empty();
-            console.log('GoalModal: Content cleared');
         } catch (error) {
-            console.error('GoalModal: Error during cleanup:', error);
+            console.error('CategoryModal: Error during cleanup:', error);
+        } finally {
+            super.onClose();
         }
+    }
+}
+
+class TaskModal extends Modal {
+    app: App;
+    task: Task | undefined;
+    vueApp: any = null;
+
+    constructor(app: App, task?: Task) {
+        super(app);
+        this.app = app;
+        this.task = task;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.createEl('h2', { text: this.task ? 'Modifier la tâche' : 'Nouvelle tâche' });
+        const modalContent = contentEl.createDiv('goalflowz-modal-content');
+        this.vueApp = createApp(TaskModalContent, {
+            task: this.task,
+            closeModal: () => this.close()
+        }).mount(modalContent);
+    }
+
+    onClose() {
+        if (this.vueApp) {
+            this.vueApp.$.appContext.app.unmount();
+            this.vueApp = null;
+        }
+        super.onClose();
     }
 }
 
@@ -127,19 +184,19 @@ export default class GoalFlowz extends Plugin {
     modalStore!: ReturnType<typeof useModalStore>;
     private notesGenerator!: NotesGeneratorService;
     private timeManager!: TimeManagementService;
+    private tasksStore!: ReturnType<typeof useTasksStore>;
+    private pinia!: ReturnType<typeof createPinia>;
 
     async onload() {
         await this.loadSettings();
         
         // Initialiser Pinia et les stores
-        const tempApp = createApp({});
-        tempApp.use(pinia);
+        this.pinia = createPinia();
+        this.goalsStore = useGoalsStore(this.pinia);
+        this.tasksStore = useTasksStore(this.pinia);
         
         this.settingsStore = useSettingsStore();
         this.settingsStore.updateSettings(this.settings);
-        
-        this.goalsStore = useGoalsStore();
-        await this.goalsStore.initializeService(this.app);
         
         this.modalStore = useModalStore();
         this.modalStore.initialize(this.app);
@@ -193,6 +250,21 @@ export default class GoalFlowz extends Plugin {
                 this.saveSettings();
             })
         );
+
+        // Chargement des données
+        const storageService = new StorageService(this.app);
+        const data = await storageService.loadData();
+        this.goalsStore.$patch({ goals: data.goals });
+        this.tasksStore.$patch({ tasks: data.tasks });
+
+        // Sauvegarde automatique des données
+        watch(
+            [() => this.goalsStore.goals, () => this.tasksStore.tasks],
+            async ([goals, tasks]) => {
+                await storageService.saveData(goals, tasks);
+            },
+            { deep: true }
+        );
     }
 
     onunload() {
@@ -231,3 +303,6 @@ export default class GoalFlowz extends Plugin {
         await this.notesGenerator.generateNotes();
     }
 }
+
+// Export des classes modales
+export { GoalModal, TaskModal };

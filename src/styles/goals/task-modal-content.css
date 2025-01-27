@@ -1,0 +1,90 @@
+
+.goalflowz-task-modal {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.goalflowz-modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.goalflowz-modal-field label {
+  font-weight: 500;
+}
+
+.goalflowz-modal-field input,
+.goalflowz-modal-field select,
+.goalflowz-modal-field textarea {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.goalflowz-modal-field textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.goalflowz-tags-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.goalflowz-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.goalflowz-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 10px;
+  background-color: var(--background-modifier-accent);
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.goalflowz-tag-remove {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+.goalflowz-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.goalflowz-modal-save {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  cursor: pointer;
+}
+
+.goalflowz-modal-delete {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  background-color: var(--color-red);
+  color: white;
+  border: none;
+  cursor: pointer;
+}

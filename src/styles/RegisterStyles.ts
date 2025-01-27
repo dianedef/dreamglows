@@ -4,6 +4,10 @@ import weekViewStyles from './planning/week-view.css';
 import dailyViewStyles from './daily-view.css';
 import goalsViewStyles from './goals/goals-view.css';
 import goalsModalStyles from './goals/goals-modal.css';
+import taskListStyles from './goals/task-list.css';
+import taskModalStyles from './goals/task-modal-content.css';
+import dayViewStyles from './day-view.css';
+
 
 export function registerStyles(viewType: string) {
     const styleEl = document.createElement('style');
@@ -13,11 +17,14 @@ export function registerStyles(viewType: string) {
         ${planningStyles}
         ${goalsViewStyles}
         ${goalsModalStyles}
-        
+        ${taskListStyles}
+        ${taskModalStyles}
+
         /* Styles spécifiques à la vue */
         ${weekViewStyles}
         ${viewType === 'list' ? listViewStyles : ''}
         ${viewType === 'daily' ? dailyViewStyles : ''}
+        ${viewType === 'day' ? dayViewStyles : ''}
     `;
     document.head.appendChild(styleEl);
 }
