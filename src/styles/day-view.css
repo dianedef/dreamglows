@@ -115,11 +115,39 @@
 }
 
 .goalflowz-habits-section {
+  position: relative;
   background-color: var(--background-primary);
   border-radius: 8px;
-  padding: 0;
   border: 1px solid var(--background-modifier-border);
   overflow: hidden;
+  padding: 1rem;
+}
+
+.goalflowz-habits-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.progress-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: var(--interactive-accent);
+  opacity: 0.3;
+  transition: width 0.3s ease;
+  z-index: 1;
+}
+
+.goalflowz-habits-content {
+  position: relative;
+  z-index: 2;
+  padding: 1rem;
 }
 
 .goalflowz-habits-section progress {
@@ -151,7 +179,8 @@
 }
 
 .goalflowz-habits-grid {
-  padding: 1rem;
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
@@ -205,9 +234,12 @@
 }
 
 .goalflowz-mood-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
   gap: 2rem;
+  margin-top: 1rem;
 }
 
 .goalflowz-mood-item {

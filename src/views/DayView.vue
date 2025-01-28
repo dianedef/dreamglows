@@ -57,8 +57,14 @@
 
     <!-- Trackers d'habitudes -->
     <div class="goalflowz-habits-section">
-      <progress :value="dayStats.completionRate" max="100"></progress>
-
+      <div class="goalflowz-habits-background">
+        <div 
+          class="progress-background" 
+          :style="{ width: `${dayStats.completionRate}%` }"
+          @vue:mounted="() => console.log('Progress width:', dayStats.completionRate + '%')"
+        ></div>
+      </div>
+      
       <div class="goalflowz-habits-grid">
         <div 
           v-for="habit in activeHabits" 
@@ -84,32 +90,31 @@
         </div>
       </div>
 
-    <!-- Humeur et énergie -->
+      <!-- Humeur et énergie -->
       <div class="goalflowz-mood-row">
         <div class="goalflowz-mood-item">
           <div class="goalflowz-mood-buttons">
             <button 
               v-for="level in [1,2,3,4,5]" 
               :key="'mood-'+level"
-              @click="setMood(level as 1 | 2 | 3 | 4 | 5)"
-              :class="{ active: dayStats.mood === level }"
               class="goalflowz-mood-btn"
+              :class="{ active: dayStats.mood === level }"
+              @click="setDayMood(level)"
             >
               {{ getMoodEmoji(level) }}
             </button>
           </div>
         </div>
-
         <div class="goalflowz-mood-item">
           <div class="goalflowz-mood-buttons">
             <button 
               v-for="level in [1,2,3,4,5]" 
               :key="'energy-'+level"
-              @click="setEnergyLevel(level as 1 | 2 | 3 | 4 | 5)"
-              :class="{ active: dayStats.energyLevel === level }"
               class="goalflowz-energy-btn"
+              :class="{ active: dayStats.energyLevel === level }"
+              @click="setDayEnergyLevel(level)"
             >
-              {{ getEnergyEmoji(level) }}
+              🔋
             </button>
           </div>
         </div>
@@ -349,7 +354,7 @@ const getEnergyEmoji = (level: number) => {
   return emojis[level - 1];
 };
 
-const setMood = (level: 1 | 2 | 3 | 4 | 5) => {
+const setDayMood = (level: 1 | 2 | 3 | 4 | 5) => {
   try {
     const date = dateUtils.formatDate(currentDate.value);
     habitsStore.setDayMood(date, level);
@@ -359,7 +364,7 @@ const setMood = (level: 1 | 2 | 3 | 4 | 5) => {
   }
 };
 
-const setEnergyLevel = (level: 1 | 2 | 3 | 4 | 5) => {
+const setDayEnergyLevel = (level: 1 | 2 | 3 | 4 | 5) => {
   try {
     const date = dateUtils.formatDate(currentDate.value);
     habitsStore.setDayEnergyLevel(date, level);

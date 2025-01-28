@@ -63,36 +63,34 @@ export const useHabitsStore = defineStore('habits', {
             const activeHabits = state.habits.filter(h => h.active);
             const completedHabits = dayLogs.filter(log => log.completed).length;
 
-            // Calculer les streaks
-            const streaks: { [habitId: string]: number } = {};
-            for (const habit of activeHabits) {
-                let streak = 0;
-                let currentDate = DateTime.fromISO(date);
+            // Ajouter 2 au total (1 pour l'humeur, 1 pour l'énergie)
+            const totalItems = activeHabits.length + 2;
+            
+            // Compter les éléments complétés (habitudes + humeur + énergie)
+            let completedItems = completedHabits;
+            if (state.dayStats?.[date]?.mood) completedItems++;
+            if (state.dayStats?.[date]?.energyLevel) completedItems++;
 
-                while (true) {
-                    const dateStr = currentDate.toFormat('yyyy-MM-dd');
-                    const log = state.logs.find(
-                        l => l.habitId === habit.id && l.date === dateStr && l.completed
-                    );
+            const completionRate = totalItems ? 
+                (completedItems / totalItems) * 100 : 0;
 
-                    if (log) {
-                        streak++;
-                        currentDate = currentDate.minus({ days: 1 });
-                    } else {
-                        break;
-                    }
-                }
-
-                streaks[habit.id] = streak;
-            }
+            console.log('Calcul du taux de complétion:', {
+                date,
+                activeHabits: activeHabits.length,
+                completedHabits,
+                hasMood: !!state.dayStats?.[date]?.mood,
+                hasEnergy: !!state.dayStats?.[date]?.energyLevel,
+                totalItems,
+                completedItems,
+                completionRate
+            });
 
             return {
                 date,
-                completedHabits,
-                totalHabits: activeHabits.length,
-                completionRate: activeHabits.length ? 
-                    (completedHabits / activeHabits.length) * 100 : 0,
-                streaks,
+                completedHabits: completedItems,
+                totalHabits: totalItems,
+                completionRate,
+                streaks: {},
                 mood: state.dayStats?.[date]?.mood,
                 energyLevel: state.dayStats?.[date]?.energyLevel,
                 notes: state.dayStats?.[date]?.notes
@@ -139,6 +137,13 @@ export const useHabitsStore = defineStore('habits', {
                 // Mettre à jour les stats du jour
                 const stats = this.getDayStats(date);
                 if (!this.dayStats) this.dayStats = {};
+                
+                console.log('Mise à jour des stats:', {
+                    avant: this.dayStats[date]?.completionRate,
+                    apres: stats.completionRate,
+                    completed: log.completed
+                });
+
                 this.dayStats[date] = {
                     ...stats,
                     completedHabits: stats.completedHabits,
