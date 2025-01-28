@@ -57,11 +57,7 @@
 
     <!-- Trackers d'habitudes -->
     <div class="goalflowz-habits-section">
-      <div class="goalflowz-section-header">
-        <div class="goalflowz-progress-bar">
-          <div class="goalflowz-progress-fill" :style="{ width: `${completionRate}%` }"></div>
-        </div>
-      </div>
+      <progress :value="dayStats.completionRate" max="100"></progress>
 
       <div class="goalflowz-habits-grid">
         <div 
@@ -133,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue';
 import { DateTime } from 'luxon';
 import { useHabitsStore } from '@/stores/habitsStore';
 import { useGoalsStore } from '@/stores/goalsStore';
@@ -232,20 +228,6 @@ const dayStats = computed(() => {
   } catch (error) {
     console.warn('Erreur de récupération des stats:', error);
     return { completionRate: 0, mood: 0, energyLevel: 0, notes: '' };
-  }
-});
-
-const completionRate = computed(() => {
-  try {
-    const date = dateUtils.formatDate(currentDate.value);
-    const logs = habitsStore.getDayLogs(date);
-    const totalHabits = activeHabits.value.length;
-    if (totalHabits === 0) return 0;
-    const completedHabits = logs.filter(log => log.completed).length;
-    return (completedHabits / totalHabits) * 100;
-  } catch (error) {
-    console.warn('Erreur de calcul du taux de complétion:', error);
-    return 0;
   }
 });
 
@@ -409,12 +391,22 @@ watch(currentDate, () => {
 
 // Initialisation avec gestion d'erreurs
 onMounted(() => {
-  try {
-    habitsStore.initializeDefaultHabits();
-    const date = dateUtils.formatDate(currentDate.value);
-    dayNotes.value = habitsStore.getDayStats(date).notes || '';
-  } catch (error) {
-    console.warn('Erreur d\'initialisation:', error);
-  }
+    try {
+        console.log('DayView mounted');
+        habitsStore.initializeDefaultHabits();
+        const date = dateUtils.formatDate(currentDate.value);
+        dayNotes.value = habitsStore.getDayStats(date).notes || '';
+        console.log('DayView initialized with date:', date);
+    } catch (error) {
+        console.error('Erreur d\'initialisation DayView:', error);
+    }
+});
+
+onUnmounted(() => {
+    try {
+        console.log('DayView unmounted');
+    } catch (error) {
+        console.error('Erreur lors du démontage de DayView:', error);
+    }
 });
 </script>

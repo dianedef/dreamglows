@@ -1,3 +1,41 @@
+.goalflowz-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  padding: 1rem;
+  gap: 1rem;
+  background-color: var(--background-primary);
+}
+
+.goalflowz-view-switch {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: var(--background-secondary);
+  border-radius: 6px;
+}
+
+.goalflowz-view-switch button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.goalflowz-view-switch button:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.goalflowz-view-switch button.active {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
 .goalflowz-day-view {
   height: 100%;
   padding: 1rem;
@@ -79,8 +117,17 @@
 .goalflowz-habits-section {
   background-color: var(--background-primary);
   border-radius: 8px;
-  padding: 1rem;
+  padding: 0;
   border: 1px solid var(--background-modifier-border);
+  overflow: hidden;
+}
+
+.goalflowz-habits-section progress {
+  width: 100%;
+  height: 4px;
+  border: none;
+  border-radius: 0;
+  margin: 0;
 }
 
 .goalflowz-section-header {
@@ -90,12 +137,21 @@
   margin-bottom: 1rem;
 }
 
+.goalflowz-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
 .goalflowz-completion-rate {
   font-size: 0.9em;
   color: var(--text-muted);
+  font-weight: 500;
 }
 
 .goalflowz-habits-grid {
+  padding: 1rem;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
@@ -212,16 +268,11 @@
   resize: vertical;
 }
 
-.goalflowz-progress-bar {
-  width: 100%;
-  height: 6px;
-  background-color: var(--background-modifier-border);
-  border-radius: 3px;
-  overflow: hidden;
+.setting-item {
+  padding: 0;
+  border: none;
 }
 
-.goalflowz-progress-fill {
-  height: 100%;
-  background-color: var(--interactive-success);
-  transition: width 0.3s ease;
+.setting-item-control {
+  padding: 0;
 }

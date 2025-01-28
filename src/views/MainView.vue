@@ -57,17 +57,56 @@ const settingsStore = useSettingsStore();
 const activeTab = ref(settingsStore.settings.lastActiveTab);
 
 const setActiveTab = (tab: string) => {
-    activeTab.value = tab;
-    settingsStore.updateSettings({ lastActiveTab: tab });
+    try {
+        if (!['day', 'goals', 'planning', 'stats'].includes(tab)) {
+            console.error('Tab invalide:', tab);
+            return;
+        }
+        
+        console.log('Changement d\'onglet:', {
+            ancien: activeTab.value,
+            nouveau: tab,
+            settings: settingsStore.settings
+        });
+        
+        activeTab.value = tab;
+        settingsStore.updateSettings({ lastActiveTab: tab });
+    } catch (error) {
+        console.error('Erreur lors du changement d\'onglet:', error);
+    }
 };
 
 const handleViewChange = ((event: CustomEvent) => {
-    activeTab.value = event.detail;
+    try {
+        const newTab = event.detail;
+        if (!['day', 'goals', 'planning', 'stats'].includes(newTab)) {
+            console.error('Tab invalide dans l\'événement:', newTab);
+            return;
+        }
+        
+        console.log('Changement de vue:', {
+            ancien: activeTab.value,
+            nouveau: newTab,
+            settings: settingsStore.settings
+        });
+        
+        activeTab.value = newTab;
+    } catch (error) {
+        console.error('Erreur lors du changement de vue:', error);
+    }
 }) as EventListener;
 
 // Écouter l'événement de changement de vue
 onMounted(() => {
-    window.addEventListener('view-change', handleViewChange);
+    try {
+        window.addEventListener('view-change', handleViewChange);
+        console.log('MainView monté avec:', {
+            tab: activeTab.value,
+            settings: settingsStore.settings
+        });
+    } catch (error) {
+        console.error('Erreur lors du montage:', error);
+    }
 });
 
 onUnmounted(() => {

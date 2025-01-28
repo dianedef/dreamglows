@@ -48,20 +48,20 @@ export const DEFAULT_SETTINGS: GoalFlowzSettings = {
     projectFolders: [],
     frequencyColors: {
         high: "#ff0000",
-        medium: "#ffa500",
-        low: "#008000"
+        medium: "#ffff00",
+        low: "#00ff00"
     },
     openAIKey: "",
     openRouterKey: "",
-    lastActiveTab: "goals",
+    lastActiveTab: "day",
     recentGoals: [],
     notesPath: "notes",
-    folderStructure: "monthly",
+    folderStructure: "flat",
     monthLanguage: "fr",
     notesFormat: "1",
-    noteTemplate: "# {{title}}\n\n## Objectif\n\n## Tâches\n\n## Notes",
+    noteTemplate: "",
     lastMainWidth: 50,
-    timelineStartHour: "08:00",
-    timelineEndHour: "23:00",
+    timelineStartHour: "09:00",
+    timelineEndHour: "18:00",
     timeFormat: "24h"
 }; 

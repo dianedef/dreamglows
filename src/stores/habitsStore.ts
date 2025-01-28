@@ -1,18 +1,30 @@
 import { defineStore } from 'pinia';
 import type { Habit, DailyHabitLog, DayStats } from '@/types/habits';
 import { DateTime } from 'luxon';
+import { ref } from 'vue';
 
 interface HabitsState {
     habits: Habit[];
     logs: DailyHabitLog[];
-    dayStats: { [date: string]: DayStats };
+    dayStats?: { [date: string]: DayStats };
 }
 
 export const useHabitsStore = defineStore('habits', {
     state: (): HabitsState => ({
         habits: [],
         logs: [],
-        dayStats: {}
+        dayStats: {
+            [DateTime.now().toFormat('yyyy-MM-dd')]: {
+                date: DateTime.now().toFormat('yyyy-MM-dd'),
+                completedHabits: 0,
+                totalHabits: 0,
+                completionRate: 0,
+                streaks: {},
+                mood: undefined,
+                energyLevel: undefined,
+                notes: ''
+            }
+        }
     }),
 
     getters: {
@@ -24,18 +36,67 @@ export const useHabitsStore = defineStore('habits', {
         getDayLogs: (state) => (date: string) => 
             state.logs.filter(log => log.date === date),
         
-        getDayStats: (state) => (date: string) => 
-            state.dayStats[date] || {
-                date,
-                completedHabits: 0,
-                totalHabits: 0,
-                completionRate: 0,
-                streaks: {}
-            },
-        
         getHabitStreak: (state) => (habitId: string) => {
             const today = DateTime.now().toFormat('yyyy-MM-dd');
-            return state.dayStats[today]?.streaks[habitId] || 0;
+            let streak = 0;
+            let currentDate = DateTime.fromISO(today);
+
+            while (true) {
+                const dateStr = currentDate.toFormat('yyyy-MM-dd');
+                const log = state.logs.find(
+                    l => l.habitId === habitId && l.date === dateStr && l.completed
+                );
+
+                if (log) {
+                    streak++;
+                    currentDate = currentDate.minus({ days: 1 });
+                } else {
+                    break;
+                }
+            }
+
+            return streak;
+        },
+        
+        getDayStats: (state) => (date: string) => {
+            const dayLogs = state.logs.filter(log => log.date === date);
+            const activeHabits = state.habits.filter(h => h.active);
+            const completedHabits = dayLogs.filter(log => log.completed).length;
+
+            // Calculer les streaks
+            const streaks: { [habitId: string]: number } = {};
+            for (const habit of activeHabits) {
+                let streak = 0;
+                let currentDate = DateTime.fromISO(date);
+
+                while (true) {
+                    const dateStr = currentDate.toFormat('yyyy-MM-dd');
+                    const log = state.logs.find(
+                        l => l.habitId === habit.id && l.date === dateStr && l.completed
+                    );
+
+                    if (log) {
+                        streak++;
+                        currentDate = currentDate.minus({ days: 1 });
+                    } else {
+                        break;
+                    }
+                }
+
+                streaks[habit.id] = streak;
+            }
+
+            return {
+                date,
+                completedHabits,
+                totalHabits: activeHabits.length,
+                completionRate: activeHabits.length ? 
+                    (completedHabits / activeHabits.length) * 100 : 0,
+                streaks,
+                mood: state.dayStats?.[date]?.mood,
+                energyLevel: state.dayStats?.[date]?.energyLevel,
+                notes: state.dayStats?.[date]?.notes
+            };
         }
     },
 
@@ -55,92 +116,51 @@ export const useHabitsStore = defineStore('habits', {
             }
         },
 
-        async toggleHabit(habitId: string, date: string, value?: number, app?: any) {
-            const today = date || DateTime.now().toFormat('yyyy-MM-dd');
-            const existingLog = this.logs.find(
-                log => log.habitId === habitId && log.date === today
-            );
-
-            if (existingLog) {
-                existingLog.completed = !existingLog.completed;
-                if (value !== undefined) existingLog.value = value;
-            } else {
-                this.logs.push({
-                    habitId,
-                    date: today,
-                    completed: true,
-                    value
-                });
-            }
-
-            this.updateDayStats(today);
-
-            // Synchroniser avec la note journalière si app est fourni
-            if (app) {
-                await this.syncWithDailyNote(today, app);
-            }
-        },
-
-        updateDayStats(date: string) {
-            const dayLogs = this.getDayLogs(date);
-            const activeHabits = this.activeHabits;
-            const completedHabits = dayLogs.filter(log => log.completed).length;
-
-            // Calculer les streaks
-            const streaks: { [habitId: string]: number } = {};
-            for (const habit of activeHabits) {
-                let streak = 0;
-                let currentDate = DateTime.fromISO(date);
-
-                while (true) {
-                    const dateStr = currentDate.toFormat('yyyy-MM-dd');
-                    const log = this.logs.find(
-                        l => l.habitId === habit.id && l.date === dateStr
-                    );
-
-                    if (log?.completed) {
-                        streak++;
-                        currentDate = currentDate.minus({ days: 1 });
-                    } else {
-                        break;
-                    }
+        toggleHabit(habitId: string, date: string, value?: number, app?: any) {
+            try {
+                // Trouver ou créer le log
+                let log = this.logs.find(l => l.habitId === habitId && l.date === date);
+                if (!log) {
+                    log = {
+                        habitId,
+                        date,
+                        completed: false,
+                        value: value
+                    };
+                    this.logs.push(log);
                 }
 
-                streaks[habit.id] = streak;
-            }
+                // Basculer l'état et mettre à jour la valeur
+                log.completed = !log.completed;
+                if (value !== undefined) {
+                    log.value = value;
+                }
 
-            this.dayStats[date] = {
-                date,
-                completedHabits,
-                totalHabits: activeHabits.length,
-                completionRate: activeHabits.length ? 
-                    (completedHabits / activeHabits.length) * 100 : 0,
-                streaks,
-                mood: this.dayStats[date]?.mood,
-                energyLevel: this.dayStats[date]?.energyLevel,
-                notes: this.dayStats[date]?.notes
-            };
-        },
+                // Mettre à jour les stats du jour
+                const stats = this.getDayStats(date);
+                if (!this.dayStats) this.dayStats = {};
+                this.dayStats[date] = {
+                    ...stats,
+                    completedHabits: stats.completedHabits,
+                    totalHabits: stats.totalHabits,
+                    completionRate: stats.completionRate
+                };
 
-        setDayMood(date: string, mood: 1 | 2 | 3 | 4 | 5) {
-            if (!this.dayStats[date]) {
-                this.updateDayStats(date);
-            }
-            this.dayStats[date].mood = mood;
-        },
+                // Synchroniser avec la note quotidienne si nécessaire
+                if (app) {
+                    this.syncWithDailyNote(date, app);
+                }
 
-        setDayEnergyLevel(date: string, level: 1 | 2 | 3 | 4 | 5) {
-            if (!this.dayStats[date]) {
-                this.updateDayStats(date);
+                console.log('Habitude basculée:', {
+                    habitId,
+                    date,
+                    completed: log.completed,
+                    value,
+                    stats: this.dayStats[date]
+                });
+            } catch (error) {
+                console.error('Erreur lors du basculement de l\'habitude:', error);
             }
-            this.dayStats[date].energyLevel = level;
-        },
-
-        setDayNotes(date: string, notes: string) {
-            if (!this.dayStats[date]) {
-                this.updateDayStats(date);
-            }
-            this.dayStats[date].notes = notes;
         },
 
         // Méthode pour initialiser les habitudes par défaut
@@ -193,65 +213,23 @@ export const useHabitsStore = defineStore('habits', {
 
         async syncWithDailyNote(date: string, app: any) {
             try {
-                const settings = app.plugins.plugins.goalflowz.settings;
-                const formattedDate = DateTime.fromISO(date);
-                
-                // Construire le chemin de la note en fonction de la structure
-                let notePath = settings.notesPath;
-                if (settings.folderStructure === 'monthly') {
-                    const monthName = formattedDate.setLocale(settings.monthLanguage).toFormat('MMMM');
-                    notePath = `${notePath}/${monthName}`;
-                }
+                const dailyNote = await app.vault.getAbstractFileByPath(`Journal/${date}.md`);
+                if (!dailyNote) return;
 
-                // Construire le nom du fichier selon le format choisi
-                let fileName;
-                if (settings.notesFormat === 'custom' && settings.customNotesFormat) {
-                    fileName = formattedDate.toFormat(settings.customNotesFormat);
-                } else {
-                    const day = formattedDate.day;
-                    const monthName = formattedDate.setLocale(settings.monthLanguage).toFormat('MMMM');
-                    fileName = `📓 ${day}${day === 1 ? 'er' : ''} ${monthName}`;
-                }
-
-                const filePath = `${notePath}/${fileName}.md`;
-                
-                // Récupérer ou créer la note du jour
-                let dailyNote = app.vault.getAbstractFileByPath(filePath);
-                if (!dailyNote) {
-                    // Si la note n'existe pas, on la crée avec le template
-                    const template = settings.noteTemplate
-                        .replace('{day}', formattedDate.day.toString())
-                        .replace('{suffix}', formattedDate.day === 1 ? 'er' : '')
-                        .replace('{month}', formattedDate.setLocale(settings.monthLanguage).toFormat('MMMM'))
-                        .replace('{MM}', formattedDate.toFormat('MM'))
-                        .replace('{DD}', formattedDate.toFormat('dd'));
-                    
-                    dailyNote = await app.vault.create(filePath, template);
-                }
-
-                // Lire le contenu actuel
                 let content = await app.vault.read(dailyNote);
 
-                // Préparer le contenu des habitudes
-                const dayLogs = this.getDayLogs(date);
+                // Générer le contenu des habitudes
                 const stats = this.getDayStats(date);
-                
-                const habitsContent = `
-## Habitudes du jour
-- Taux de complétion : ${stats.completionRate.toFixed(0)}%
-${this.activeHabits.map(habit => {
-    const log = dayLogs.find(l => l.habitId === habit.id);
-    const status = log?.completed ? '✅' : '⭕';
-    const value = log?.value ? ` (${log.value}${habit.unit || ''})` : '';
-    const streak = stats.streaks[habit.id] ? ` 🔥 ${stats.streaks[habit.id]} jours` : '';
-    return `- ${status} ${habit.icon} ${habit.name}${value}${streak}`;
-}).join('\n')}
-
-${stats.mood ? `Humeur : ${['😢', '😕', '😐', '😊', '😄'][stats.mood - 1]}` : ''}
-${stats.energyLevel ? `Énergie : ${'🔋'.repeat(stats.energyLevel)}` : ''}
-
-${stats.notes ? `Notes : ${stats.notes}` : ''}
-`;
+                const habitsContent = `## Habitudes du jour\n${this.habits
+                    .filter(h => h.active)
+                    .map(habit => {
+                        const log = this.logs.find(l => l.habitId === habit.id && l.date === date);
+                        const status = log?.completed ? '✅' : '⬜';
+                        const value = log?.value ? ` (${log.value}${habit.unit || ''})` : '';
+                        const streak = stats.streaks[habit.id] ? ` 🔥 ${stats.streaks[habit.id]} jours` : '';
+                        return `- ${status} ${habit.icon} ${habit.name}${value}${streak}`;
+                    })
+                    .join('\n')}\n`;
 
                 // Vérifier si une section habitudes existe déjà
                 const habitsSectionRegex = /## Habitudes du jour[\s\S]*?(?=\n## |$)/;
@@ -265,10 +243,63 @@ ${stats.notes ? `Notes : ${stats.notes}` : ''}
 
                 // Sauvegarder la note mise à jour
                 await app.vault.modify(dailyNote, content);
-
             } catch (error) {
                 console.warn('Erreur lors de la synchronisation avec la note journalière:', error);
             }
+        },
+
+        setDayMood(date: string, mood: 1 | 2 | 3 | 4 | 5) {
+            if (!this.dayStats) this.dayStats = {};
+            if (!this.dayStats[date]) {
+                this.dayStats[date] = {
+                    date,
+                    completedHabits: 0,
+                    totalHabits: 0,
+                    completionRate: 0,
+                    streaks: {},
+                    mood,
+                    energyLevel: undefined,
+                    notes: undefined
+                };
+            } else {
+                this.dayStats[date].mood = mood;
+            }
+        },
+
+        setDayEnergyLevel(date: string, level: 1 | 2 | 3 | 4 | 5) {
+            if (!this.dayStats) this.dayStats = {};
+            if (!this.dayStats[date]) {
+                this.dayStats[date] = {
+                    date,
+                    completedHabits: 0,
+                    totalHabits: 0,
+                    completionRate: 0,
+                    streaks: {},
+                    mood: undefined,
+                    energyLevel: level,
+                    notes: undefined
+                };
+            } else {
+                this.dayStats[date].energyLevel = level;
+            }
+        },
+
+        setDayNotes(date: string, notes: string) {
+            if (!this.dayStats) this.dayStats = {};
+            if (!this.dayStats[date]) {
+                this.dayStats[date] = {
+                    date,
+                    completedHabits: 0,
+                    totalHabits: 0,
+                    completionRate: 0,
+                    streaks: {},
+                    mood: undefined,
+                    energyLevel: undefined,
+                    notes
+                };
+            } else {
+                this.dayStats[date].notes = notes;
+            }
         }
     }
-}); 
+});

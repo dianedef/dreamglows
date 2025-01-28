@@ -23,10 +23,27 @@ export const useSettingsStore = defineStore('settings', {
 
     actions: {
         updateSettings(newSettings: Partial<GoalFlowzSettings>) {
-            this.settings = {
-                ...this.settings,
-                ...newSettings
-            };
+            try {
+                console.log('Mise à jour des paramètres:', {
+                    ancien: this.settings,
+                    nouveau: newSettings
+                });
+                
+                // Valider lastActiveTab
+                if (newSettings.lastActiveTab && !['day', 'goals', 'planning', 'stats'].includes(newSettings.lastActiveTab)) {
+                    console.error('Tab invalide dans les nouveaux paramètres:', newSettings.lastActiveTab);
+                    return;
+                }
+                
+                this.settings = {
+                    ...this.settings,
+                    ...newSettings
+                };
+                
+                console.log('Paramètres mis à jour:', this.settings);
+            } catch (error) {
+                console.error('Erreur lors de la mise à jour des paramètres:', error);
+            }
         },
 
         addDefaultTask(task: DefaultTask) {

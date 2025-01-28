@@ -52,14 +52,20 @@ class GoalFlowzView extends ItemView {
         container.empty();
         container.createEl("div", { cls: "goalflowz-container" });
 
+        // Enregistrer les styles
+        registerStyles('all');
+
+        // Créer l'application Vue avec Pinia
         this.vueApp = createApp(MainView, {
             contentFiles: this.app.vault.getMarkdownFiles(),
             app: this.app
         });
         
+        // S'assurer que Pinia est initialisé avant de l'utiliser
+        const pinia = createPinia();
         this.vueApp.use(pinia);
         
-        // Initialiser les stores
+        // Initialiser les stores après Pinia
         const tasksStore = useTasksStore();
         const goalsStore = useGoalsStore();
         const storageService = new StorageService(this.app);
@@ -78,6 +84,7 @@ class GoalFlowzView extends ItemView {
             await storageService.saveData(goalsStore.goals, tasksStore.tasks);
         }, { deep: true });
         
+        // Monter l'application
         this.vueApp.mount(container.children[0]);
     }
 
@@ -178,9 +185,6 @@ export default class GoalFlowz extends Plugin {
             // Ajouter l'onglet de paramètres
             this.addSettingTab(new GoalFlowzSettingsTab(this.app, this));
 
-            // Enregistrer les styles
-            registerStyles('all');
-
             // Chargement des données
             const storageService = new StorageService(this.app);
             const data = await storageService.loadData();
@@ -228,6 +232,11 @@ export default class GoalFlowz extends Plugin {
 
         // Valider et fusionner chaque propriété
         if (loadedData) {
+            // Valider lastActiveTab
+            if (loadedData.lastActiveTab && ['day', 'goals', 'planning', 'stats'].includes(loadedData.lastActiveTab)) {
+                settings.lastActiveTab = loadedData.lastActiveTab;
+            }
+
             // Valider folderStructure
             if (loadedData.folderStructure && ['flat', 'monthly'].includes(loadedData.folderStructure)) {
                 settings.folderStructure = loadedData.folderStructure;
@@ -300,20 +309,17 @@ export default class GoalFlowz extends Plugin {
 
     async activateView() {
         const { workspace } = this.app;
-
+        
         let leaf = workspace.getLeavesOfType(VIEW_TYPE_GOALFLOWZ)[0];
+        
         if (!leaf) {
-            const newLeaf = workspace.getRightLeaf(false);
-            if (newLeaf) {
-                await newLeaf.setViewState({
-                    type: VIEW_TYPE_GOALFLOWZ,
-                    active: true,
-                });
-                leaf = newLeaf;
-            } else {
-                throw new Error("Impossible de créer une nouvelle feuille de travail");
-            }
+            leaf = workspace.getRightLeaf(false);
+            await leaf.setViewState({
+                type: VIEW_TYPE_GOALFLOWZ,
+                active: true,
+            });
         }
+        
         workspace.revealLeaf(leaf);
     }
 
