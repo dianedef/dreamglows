@@ -2,28 +2,16 @@
     <div class="goalflowz-container">
         <div class="goalflowz-view-switch">
             <button 
-                :class="{ active: activeTab === 'day' }"
-                @click="setActiveTab('day')"
+                :class="{ active: ['day', 'planning'].includes(activeTab) }"
+                @click="setActiveTab(['day', 'planning'].includes(activeTab) ? (activeTab === 'day' ? 'planning' : 'day') : 'day')"
             >
-                📅 Aujourd'hui
+                {{ activeTab === 'planning' ? '📋 Planning' : '📅 Aujourd\'hui' }}
             </button>
             <button 
-                :class="{ active: activeTab === 'goals' }"
-                @click="setActiveTab('goals')"
+                :class="{ active: ['goals', 'stats'].includes(activeTab) }"
+                @click="setActiveTab(['goals', 'stats'].includes(activeTab) ? (activeTab === 'goals' ? 'stats' : 'goals') : 'goals')"
             >
-                🎯 Objectifs
-            </button>
-            <button 
-                :class="{ active: activeTab === 'planning' }"
-                @click="setActiveTab('planning')"
-            >
-                📋 Planning
-            </button>
-            <button 
-                :class="{ active: activeTab === 'stats' }"
-                @click="setActiveTab('stats')"
-            >
-                📊 Statistiques
+                {{ activeTab === 'stats' ? '📊 Statistiques' : '🎯 Objectifs' }}
             </button>
         </div>
 
