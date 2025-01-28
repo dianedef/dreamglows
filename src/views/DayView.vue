@@ -58,8 +58,8 @@
     <!-- Trackers d'habitudes -->
     <div class="goalflowz-habits-section">
       <div class="goalflowz-section-header">
-        <div class="goalflowz-completion-rate">
-          {{ dayStats.completionRate.toFixed(0) }}% complété
+        <div class="goalflowz-progress-bar">
+          <div class="goalflowz-progress-fill" :style="{ width: `${completionRate}%` }"></div>
         </div>
       </div>
 
@@ -232,6 +232,20 @@ const dayStats = computed(() => {
   } catch (error) {
     console.warn('Erreur de récupération des stats:', error);
     return { completionRate: 0, mood: 0, energyLevel: 0, notes: '' };
+  }
+});
+
+const completionRate = computed(() => {
+  try {
+    const date = dateUtils.formatDate(currentDate.value);
+    const logs = habitsStore.getDayLogs(date);
+    const totalHabits = activeHabits.value.length;
+    if (totalHabits === 0) return 0;
+    const completedHabits = logs.filter(log => log.completed).length;
+    return (completedHabits / totalHabits) * 100;
+  } catch (error) {
+    console.warn('Erreur de calcul du taux de complétion:', error);
+    return 0;
   }
 });
 

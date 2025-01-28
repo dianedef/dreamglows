@@ -94,13 +94,21 @@ const newTaskLabels = ref<Record<string, string>>({});
 
 // Fonctions nécessaires
 const formatDate = (date: string) => {
-    return format(new Date(date), 'dd MMM yyyy', { locale: fr });
+    try {
+        if (!date) return 'Date inconnue';
+        const parsedDate = new Date(date);
+        if (isNaN(parsedDate.getTime())) return 'Date invalide';
+        return format(parsedDate, 'dd MMM yyyy', { locale: fr });
+    } catch (error) {
+        console.warn('Erreur de formatage de date:', error);
+        return 'Date invalide';
+    }
 };
 
-const getProgressPercentage = (tasks: Task[]) => {
-    if (!tasks.length) return 0;
-    const completed = tasks.filter(t => t.done).length;
-    return Math.round((completed / tasks.length) * 100);
+const getProgressPercentage = (tasks: Task[]): number => {
+    if (!tasks || tasks.length === 0) return 0;
+    const completedTasks = tasks.filter(task => task.done).length;
+    return Math.round((completedTasks / tasks.length) * 100);
 };
 
 const openFile = (path: string, event: Event) => {

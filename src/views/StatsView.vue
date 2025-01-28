@@ -2,7 +2,7 @@
 <template>
   <div class="goalflowz-statistics-view">
     <div class="goalflowz-statistics-header">
-      <h2>Statistiques</h2>
+    <h2>Statistiques</h2>
       <div class="goalflowz-period-selector">
         <button 
           v-for="period in ['7j', '30j', '90j', '365j']" 

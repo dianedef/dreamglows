@@ -1,26 +1,109 @@
 <template>
     <div class="goalflowz-planning-view">
-        <div class="goalflowz-planning-header">
-            <h2>Planning</h2>
-            <div class="goalflowz-planning-controls">
-                <button @click="previousWeek">◀</button>
-                <span>{{ weekLabel }}</span>
-                <button @click="nextWeek">▶</button>
+        <div class="goalflowz-planning-controls">
+            <button @click="previousWeek">◀</button>
+            <span>{{ weekLabel }}</span>
+            <button @click="nextWeek">▶</button>
+        </div>
+        <div class="goalflowz-planning-filters">
+            <div class="goalflowz-search-row">
+                <input 
+                    type="text" 
+                    v-model="searchQuery" 
+                    placeholder="Rechercher une note..."
+                >
+            </div>
+            <div class="goalflowz-filters-row">
+                <div class="goalflowz-filter-group">
+                    <label>Statut</label>
+                    <select v-model="statusFilter">
+                        <option value="">Tous les statuts</option>
+                        <option value="todo">À faire</option>
+                        <option value="in-progress">En cours</option>
+                        <option value="done">Terminé</option>
+                    </select>
+                </div>
+                <div class="goalflowz-filter-group">
+                    <label>Trier par</label>
+                    <div class="goalflowz-sort-controls">
+                        <select v-model="sortBy">
+                            <option value="title">Titre</option>
+                            <option value="created">Date de création</option>
+                            <option value="lastUpdated">Dernière modification</option>
+                            <option value="wordCount">Nombre de mots</option>
+                            <option value="progress">Progression</option>
+                        </select>
+                        <button 
+                            class="goalflowz-sort-direction" 
+                            @click.stop="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'"
+                            :title="sortDirection === 'asc' ? 'Ordre croissant' : 'Ordre décroissant'"
+                        >
+                            {{ sortDirection === 'asc' ? '↑' : '↓' }}
+                        </button>
+                    </div>
+                </div>
+                <div class="goalflowz-filter-group">
+                    <label>Dossier</label>
+                    <select v-model="folderFilter">
+                        <option value="">Tous les dossiers</option>
+                        <option v-for="folder in availableFolders" 
+                            :key="folder" 
+                            :value="folder"
+                        >
+                            {{ formatFolderPath(folder) }}
+                        </option>
+                    </select>
+                </div>
+                <div class="goalflowz-filter-group">
+                    <label>Vue</label>
+                    <select v-model="viewType">
+                        <option value="list">Liste</option>
+                        <option value="week">Semaine</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div class="goalflowz-planning-content">
-            <ListViewNotes 
-                :notes="weekNotes" 
-                :expanded-notes="expandedNotes"
-                :app="app"
-                @toggle-task="toggleTask"
-                @delete-task="deleteTask"
-                @add-task="addNewTask"
-                @update-status="updateStatus"
-                @open-file="openFile"
-                @toggle-note="toggleNote"
-            />
+        <div class="week-navigation" v-if="currentWeek">
+            <button @click="previousWeek">←</button>
+            <span>Semaine {{ currentWeek.weekNumber }}</span>
+            <button @click="nextWeek">→</button>
+            <button 
+                class="view-toggle"
+                @click="toggleWeekView"
+                :title="weekViewRef?.isCompactView ? 'Vue détaillée' : 'Vue compacte'"
+            >
+                {{ weekViewRef?.isCompactView ? '7j' : '3j' }}
+            </button>
+        </div>
+
+        <ListViewNotes 
+            v-if="viewType === 'list'"
+            :notes="filteredNotes"
+            :expanded-notes="expandedNotes"
+            :app="app"
+            @toggle-note="toggleNote"
+            @toggle-task="toggleTask"
+            @delete-task="deleteTask"
+            @add-task="addNewTask"
+            @update-status="updateStatus"
+            @open-file="openFile"
+        />
+        <WeekViewNotes 
+            v-else-if="viewType === 'week' && currentWeek"
+            :week-data="weekViewData"
+            :expanded-notes="expandedNotes"
+            :app="app"
+            @toggle-note="toggleNote"
+            @toggle-task="toggleTask"
+            @delete-task="deleteTask"
+            @add-task="addNewTask"
+            @update-status="updateStatus"
+            @open-file="openFile"
+            ref="weekViewRef"
+        />
+        <div v-else class="loading">
+            Chargement...
         </div>
     </div>
 </template>
@@ -36,6 +119,7 @@ import WeekViewNotes from './planning/WeekViewNotes.vue';
 import { DateTime } from 'luxon';
 import type { WeekNotes } from '../services/TimeManagementService';
 import type { Note, Task, TaskPriority, TaskStatus } from '../types';
+import { registerStyles, unregisterStyles } from '../styles/RegisterStyles';
 
 const props = defineProps<{
     contentFiles: TFile[],
@@ -53,7 +137,8 @@ const sortDirection = ref<'asc' | 'desc'>('asc');
 const newTaskLabels = ref<{ [key: string]: string }>({});
 const viewType = ref('list');
 const currentDate = ref(DateTime.now());
-const currentWeek = ref<WeekData | null>(null);
+const currentWeek = ref<WeekViewData | null>(null);
+const weekViewData = ref<WeekNotes | null>(null);
 const weekViewRef = ref<InstanceType<typeof WeekViewNotes> | null>(null);
 
 // Ajout du computed pour les tâches par défaut
@@ -132,8 +217,8 @@ const formatFolderPath = (path: string) => {
 watch([notes], async () => {
     // Mettre à jour automatiquement le statut des notes en fonction des tâches
     for (const note of notes.value) {
-        const allTasksCompleted = note.tasks.every(t => t.done);
-        const noTasksCompleted = note.tasks.every(t => !t.done);
+        const allTasksCompleted = note.tasks.every((t: Task) => t.done);
+        const noTasksCompleted = note.tasks.every((t: Task) => !t.done);
 
         if (allTasksCompleted && note.status !== 'done') {
             await updateNoteStatus(note, 'done');
@@ -171,7 +256,7 @@ const updateNoteStatus = async (note: Note, newStatus: 'todo' | 'in-progress' | 
     }
 };
 
-const toggleNote = (path: string, event: Event) => {
+const toggleNote = (path: string, event?: Event) => {
     if (expandedNotes.value.includes(path)) {
         expandedNotes.value = expandedNotes.value.filter(p => p !== path);
     } else {
@@ -179,12 +264,11 @@ const toggleNote = (path: string, event: Event) => {
     }
 };
 
-const toggleTask = async (note: Note, task: Task) => {
-    const oldDone = task.done;
-    task.done = !task.done;
-    task.status = task.done ? 'done' : 'todo';
-    task.updatedAt = DateTime.now().toISO();
-    
+const toggleTask = async (note: Note, task: { id: string; done: boolean } | Task) => {
+    const fullTask = 'label' in task ? task : note.tasks.find(t => t.id === task.id);
+    if (!fullTask) return;
+
+    const updatedTask = { ...fullTask, done: !task.done };
     try {
         const file = props.app.vault.getAbstractFileByPath(note.path);
         const cache = props.app.metadataCache.getFileCache(file);
@@ -192,26 +276,27 @@ const toggleTask = async (note: Note, task: Task) => {
         
         if (!frontmatter.goalflowz) {
             frontmatter.goalflowz = {
-                tasks: note.tasks,
+                tasks: [updatedTask],
                 status: note.status
             };
         } else {
             const taskIndex = frontmatter.goalflowz.tasks?.findIndex((t: Task) => t.id === task.id);
             if (taskIndex >= 0) {
-                frontmatter.goalflowz.tasks[taskIndex] = { ...task };
-            } else {
-                frontmatter.goalflowz.tasks = frontmatter.goalflowz.tasks || [];
-                frontmatter.goalflowz.tasks.push({ ...task });
+                frontmatter.goalflowz.tasks[taskIndex] = updatedTask;
             }
         }
 
         await props.app.fileManager.processFrontMatter(file, (fm: any) => {
             fm.goalflowz = frontmatter.goalflowz;
         });
+
+        // Mettre à jour la tâche dans la note
+        const taskIndex = note.tasks.findIndex(t => t.id === task.id);
+        if (taskIndex >= 0) {
+            note.tasks[taskIndex] = updatedTask;
+        }
     } catch (error) {
-        console.error(`Erreur lors de la mise à jour des métadonnées dans ${note.path}:`, error);
-        task.done = oldDone;
-        task.status = oldDone ? 'done' : 'todo';
+        console.error(`Erreur lors de la mise à jour de la tâche dans ${note.path}:`, error);
     }
 };
 
@@ -244,10 +329,13 @@ const loadNotes = async () => {
     const files = props.contentFiles;
     const loadedNotes: Note[] = [];
 
+    console.log('Chargement des notes - fichiers disponibles:', files.length);
+
     for (const file of files) {
         try {
             // Vérifier si le fichier existe toujours
             if (!props.app.vault.getAbstractFileByPath(file.path)) {
+                console.warn(`Le fichier ${file.path} n'existe plus`);
                 continue;
             }
 
@@ -255,6 +343,12 @@ const loadNotes = async () => {
             const frontmatter = cache?.frontmatter || {};
             const goalflowz = frontmatter.goalflowz || {};
             const content = await props.app.vault.read(file);
+
+            console.log(`Chargement du fichier ${file.path}:`, { 
+                frontmatter, 
+                goalflowz,
+                contentLength: content.length 
+            });
 
             let tasks: Task[] = [];
             if (goalflowz.tasks && Array.isArray(goalflowz.tasks)) {
@@ -274,6 +368,8 @@ const loadNotes = async () => {
                     linkToOptimizer: defaultTask.linkToOptimizer,
                     linkToGenerator: defaultTask.linkToGenerator
                 }));
+                
+                console.log(`Ajout des tâches par défaut pour ${file.path}:`, tasks);
                 
                 // Sauvegarder les tâches par défaut dans le frontmatter
                 await props.app.fileManager.processFrontMatter(file, (fm: any) => {
@@ -300,10 +396,11 @@ const loadNotes = async () => {
         }
     }
 
+    console.log('Notes chargées:', loadedNotes);
     notes.value = loadedNotes;
 };
 
-const openFile = (path: string, event: Event) => {
+const openFile = (path: string, event?: Event) => {
     const file = props.app.vault.getAbstractFileByPath(path);
     if (file) {
         props.app.workspace.getLeaf('tab').openFile(file);
@@ -396,10 +493,68 @@ const addToGenerator = (note: Note) => {
 
 const loadCurrentWeek = async () => {
     try {
-        currentWeek.value = await props.app.plugins.plugins.goalflowz.timeManager.getWeekNotes(currentDate.value);
+        console.log('Chargement de la semaine courante:', currentDate.value.toISO());
+        const weekData = await props.app.plugins.plugins.goalflowz.timeManager.getWeekNotes(currentDate.value);
+        console.log('Données de la semaine reçues:', weekData);
+
+        // Transformer les TFile en Notes
+        const weekNotes = await Promise.all(weekData.notes.map(async (file: TFile) => {
+            const cache = props.app.metadataCache.getFileCache(file);
+            const frontmatter = cache?.frontmatter || {};
+            const goalflowz = frontmatter.goalflowz || {};
+            const content = await props.app.vault.read(file);
+
+            let tasks: Task[] = [];
+            if (goalflowz.tasks && Array.isArray(goalflowz.tasks)) {
+                tasks = goalflowz.tasks;
+            } else {
+                tasks = defaultTasks.value.map(defaultTask => ({
+                    id: Math.random().toString(36).substr(2, 9),
+                    title: defaultTask.label,
+                    label: defaultTask.label,
+                    description: '',
+                    priority: 'medium' as TaskPriority,
+                    status: 'todo' as TaskStatus,
+                    done: false,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    linkToOptimizer: defaultTask.linkToOptimizer,
+                    linkToGenerator: defaultTask.linkToGenerator
+                }));
+            }
+
+            return {
+                path: file.path,
+                title: file.basename,
+                status: goalflowz.status || 'todo',
+                created: file.stat.ctime ? new Date(file.stat.ctime).toISOString() : new Date().toISOString(),
+                lastUpdated: file.stat.mtime ? new Date(file.stat.mtime).toISOString() : new Date().toISOString(),
+                wordCount: content.split(/\s+/).length,
+                tasks
+            };
+        }));
+
+        // Créer un objet WeekNotes pour la vue semaine
+        weekViewData.value = {
+            weekNumber: weekData.weekNumber,
+            startDate: weekData.startDate,
+            endDate: weekData.endDate,
+            notes: weekData.notes // On garde les TFile pour la vue semaine
+        };
+
+        // Stocker les notes transformées pour la vue liste
+        currentWeek.value = {
+            startDate: weekData.startDate.toISO(),
+            endDate: weekData.endDate.toISO(),
+            notes: weekNotes,
+            weekNumber: weekData.weekNumber
+        };
+
+        console.log('Semaine chargée avec notes transformées:', currentWeek.value);
     } catch (error) {
         console.error('Erreur lors du chargement de la semaine:', error);
         currentWeek.value = null;
+        weekViewData.value = null;
     }
 };
 
@@ -415,6 +570,7 @@ const nextWeek = async () => {
 
 // S'assurer que le timeManager est disponible
 watch(() => props.app.plugins.plugins.goalflowz?.timeManager, async (newVal) => {
+    console.log('TimeManager disponible:', !!newVal);
     if (newVal && viewType.value === 'week') {
         await loadCurrentWeek();
     }
@@ -441,22 +597,25 @@ const weekLabel = computed(() => {
 });
 
 const weekNotes = computed(() => {
+    console.log('Calcul des weekNotes:', currentWeek.value?.notes || []);
     return currentWeek.value?.notes || [];
 });
 
 onMounted(() => {
+    registerStyles('list');
     loadNotes();
     loadCurrentWeek();
 });
 
 onUnmounted(() => {
-    // styleEl.remove();
+    unregisterStyles();
 });
 
-interface WeekData {
+interface WeekViewData {
     startDate: string;
     endDate: string;
     notes: Note[];
+    weekNumber: number;
 }
 </script>
 
