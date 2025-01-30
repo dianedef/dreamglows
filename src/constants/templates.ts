@@ -1,14 +1,27 @@
-export const DEFAULT_NOTE_TEMPLATE = `---
-date: {MM}/{DD}
+const FR_NOTE_TEMPLATE = `---
+date: {year}-{MM}-{DD}
 ---
-# 📓 {day}{suffix} {month}
+# {year}
 
-## {year}
+## 🎯 Objectifs atteints
 
-### 🎯 Objectifs du jour
+## 📝 Journal
 
-### 📝 Notes
+## 📊 Bilan de la journée
+`;
 
-### 📊 Bilan de la journée
+const EN_NOTE_TEMPLATE = `---
+date: {year}-{MM}-{DD}
+---
+# {year}
 
-`; 
+## 🎯 Goals Achieved
+
+## 📝 Diary
+
+## 📊 Daily Review
+`;
+
+export const getDefaultTemplate = (language: 'fr' | 'en'): string => {
+    return language === 'fr' ? FR_NOTE_TEMPLATE : EN_NOTE_TEMPLATE;
+}; 

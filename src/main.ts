@@ -158,9 +158,9 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
         console.log('Initialisation des services de base...');
         try {
             // Services sans dépendances
-            this.dateService = new DateService(this.settings.monthLanguage);
+            this.dateService = new DateService(this.settings.monthLanguage, this.settings.notesPath);
             this.eventService = new EventService();
-            this.validationService = new ValidationService(this.dateService);
+            this.validationService = new ValidationService(this.dateService, this.settings);
             
             console.log('Services de base initialisés');
         } catch (error) {

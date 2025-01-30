@@ -7,7 +7,7 @@ export class DateService {
     private static readonly FORMATS = {
         ISO: "yyyy-MM-dd'T'HH:mm:ss.SSSZ",
         FILE: 'yyyy-MM-dd',
-        DISPLAY: 'dd/MM/yyyy',
+        DISPLAY: 'dd-MM-yyyy',
         FULL: 'EEEE d MMMM yyyy'
     };
 

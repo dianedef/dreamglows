@@ -7,9 +7,13 @@ import {
     MetricsSchema, EventSchema, DayStatsSchema,
     CategoryStatsSchema, PeriodStatsSchema
 } from '../types/models';
+import { GoalFlowzSettings } from '../types/settings';
 
 export class ValidationService {
-    constructor(private dateService: DateService) {}
+    constructor(
+        private dateService: DateService,
+        private settings: GoalFlowzSettings
+    ) {}
 
     /**
      * Valide un objectif
@@ -206,8 +210,13 @@ export class ValidationService {
     }
 
     validateNoteContent(content: string): void {
+        // Extraire les sections du template
+        const templateLines = this.settings.noteTemplate.split('\n');
+        const requiredSections = templateLines
+            .filter(line => line.startsWith('##'))
+            .map(line => line.trim());
+
         // Vérifier la présence des sections requises
-        const requiredSections = ['## 🎯 Objectifs du jour', '## 📝 Notes', '## 📊 Bilan de la journée'];
         for (const section of requiredSections) {
             if (!content.includes(section)) {
                 throw new ValidationError(

@@ -14,10 +14,16 @@ export const DELIMITERS = {
 };
 
 export const SECTIONS = {
-    GOALFLOWZ: '🎯 GoalFlowz',
-    GOALS: 'Objectifs',
-    TASKS_START: 'Tâches à commencer',
-    TASKS_END: 'Tâches à terminer'
+    FR: {
+        GOALS: '🎯 Objectifs atteints',
+        DIARY: '📝 Journal',
+        REVIEW: '📊 Bilan de la journée'
+    },
+    EN: {
+        GOALS: '🎯 Goals Achieved',
+        DIARY: '📝 Diary',
+        REVIEW: '📊 Daily Review'
+    }
 };
 
 // Nombre minimum de champs attendus dans le format

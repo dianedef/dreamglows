@@ -138,4 +138,11 @@ export const PeriodStatsSchema = z.object({
 
 export type DayStats = z.infer<typeof DayStatsSchema>;
 export type CategoryStats = z.infer<typeof CategoryStatsSchema>;
-export type PeriodStats = z.infer<typeof PeriodStatsSchema>; 
+export type PeriodStats = z.infer<typeof PeriodStatsSchema>;
+
+export interface DailyNote {
+    date: string;
+    goals: string[];
+    diary: string[];
+    review: string[];
+} 

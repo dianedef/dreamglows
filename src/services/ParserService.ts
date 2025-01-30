@@ -9,10 +9,12 @@ import { DailyMood } from './StorageService';
 export class ParserService {
     private validationService: ValidationService;
     private dateService: DateService;
+    private language: 'fr' | 'en';
 
-    constructor(validationService: ValidationService, dateService: DateService) {
+    constructor(validationService: ValidationService, dateService: DateService, language: 'fr' | 'en' = 'fr') {
         this.validationService = validationService;
         this.dateService = dateService;
+        this.language = language;
     }
 
     /**
@@ -158,50 +160,43 @@ export class ParserService {
      * Parse une note quotidienne complète
      */
     parseDailyNote(content: string, date: string): DailyNote & { mood?: DailyMood } {
-        const mood = this.parseMoodSection(content);
-        const { goals, tasksToStart, tasksToEnd } = this.parseSections(content);
-
+        const sections = this.parseSections(content);
         return {
             date,
-            goals,
-            tasksToStart,
-            tasksToEnd,
-            mood
+            goals: sections.goals,
+            diary: sections.diary,
+            review: sections.review
         };
     }
 
     /**
      * Parse les différentes sections d'une note
      */
-    private parseSections(content: string): { goals: string[], tasksToStart: string[], tasksToEnd: string[] } {
+    private parseSections(content: string): { goals: string[], diary: string[], review: string[] } {
         const sections = {
             goals: [] as string[],
-            tasksToStart: [] as string[],
-            tasksToEnd: [] as string[]
+            diary: [] as string[],
+            review: [] as string[]
         };
 
-        // Extraire la section GoalFlowz
-        const goalFlowzMatch = content.match(new RegExp(`${DELIMITERS.SECTION} ${SECTIONS.GOALFLOWZ}\\n([\\s\\S]*?)(?=${DELIMITERS.SECTION}|$)`));
-        if (!goalFlowzMatch) return sections;
+        const currentSections = this.language === 'fr' ? SECTIONS.FR : SECTIONS.EN;
 
-        const goalFlowzContent = goalFlowzMatch[1];
-
-        // Parser les objectifs
-        const goalsMatch = goalFlowzContent.match(new RegExp(`${DELIMITERS.SUBSECTION} ${SECTIONS.GOALS}\\n([\\s\\S]*?)(?=${DELIMITERS.SUBSECTION}|$)`));
+        // Parser les objectifs atteints
+        const goalsMatch = content.match(new RegExp(`${DELIMITERS.SECTION} ${currentSections.GOALS}\\n([\\s\\S]*?)(?=${DELIMITERS.SECTION}|$)`));
         if (goalsMatch) {
             sections.goals = goalsMatch[1].trim().split('\n').filter(Boolean);
         }
 
-        // Parser les tâches à commencer
-        const tasksStartMatch = goalFlowzContent.match(new RegExp(`${DELIMITERS.SUBSECTION} ${SECTIONS.TASKS_START}\\n([\\s\\S]*?)(?=${DELIMITERS.SUBSECTION}|$)`));
-        if (tasksStartMatch) {
-            sections.tasksToStart = tasksStartMatch[1].trim().split('\n').filter(Boolean);
+        // Parser le journal/diary
+        const diaryMatch = content.match(new RegExp(`${DELIMITERS.SECTION} ${currentSections.DIARY}\\n([\\s\\S]*?)(?=${DELIMITERS.SECTION}|$)`));
+        if (diaryMatch) {
+            sections.diary = diaryMatch[1].trim().split('\n').filter(Boolean);
         }
 
-        // Parser les tâches à terminer
-        const tasksEndMatch = goalFlowzContent.match(new RegExp(`${DELIMITERS.SUBSECTION} ${SECTIONS.TASKS_END}\\n([\\s\\S]*?)(?=${DELIMITERS.SUBSECTION}|$)`));
-        if (tasksEndMatch) {
-            sections.tasksToEnd = tasksEndMatch[1].trim().split('\n').filter(Boolean);
+        // Parser le bilan/review
+        const reviewMatch = content.match(new RegExp(`${DELIMITERS.SECTION} ${currentSections.REVIEW}\\n([\\s\\S]*?)(?=${DELIMITERS.SECTION}|$)`));
+        if (reviewMatch) {
+            sections.review = reviewMatch[1].trim().split('\n').filter(Boolean);
         }
 
         return sections;

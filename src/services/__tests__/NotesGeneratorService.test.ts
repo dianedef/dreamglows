@@ -37,7 +37,7 @@ describe('NotesGeneratorService', () => {
 
         // Initialisation des services
         dateService = new DateService('fr');
-        validationService = new ValidationService(dateService);
+        validationService = new ValidationService(dateService, mockSettings as GoalFlowzSettings);
         storageService = vi.fn() as unknown as StorageService;
 
         // Création du service à tester
@@ -145,7 +145,7 @@ describe('NotesGeneratorService', () => {
             const date = DateTime.fromObject({ year: 2024, month: 1, day: 1 });
             const content = (service as any).generateNoteContent(date);
 
-            expect(content).toBe('# 1 janvier 01 01\n\n## Objectifs\n\n## Tâches');
+            expect(content).toBe('# 1 janvier 01-01\n\n## Objectifs\n\n## Tâches');
         });
 
         it('devrait gérer correctement le suffixe "er" pour le premier du mois', () => {

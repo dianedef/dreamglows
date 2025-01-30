@@ -473,8 +473,8 @@ const initializeNoteView = async (element: HTMLElement, app: any) => {
       element.innerHTML = '';
     }
     
-    // Créer une nouvelle leaf
-    const leaf = new WorkspaceLeaf();
+    // Créer une nouvelle leaf avec l'app
+    const leaf = new WorkspaceLeaf(app);
     
     // Obtenir le fichier
     const file = app.vault.getAbstractFileByPath(currentNote.value.path);
@@ -502,12 +502,14 @@ const initializeNoteView = async (element: HTMLElement, app: any) => {
       editor.refresh();
 
       // Ajouter l'écouteur pour la sauvegarde automatique
-      editor.on('change', async () => {
-        const content = editor.getValue();
-        if (content !== undefined) {
-          await app.vault.modify(file, content);
-        }
-      });
+      if (editor.cm) {
+        editor.cm.on('changes', async () => {
+          const content = editor.getValue();
+          if (content !== undefined) {
+            await app.vault.modify(file, content);
+          }
+        });
+      }
     }
 
     console.log('Vue de note initialisée avec succès');

@@ -8,18 +8,16 @@
       {{ isGenerating ? 'Génération en cours...' : 'Générer les notes' }}
     </button>
 
-    <ProgressModal
-      v-if="isGenerating"
-      title="Génération des notes"
-      :progress="progress"
-      @cancel="cancelGeneration"
-    />
+    <div v-if="isGenerating" class="progress-container">
+      <div class="progress-bar" :style="{ width: progress.percentage + '%' }"></div>
+      <div class="progress-text">{{ progress.current }}/{{ progress.total }} ({{ progress.percentage }}%)</div>
+      <div class="message-text">{{ progress.message }}</div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import ProgressModal from '../modals/ProgressModal.vue';
 import type { ProgressInfo } from '@/types/progress';
 import { ProgressTracker } from '@/types/progress';
 import type { NotesGeneratorService } from '@/services/NotesGeneratorService';
@@ -36,11 +34,10 @@ const progress = ref<ProgressInfo>({
   percentage: 0
 });
 
-let progressTracker: ProgressTracker | null = null;
-
 const startGeneration = async () => {
   isGenerating.value = true;
-  progressTracker = new ProgressTracker((info) => {
+  
+  const progressTracker = new ProgressTracker((info) => {
     progress.value = info;
   });
 
@@ -50,18 +47,44 @@ const startGeneration = async () => {
     isGenerating.value = false;
   }
 };
-
-const cancelGeneration = () => {
-  progressTracker?.abort();
-};
 </script>
 
-<style scoped>
+<style>
 .notes-generator {
   padding: 1rem;
 }
 
+.progress-container {
+  margin-top: 1rem;
+  background: var(--background-modifier-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 8px;
+  background: var(--interactive-accent);
+  width: 0;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 0.5rem;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.message-text {
+  text-align: center;
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85em;
+}
+
 .generate-btn {
+  width: 100%;
   padding: 0.5rem 1rem;
   background: var(--interactive-accent);
   color: var(--text-on-accent);

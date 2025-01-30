@@ -1,3 +1,5 @@
+import { getDefaultTemplate } from '../constants/templates';
+
 export interface Ritual {
     label: string;
     isCompleted: boolean;
@@ -5,6 +7,15 @@ export interface Ritual {
     linkToOptimizer?: boolean;
     linkToGenerator?: boolean;
 }
+
+export type NoteFormat = 
+    | 'full-date-emoji' // 📓 1er Janvier 01-01 ou 📓 1st January 01-01
+    | 'name-emoji'      // 📓 1er Janvier ou 📓 1st January
+    | 'short-emoji'     // 📓 01-01
+    | 'full-write'      // ✍️ 1er Janvier ou ✍️ 1st January
+    | 'short-write'     // ✍️ 01-01
+    | 'name-only'       // 1er Janvier ou 1st January
+    | 'short-only';     // 01-01
 
 export interface GoalFlowzSettings {
     rituals: Ritual[];
@@ -30,7 +41,7 @@ export interface GoalFlowzSettings {
     notesPath: string;
     folderStructure: 'flat' | 'monthly';
     monthLanguage: 'fr' | 'en';
-    notesFormat: '1' | '2' | 'custom';
+    notesFormat: NoteFormat;
     customNotesFormat?: string;
     noteTemplate: string;
     lastMainWidth: number;
@@ -58,38 +69,8 @@ export const DEFAULT_SETTINGS: GoalFlowzSettings = {
     notesPath: "notes",
     folderStructure: "flat",
     monthLanguage: "fr",
-    notesFormat: "1",
-    noteTemplate: `<!--
-⚠️ IMPORTANT : Pour assurer le bon fonctionnement du plugin
-- Ne pas modifier les titres de sections (## 🎯 GoalFlowz, etc.)
-- Ne pas déplacer les notes vers d'autres dossiers
-- Éviter les caractères spéciaux dans les titres : < > : " | ? * 
-- Les tags doivent suivre le format #tag-name
--->
-
-# 📓 {day}{suffix} {month}
-
-*{MM}/{DD}*
-
-## 😊 Humeur
-- Niveau d'humeur : _/5
-- Niveau d'énergie : _/5
-- Notes : 
-- Timestamp : {MM}/{DD}
-
-## 🎯 GoalFlowz
-
-### Objectifs
-
-### Tâches à commencer
-
-### Tâches à terminer
-
-## 📝 Journal
-
-## 📊 Bilan de la journée
-
-`,
+    notesFormat: "full-date-emoji",
+    noteTemplate: getDefaultTemplate('fr'),
     lastMainWidth: 50,
     timelineStartHour: "09:00",
     timelineEndHour: "18:00",

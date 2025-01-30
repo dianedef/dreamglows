@@ -27,8 +27,8 @@
   "recentGoals": [],
   "notesPath": "Journal",
   "folderStructure": "monthly",
-  "monthLanguage": "en",
-  "notesFormat": "1",
+  "monthLanguage": "fr",
+  "notesFormat": "full-date-emoji",
   "noteTemplate": "# {{title}}\n\n## Objectif\n\n## Tâches\n\n## Notes",
   "lastMainWidth": 50,
   "timelineStartHour": "08:00",
@@ -50,6 +50,48 @@
     {
       "label": "Nouvelle tâche",
       "isCompleted": false,
+      "linkToOptimizer": false,
+      "linkToGenerator": false
+    }
+  ],
+  "goals": [],
+  "tasks": [
+    {
+      "id": "f54e281f-ec20-4a4d-b45c-560bcd8ef8d4",
+      "title": "efzef",
+      "description": "",
+      "startDate": "2025-01-30T23:18:58.925Z",
+      "priority": "medium",
+      "status": "todo",
+      "tags": [],
+      "createdAt": "2025-01-30T23:18:58.925Z",
+      "updatedAt": "2025-01-30T23:18:58.925Z",
+      "linkToOptimizer": true,
+      "linkToGenerator": true
+    },
+    {
+      "id": "d3cf18c9-fbb9-40e7-b71f-344a3da924d0",
+      "title": "zeczeczec",
+      "description": "",
+      "startDate": "2025-01-30T23:18:58.925Z",
+      "priority": "medium",
+      "status": "todo",
+      "tags": [],
+      "createdAt": "2025-01-30T23:18:58.925Z",
+      "updatedAt": "2025-01-30T23:18:58.925Z",
+      "linkToOptimizer": false,
+      "linkToGenerator": true
+    },
+    {
+      "id": "0433a7e6-7e0d-4e76-983b-fec47148a04c",
+      "title": "Nouvelle tâche",
+      "description": "",
+      "startDate": "2025-01-30T23:18:58.925Z",
+      "priority": "medium",
+      "status": "todo",
+      "tags": [],
+      "createdAt": "2025-01-30T23:18:58.925Z",
+      "updatedAt": "2025-01-30T23:18:58.925Z",
       "linkToOptimizer": false,
       "linkToGenerator": false
     }

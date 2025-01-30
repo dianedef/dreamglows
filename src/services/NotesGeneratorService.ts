@@ -7,7 +7,8 @@ import { DateError, NotesGenerationError, NotesErrorCode } from '../types/errors
 import { DateTime } from 'luxon';
 import { ProgressTracker } from '../types/progress';
 import { ValidationError } from '../types/errors';
-import { DEFAULT_NOTE_TEMPLATE } from '../constants/templates';
+import { getDefaultTemplate } from '../constants/templates';
+import { GoalFlowzSettingsTab } from './SettingsTabService';
 
 export class NotesGeneratorService {
     constructor(
@@ -20,6 +21,13 @@ export class NotesGeneratorService {
 
     async generateNotes(progress?: ProgressTracker): Promise<void> {
         try {
+            // Fermer la modale des paramètres si elle est ouverte
+            this.app.workspace.iterateAllLeaves(leaf => {
+                if (leaf.getViewState().type === 'plugin-settings') {
+                    leaf.detach();
+                }
+            });
+
             // Vérifier si un chemin est défini
             if (!this.settings.notesPath) {
                 throw new NotesGenerationError(
@@ -34,12 +42,23 @@ export class NotesGeneratorService {
             // Créer le dossier principal s'il n'existe pas
             await this.ensureDirectoryExists(this.settings.notesPath);
 
-            // Calculer le nombre total de notes à générer
             const now = this.dateService.today();
             const totalNotes = this.calculateTotalNotes(now);
             progress?.setTotal(totalNotes, 'Préparation de la génération des notes...');
 
-            // Générer les notes pour chaque mois
+            // Créer d'abord tous les dossiers mensuels si nécessaire
+            if (this.settings.folderStructure === 'monthly') {
+                for (let month = 0; month < 12; month++) {
+                    const monthDate = now.set({ month });
+                    const monthName = monthDate.setLocale(this.settings.monthLanguage || 'fr')
+                        .toFormat('MMMM').toLowerCase();
+                    const monthNumber = monthDate.toFormat('MM');
+                    const monthPath = `${this.settings.notesPath}/${monthNumber}_${monthName}`;
+                    await this.ensureDirectoryExists(monthPath);
+                }
+            }
+
+            // Ensuite générer les notes pour chaque mois
             for (let month = 0; month < 12; month++) {
                 if (progress?.signal.aborted) {
                     throw new NotesGenerationError(
@@ -55,23 +74,8 @@ export class NotesGeneratorService {
                 await this.generateMonthNotes(monthDate, progress);
             }
 
-            // Afficher un message de succès plus détaillé
-            new Notice(`✨ Notes générées avec succès !
-            
-📝 Conseils d'utilisation :
-- Utilisez les sections par année pour suivre votre évolution
-- Comparez vos objectifs et bilans d'une année à l'autre
-- Les notes sont organisées pour faciliter la réflexion à long terme
-
-⚠️ Important :
-- Ne modifiez pas la structure des sections (## année, ### 🎯 Objectifs, etc.)
-- Évitez les caractères spéciaux dans les titres de vos notes
-- Ne déplacez pas les notes générées hors de leur dossier
-- Ne modifiez pas les métadonnées YAML en haut de la note
-
-💡 Astuce :
-- Utilisez la vue Planning pour comparer les mêmes jours sur différentes années
-- Profitez des bilans annuels pour définir vos objectifs de l'année suivante`);
+            // Message de succès dans le progress tracker
+            progress?.increment('✨ Notes générées avec succès !');
 
         } catch (error) {
             console.error('Erreur lors de la génération des notes:', error);
@@ -153,7 +157,6 @@ export class NotesGeneratorService {
             let basePath = this.settings.notesPath;
             if (this.settings.folderStructure === 'monthly') {
                 basePath = `${this.settings.notesPath}/${monthNumber}_${monthName}`;
-                await this.ensureDirectoryExists(basePath);
             }
 
             // Générer les notes pour chaque jour du mois
@@ -185,14 +188,14 @@ export class NotesGeneratorService {
         try {
             const fileName = this.formatNoteFileName(date);
             const filePath = `${basePath}/${fileName}.md`;
-
-            if (await this.fileExists(filePath)) {
-                throw new NotesGenerationError(
-                    `La note existe déjà : ${fileName}`,
-                    NotesErrorCode.FILE_ALREADY_EXISTS,
-                    { path: filePath }
-                );
-            }
+            console.log('Tentative de création de note :', {
+                basePath,
+                fileName,
+                filePath,
+                date: date.toISO(),
+                format: this.settings.notesFormat,
+                language: this.settings.monthLanguage
+            });
 
             const content = this.generateNoteContent(date);
             
@@ -201,6 +204,11 @@ export class NotesGeneratorService {
                 this.validationService.validateNoteContent(content);
                 this.validationService.validateLatexAndCode(content);
             } catch (error) {
+                console.error('Erreur de validation :', {
+                    error,
+                    content: content.slice(0, 200) + '...',  // Log juste le début du contenu
+                    sections: content.match(/^##\s.+$/gm)    // Log les sections trouvées
+                });
                 if (error instanceof ValidationError) {
                     throw new NotesGenerationError(
                         `Validation échouée : ${error.message}`,
@@ -211,7 +219,17 @@ export class NotesGeneratorService {
                 throw error;
             }
 
-            await this.createNote(filePath, content);
+            try {
+                await this.app.vault.create(filePath, content);
+            } catch (error) {
+                console.error('Erreur lors de la création du fichier :', {
+                    error,
+                    filePath,
+                    fileExists: await this.fileExists(filePath),
+                    parentExists: await this.fileExists(basePath)
+                });
+                throw error;
+            }
         } catch (error) {
             if (error instanceof NotesGenerationError) {
                 throw error;
@@ -226,15 +244,34 @@ export class NotesGeneratorService {
 
     private formatNoteFileName(date: DateTime): string {
         const day = date.day;
-        let monthName = date.setLocale(this.settings.monthLanguage || 'fr').toFormat('MMMM');
-        // En français, pas de majuscule pour les mois
-        if (this.settings.monthLanguage !== 'en') {
-            monthName = monthName.toLowerCase();
-        }
+        const monthName = date.setLocale(this.settings.monthLanguage || 'fr').toFormat('MMMM');
+        // Format de date selon la langue, en utilisant - au lieu de /
+        const shortDate = this.settings.monthLanguage === 'fr' ? 
+            date.toFormat('dd-MM') :  // Format français : 01-12
+            date.toFormat('MM-dd');   // Format anglais : 12-01
         const suffix = this.settings.monthLanguage === 'en' ? 
             (day === 1 ? 'st' : day === 2 ? 'nd' : day === 3 ? 'rd' : 'th') : 
             (day === 1 ? 'er' : '');
-        return `📓 ${day}${suffix} ${monthName}`;
+        const dayWithSuffix = `${day}${suffix}`;
+
+        switch (this.settings.notesFormat) {
+            case 'full-date-emoji':
+                return `📓 ${dayWithSuffix} ${monthName} ${shortDate}`;
+            case 'name-emoji':
+                return `📓 ${dayWithSuffix} ${monthName}`;
+            case 'short-emoji':
+                return `📓 ${shortDate}`;
+            case 'full-write':
+                return `✍️ ${dayWithSuffix} ${monthName}`;
+            case 'short-write':
+                return `✍️ ${shortDate}`;
+            case 'name-only':
+                return `${dayWithSuffix} ${monthName}`;
+            case 'short-only':
+                return shortDate;
+            default:
+                return `📓 ${dayWithSuffix} ${monthName} ${shortDate}`;
+        }
     }
 
     private generateNoteContent(date: DateTime): string {
@@ -247,7 +284,8 @@ export class NotesGeneratorService {
             (date.day === 1 ? 'st' : date.day === 2 ? 'nd' : date.day === 3 ? 'rd' : 'th') : 
             (date.day === 1 ? 'er' : '');
             
-        return DEFAULT_NOTE_TEMPLATE
+        const template = this.settings.noteTemplate || getDefaultTemplate(this.settings.monthLanguage);
+        return template
             .replace('{day}', date.day.toString())
             .replace('{suffix}', suffix)
             .replace('{month}', monthName)
@@ -258,10 +296,6 @@ export class NotesGeneratorService {
 
     private async fileExists(path: string): Promise<boolean> {
         return await this.app.vault.adapter.exists(path);
-    }
-
-    private async createNote(path: string, content: string): Promise<void> {
-        await this.app.vault.create(path, content);
     }
 
     async generateSingleNote(date: DateTime): Promise<void> {
