@@ -16,7 +16,7 @@
 
     <div class="goalflowz-modal-field">
       <label>Date de début</label>
-      <input v-model="taskData.startDate" type="date" required />
+      <input v-model="taskData.startDate" type="date" />
     </div>
 
     <div class="goalflowz-modal-field">
@@ -107,7 +107,7 @@ const newTag = ref('');
 const taskData = reactive<Partial<Task>>({
   title: '',
   description: '',
-  startDate: new Date().toISOString().split('T')[0],
+  startDate: '',
   dueDate: '',
   priority: 'medium',
   status: 'todo',
@@ -138,18 +138,19 @@ const removeTag = (tag: string) => {
 
 const save = async () => {
   console.log('💾 Début de la sauvegarde de la tâche');
+  
   const completeTaskData = {
     ...taskData,
     title: taskData.title || '',
     description: taskData.description || '',
-    startDate: taskData.startDate || new Date().toISOString(),
-    dueDate: taskData.dueDate,
+    startDate: taskData.startDate || new Date().toISOString().split('T')[0],
+    dueDate: taskData.dueDate || undefined,
     priority: taskData.priority || 'medium',
     status: taskData.status || 'todo',
     goalId: taskData.goalId || undefined,
     notes: taskData.notes || '',
     tags: taskData.tags || [],
-    createdAt: taskData.createdAt || new Date().toISOString(),
+    createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     linkToOptimizer: taskData.linkToOptimizer || false,
     linkToGenerator: taskData.linkToGenerator || false

@@ -1,11 +1,14 @@
-export const DEFAULT_NOTE_TEMPLATE = `# 📓 {day}{suffix} {month}
+export const DEFAULT_NOTE_TEMPLATE = `---
+date: {MM}/{DD}
+---
+# 📓 {day}{suffix} {month}
 
-*{MM}/{DD}*
+## {year}
 
-## 🎯 Objectifs du jour
+### 🎯 Objectifs du jour
 
-## 📝 Notes
+### 📝 Notes
 
-## 📊 Bilan de la journée
+### 📊 Bilan de la journée
 
 `; 

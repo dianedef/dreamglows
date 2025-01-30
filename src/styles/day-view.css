@@ -1,10 +1,21 @@
+/* Variables locales pour une meilleure maintenance */
+:root {
+  --goalflowz-spacing-xs: 0.15rem;
+  --goalflowz-spacing-sm: 0.3rem;
+  --goalflowz-spacing-md: 0.5rem;
+  --goalflowz-spacing-lg: 0.75rem;
+  --goalflowz-border-radius: 4px;
+  --goalflowz-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Layout principal */
 .goalflowz-container {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
-  padding: 1rem;
-  gap: 1rem;
+  padding: var(--goalflowz-spacing-md);
+  gap: var(--goalflowz-spacing-md);
   background-color: var(--background-primary);
 }
 
@@ -38,33 +49,32 @@
 
 .goalflowz-day-view {
   height: 100%;
-  padding: 1rem;
+  padding: var(--goalflowz-spacing-sm);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--goalflowz-spacing-md);
   overflow-y: auto;
 }
 
+/* En-tête et navigation */
 .goalflowz-day-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: var(--goalflowz-spacing-sm);
 }
 
 .goalflowz-day-navigation {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--goalflowz-spacing-sm);
 }
 
 .goalflowz-nav-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 4px;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  padding: var(--goalflowz-spacing-xs) var(--goalflowz-spacing-sm);
+  border-radius: var(--goalflowz-border-radius);
+  opacity: 0.8;
+  transition: all 0.2s ease;
 }
 
 .goalflowz-nav-btn:hover {
@@ -81,24 +91,26 @@
   cursor: pointer;
 }
 
+/* Cartes de résumé */
 .goalflowz-day-summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--goalflowz-spacing-sm);
 }
 
 .goalflowz-summary-card {
-  padding: 1rem;
-  border-radius: 8px;
+  padding: var(--goalflowz-spacing-sm);
+  border-radius: var(--goalflowz-border-radius);
   background-color: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
+  box-shadow: var(--goalflowz-card-shadow);
 }
 
 .goalflowz-card-content {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-top: 0.5rem;
+  gap: var(--goalflowz-spacing-xs);
+  margin-top: var(--goalflowz-spacing-xs);
 }
 
 .goalflowz-card-text {
@@ -110,93 +122,109 @@
 }
 
 .goalflowz-card-subtitle {
-  font-size: 0.9em;
+  font-size: 0.8em;
   color: var(--text-muted);
 }
 
+/* Section des habitudes */
 .goalflowz-habits-section {
+  container-type: inline-size;
   position: relative;
   background-color: var(--background-primary);
-  border-radius: 8px;
+  border-radius: var(--goalflowz-border-radius);
   border: 1px solid var(--background-modifier-border);
   overflow: hidden;
-  padding: 1rem;
+  padding: var(--goalflowz-spacing-sm);
+  box-shadow: var(--goalflowz-card-shadow);
 }
 
-.goalflowz-habits-background {
-  position: absolute;
-  top: 0;
-  left: 0;
+/* Calendrier des flammes */
+.goalflowz-flames-calendar {
   width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
 }
 
-.progress-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background-color: var(--interactive-accent);
-  opacity: 0.3;
-  transition: width 0.3s ease;
-  z-index: 1;
-}
-
-.goalflowz-habits-content {
-  position: relative;
-  z-index: 2;
-  padding: 1rem;
-}
-
-.goalflowz-habits-section progress {
-  width: 100%;
-  height: 4px;
-  border: none;
-  border-radius: 0;
-  margin: 0;
-}
-
-.goalflowz-section-header {
+.goalflowz-flames-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
-.goalflowz-header-row {
+.goalflowz-month-flames {
   display: flex;
-  justify-content: space-between;
+  gap: 0;
+  line-height: 0.9;
+  padding: 0 !important;
+  margin: 0 !important;
   align-items: center;
-  margin-bottom: 0.5rem;
 }
 
-.goalflowz-completion-rate {
-  font-size: 0.9em;
-  color: var(--text-muted);
-  font-weight: 500;
+.goalflowz-flame-day {
+  font-size: 1.2em;
+  opacity: 0.4;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
 }
 
+.flame-emoji {
+  display: inline-block !important;
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.goalflowz-flame-day.completed {
+  opacity: 1; /* Flammes complétées toujours à 100% */
+}
+
+.goalflowz-flame-day.future {
+  opacity: 0.4; /* Même opacité que les inactives */
+}
+
+/* Grille des habitudes */
 .goalflowz-habits-grid {
-  position: relative;
-  z-index: 2;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: var(--goalflowz-spacing-xs);
+  margin-bottom: var(--goalflowz-spacing-sm);
 }
 
 .goalflowz-habit-card {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 8px;
+  justify-content: space-between;
+  padding: var(--goalflowz-spacing-xs);
+  border-radius: var(--goalflowz-border-radius);
   background-color: var(--background-primary-alt);
   border: 1px solid var(--background-modifier-border);
+  transition: all 0.2s ease;
   cursor: pointer;
-  transition: all 0.2s;
+}
+
+.goalflowz-habit-icon {
+  font-size: 1.3em;
+}
+
+.goalflowz-habit-info {
+  display: none;
+}
+
+.goalflowz-habit-target {
+  font-size: 0.8em;
+  padding: var(--goalflowz-spacing-xs) var(--goalflowz-spacing-sm);
+  background-color: var(--background-modifier-hover);
+  border-radius: 4px;
+  white-space: nowrap;
 }
 
 .goalflowz-habit-card:hover {
@@ -208,65 +236,31 @@
   color: var(--text-on-accent);
 }
 
-.goalflowz-habit-icon {
-  font-size: 1.5em;
-}
-
-.goalflowz-habit-info {
-  flex: 1;
-}
-
-.goalflowz-habit-name {
-  font-weight: 500;
-}
-
-.goalflowz-habit-streak {
-  font-size: 0.8em;
-  opacity: 0.8;
-}
-
-.goalflowz-habit-target {
-  font-size: 0.9em;
-  padding: 0.25rem 0.5rem;
-  background-color: var(--background-modifier-hover);
-  border-radius: 4px;
-  cursor: pointer;
-}
-
+/* Humeur et énergie */
 .goalflowz-mood-row {
-  position: relative;
-  z-index: 2;
   display: flex;
   justify-content: center;
-  gap: 2rem;
-  margin-top: 1rem;
+  gap: var(--goalflowz-spacing-md);
+  margin-top: var(--goalflowz-spacing-sm);
 }
 
 .goalflowz-mood-item {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--goalflowz-spacing-xs);
 }
 
 .goalflowz-mood-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--goalflowz-spacing-xs);
 }
 
 .goalflowz-mood-btn,
 .goalflowz-energy-btn {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: 8px;
-  background-color: var(--background-primary-alt);
-  border: 1px solid var(--background-modifier-border);
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 1.2em;
-  width: 100%;
-  margin-bottom: 0.5rem;
+  padding: var(--goalflowz-spacing-xs);
+  border-radius: var(--goalflowz-border-radius);
+  font-size: 1em;
+  transition: all 0.2s ease;
 }
 
 .goalflowz-mood-btn:hover,
@@ -281,30 +275,98 @@
   border-color: var(--interactive-success);
 }
 
+/* Section des notes avec hauteur dynamique */
 .goalflowz-notes-section {
-  background-color: var(--background-primary);
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid var(--background-modifier-border);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Important pour que flex: 1 fonctionne correctement */
+  margin-top: var(--goalflowz-spacing-sm);
+  padding: var(--goalflowz-spacing-sm);
+  background: var(--background-primary);
+  border-radius: var(--goalflowz-border-radius);
+  box-shadow: var(--goalflowz-card-shadow);
 }
 
-.goalflowz-notes-section textarea {
-  width: 100%;
+.goalflowz-note-viewer {
+  margin-top: var(--goalflowz-spacing-xs);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--goalflowz-border-radius);
   min-height: 150px;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid var(--background-modifier-border);
-  background-color: var(--background-primary);
-  color: var(--text-normal);
-  resize: vertical;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-.setting-item {
+.goalflowz-note-content {
+  padding: var(--goalflowz-spacing-sm);
+}
+
+.goalflowz-note-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.goalflowz-generate-btn:hover {
+  background: var(--interactive-accent-hover);
+}
+
+/* Styles Markdown */
+:deep(.markdown-preview-view) {
+  height: 100%;
+  padding: var(--goalflowz-spacing-sm);
+}
+
+:deep(.markdown-preview-view h1) {
+  margin-top: 0;
+  font-size: 1.3em;
+}
+
+:deep(.markdown-preview-view h2) {
+  font-size: 1.1em;
+  padding-bottom: var(--goalflowz-spacing-xs);
+  margin: var(--goalflowz-spacing-sm) 0;
+}
+
+/* Optimisations pour le mode édition */
+:deep(.markdown-source-view) {
+  height: 100%;
+}
+
+:deep(.cm-editor) {
+  height: 100%;
+}
+
+:deep(.cm-scroller) {
+  padding: var(--goalflowz-spacing-sm);
+}
+
+/* Scrollbar optimisée */
+.goalflowz-note-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.goalflowz-note-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.goalflowz-note-content::-webkit-scrollbar-thumb {
+  background: var(--interactive-accent);
+  border-radius: var(--goalflowz-border-radius);
+}
+
+/* Optimisations générales */
+.setting-item,
+.setting-item-control {
   padding: 0;
   border: none;
 }
 
-.setting-item-control {
-  padding: 0;
+h2, h3 {
+  margin: 0;
+  font-size: 1.1em;
 }

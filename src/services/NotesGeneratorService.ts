@@ -55,7 +55,24 @@ export class NotesGeneratorService {
                 await this.generateMonthNotes(monthDate, progress);
             }
 
-            new Notice('Notes générées avec succès !');
+            // Afficher un message de succès plus détaillé
+            new Notice(`✨ Notes générées avec succès !
+            
+📝 Conseils d'utilisation :
+- Utilisez les sections par année pour suivre votre évolution
+- Comparez vos objectifs et bilans d'une année à l'autre
+- Les notes sont organisées pour faciliter la réflexion à long terme
+
+⚠️ Important :
+- Ne modifiez pas la structure des sections (## année, ### 🎯 Objectifs, etc.)
+- Évitez les caractères spéciaux dans les titres de vos notes
+- Ne déplacez pas les notes générées hors de leur dossier
+- Ne modifiez pas les métadonnées YAML en haut de la note
+
+💡 Astuce :
+- Utilisez la vue Planning pour comparer les mêmes jours sur différentes années
+- Profitez des bilans annuels pour définir vos objectifs de l'année suivante`);
+
         } catch (error) {
             console.error('Erreur lors de la génération des notes:', error);
             if (error instanceof NotesGenerationError) {
@@ -235,7 +252,8 @@ export class NotesGeneratorService {
             .replace('{suffix}', suffix)
             .replace('{month}', monthName)
             .replace('{MM}', localizedDate.toFormat('MM'))
-            .replace('{DD}', localizedDate.toFormat('dd'));
+            .replace('{DD}', localizedDate.toFormat('dd'))
+            .replace('{year}', localizedDate.toFormat('yyyy'));
     }
 
     private async fileExists(path: string): Promise<boolean> {
@@ -244,5 +262,55 @@ export class NotesGeneratorService {
 
     private async createNote(path: string, content: string): Promise<void> {
         await this.app.vault.create(path, content);
+    }
+
+    async generateSingleNote(date: DateTime): Promise<void> {
+        try {
+            // Vérifier si un chemin est défini
+            if (!this.settings.notesPath) {
+                throw new NotesGenerationError(
+                    'Chemin des notes non défini',
+                    NotesErrorCode.PATH_NOT_DEFINED
+                );
+            }
+
+            // Valider le chemin
+            this.validatePath(this.settings.notesPath);
+
+            // Créer le dossier principal s'il n'existe pas
+            await this.ensureDirectoryExists(this.settings.notesPath);
+
+            // Déterminer le chemin de base
+            let basePath = this.settings.notesPath;
+            if (this.settings.folderStructure === 'monthly') {
+                const monthName = date.setLocale(this.settings.monthLanguage || 'fr').toFormat('MMMM');
+                const monthNumber = date.toFormat('MM');
+                basePath = `${this.settings.notesPath}/${monthNumber}_${monthName.toLowerCase()}`;
+                await this.ensureDirectoryExists(basePath);
+            }
+
+            // Générer la note
+            await this.generateDayNote(date, basePath);
+            new Notice('Note générée avec succès !');
+        } catch (error) {
+            console.error('Erreur lors de la génération de la note:', error);
+            if (error instanceof NotesGenerationError) {
+                new Notice(`Erreur : ${error.message} (${error.code})`);
+            } else {
+                new Notice('Erreur inattendue lors de la génération de la note.');
+            }
+            throw error;
+        }
+    }
+
+    getNotePath(date: DateTime): string {
+        let basePath = this.settings.notesPath;
+        if (this.settings.folderStructure === 'monthly') {
+            const monthName = date.setLocale(this.settings.monthLanguage || 'fr').toFormat('MMMM');
+            const monthNumber = date.toFormat('MM');
+            basePath = `${this.settings.notesPath}/${monthNumber}_${monthName.toLowerCase()}`;
+        }
+        const fileName = this.formatNoteFileName(date);
+        return `${basePath}/${fileName}.md`;
     }
 } 

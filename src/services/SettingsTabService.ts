@@ -1,5 +1,7 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import type GoalFlowz from '../main';
+import NotesGenerator from '../components/notes/NotesGenerator.vue';
+import { createApp } from 'vue';
 
 export class GoalFlowzSettingsTab extends PluginSettingTab {
     plugin: GoalFlowz;
@@ -62,15 +64,13 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
         }
 
         // Bouton de génération
-        new Setting(containerEl)
-            .setName('Générer les notes')
-            .setDesc('Créer les notes pour le mois en cours')
-            .addButton(button => button
-                .setButtonText('Générer')
-                .setCta() // Met en évidence le bouton
-                .onClick(async () => {
-                    await this.plugin.generateNotes();
-                }));
+        const notesGeneratorContainer = containerEl.createEl('div');
+        this.plugin.app.workspace.onLayoutReady(() => {
+            const app = createApp(NotesGenerator, {
+                notesGenerator: this.plugin.getNotesGenerator()
+            });
+            app.mount(notesGeneratorContainer);
+        });
 
         // Le template par défaut qu'on peut définir comme constante
         const defaultTemplate = `# 📓 {day}{suffix} {month}

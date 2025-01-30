@@ -242,12 +242,12 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
         // Watcher pour les goals et les tâches
         this.goalsStore.$subscribe(async () => {
             console.log('🎯 Sauvegarde automatique des données');
-            await this.savePluginData(this.goalsStore.goals, this.tasksStore.getTasks);
+            await this.savePluginData(this.goalsStore.goals, this.tasksStore.tasks);
         });
 
         this.tasksStore.$subscribe(async () => {
             console.log('📝 Sauvegarde automatique des données');
-            await this.savePluginData(this.goalsStore.goals, this.tasksStore.getTasks);
+            await this.savePluginData(this.goalsStore.goals, this.tasksStore.tasks);
         });
     }
 
@@ -438,5 +438,9 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
             console.error('Erreur lors de la génération des notes:', error);
             new Notice('Erreur lors de la génération des notes. Vérifiez la console pour plus de détails.');
         }
+    }
+
+    getNotesGenerator(): NotesGeneratorService {
+        return this.notesGenerator;
     }
 }

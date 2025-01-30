@@ -57,14 +57,30 @@
 
     <!-- Trackers d'habitudes -->
     <div class="goalflowz-habits-section">
-      <div class="goalflowz-habits-background">
-        <div 
-          class="progress-background" 
-          :style="{ width: `${dayStats.completionRate}%` }"
-          @vue:mounted="() => console.log('Progress width:', dayStats.completionRate + '%')"
-        ></div>
+      <!-- Calendrier des flammes -->
+      <div class="goalflowz-flames-calendar">
+        <div class="goalflowz-flames-row">
+          <div 
+            v-for="month in months" 
+            :key="month.name"
+            class="goalflowz-month-flames"
+          >
+            <div 
+              v-for="day in month.days" 
+              :key="day.date"
+              class="goalflowz-flame-day"
+              :class="{
+                'completed': isDateCompleted(day.date),
+                'future': isFutureDate(day.date)
+              }"
+            >
+              <span class="flame-emoji">🔥</span>
+            </div>
+          </div>
+        </div>
       </div>
-      
+
+      <!-- Grille des habitudes -->
       <div class="goalflowz-habits-grid">
         <div 
           v-for="habit in activeHabits" 
@@ -95,7 +111,7 @@
         <div class="goalflowz-mood-item">
           <div class="goalflowz-mood-buttons">
             <button 
-              v-for="level in [1,2,3,4,5]" 
+              v-for="level in [1, 2, 3, 4, 5] as MoodLevel[]" 
               :key="'mood-'+level"
               class="goalflowz-mood-btn"
               :class="{ active: dayStats.mood === level }"
@@ -108,7 +124,7 @@
         <div class="goalflowz-mood-item">
           <div class="goalflowz-mood-buttons">
             <button 
-              v-for="level in [1,2,3,4,5]" 
+              v-for="level in [1, 2, 3, 4, 5] as MoodLevel[]" 
               :key="'energy-'+level"
               class="goalflowz-energy-btn"
               :class="{ active: dayStats.energyLevel === level }"
@@ -122,13 +138,18 @@
     </div>
 
     <!-- Notes du jour -->
-    <div class="goalflowz-notes-section">
-      <h3>Notes du jour</h3>
-      <textarea 
-        v-model="dayNotes" 
-        placeholder="Écrivez vos réflexions du jour..."
-        @input="updateNotes"
-      ></textarea>
+    <div 
+      v-if="currentNote"
+      class="goalflowz-notes-section"
+    >
+      <div
+        class="goalflowz-note-viewer"
+        ref="noteContentRef"
+      >
+        <div class="goalflowz-note-content">
+          <!-- Le contenu de la note sera injecté ici -->
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -140,6 +161,16 @@ import { useHabitsStore } from '@/stores/habitsStore';
 import { useGoalsStore } from '@/stores/goalsStore';
 import { useTasksStore } from '@/stores/tasksStore';
 import type { Habit } from '@/types/habits';
+import type { Task, TaskStatus } from '@/types/tasks';
+import type { Note } from '@/types/notes';
+import { WorkspaceLeaf, MarkdownView, TFile, Notice } from 'obsidian';
+import Goalflowz from '@/main';
+interface DayNote {
+  path: string;
+  content: string;
+}
+
+type MoodLevel = 1 | 2 | 3 | 4 | 5;
 
 // Utilitaire de gestion des dates
 const dateUtils = {
@@ -199,6 +230,7 @@ const tasksStore = useTasksStore();
 
 const currentDate = ref(DateTime.now());
 const dayNotes = ref('');
+const currentNote = ref<DayNote | null>(null);
 
 // Computed properties avec gestion d'erreurs
 const formattedDate = computed(() => {
@@ -252,8 +284,11 @@ const lastCompletedGoal = computed(() => {
 
 const nextTask = computed(() => {
   const tasks = tasksStore.getTasks
-    .filter(t => !t.status.toLowerCase().includes('done') && t.date)
-    .sort((a, b) => DateTime.fromISO(a.date || '').toMillis() - DateTime.fromISO(b.date || '').toMillis());
+    .filter((t: Task) => t.status !== 'done' && t.startDate)
+    .sort((a: Task, b: Task) => {
+      if (!a.startDate || !b.startDate) return 0;
+      return DateTime.fromISO(a.startDate).toMillis() - DateTime.fromISO(b.startDate).toMillis();
+    });
   return tasks[0];
 });
 
@@ -344,9 +379,15 @@ const openValueInput = async (habit: Habit) => {
   }
 };
 
-const getMoodEmoji = (level: number) => {
-  const emojis = ['😢', '😕', '😐', '😊', '😄'];
-  return emojis[level - 1];
+const getMoodEmoji = (level: MoodLevel): string => {
+  const emojis: Record<MoodLevel, string> = {
+    1: '😢',
+    2: '😕',
+    3: '😐',
+    4: '🙂',
+    5: '😄'
+  };
+  return emojis[level];
 };
 
 const getEnergyEmoji = (level: number) => {
@@ -354,7 +395,7 @@ const getEnergyEmoji = (level: number) => {
   return emojis[level - 1];
 };
 
-const setDayMood = (level: 1 | 2 | 3 | 4 | 5) => {
+const setDayMood = (level: MoodLevel) => {
   try {
     const date = dateUtils.formatDate(currentDate.value);
     habitsStore.setDayMood(date, level);
@@ -364,7 +405,7 @@ const setDayMood = (level: 1 | 2 | 3 | 4 | 5) => {
   }
 };
 
-const setDayEnergyLevel = (level: 1 | 2 | 3 | 4 | 5) => {
+const setDayEnergyLevel = (level: MoodLevel) => {
   try {
     const date = dateUtils.formatDate(currentDate.value);
     habitsStore.setDayEnergyLevel(date, level);
@@ -384,27 +425,132 @@ const updateNotes = () => {
   }
 };
 
-// Watchers avec gestion d'erreurs
-watch(currentDate, () => {
+// Fonction de chargement de la note
+const loadDayNote = async (date: DateTime) => {
   try {
-    const date = dateUtils.formatDate(currentDate.value);
-    dayNotes.value = habitsStore.getDayStats(date).notes || '';
-  } catch (error) {
-    console.warn('Erreur de mise à jour des notes:', error);
+    const notePath = await props.app.plugins.plugins.goalflowz.notesGenerator.getNotePath(date);
+    console.log('Chargement de la note:', notePath);
+    
+    const file = props.app.vault.getAbstractFileByPath(notePath);
+    
+    if (file && file instanceof TFile) {
+      const content = await props.app.vault.read(file);
+      currentNote.value = {
+        path: notePath,
+        content: content
+      };
+      console.log('Note chargée avec succès:', currentNote.value);
+    } else {
+      // Même si le fichier n'existe pas, on crée quand même une note vide
+      currentNote.value = {
+        path: notePath,
+        content: ''
+      };
+      console.log('Création d\'une nouvelle note:', notePath);
+    }
+  } catch (error: any) {
+    console.error('Erreur lors du chargement de la note:', error);
+    // En cas d'erreur, on crée quand même une note vide
+    currentNote.value = {
+      path: `${date.toFormat('yyyy-MM-dd')}.md`,
+      content: ''
+    };
+    new Notice('Erreur lors du chargement de la note: ' + (error.message || 'Erreur inconnue'));
+  }
+};
+
+// Fonction d'initialisation de la vue de note
+const initializeNoteView = async (element: HTMLElement, app: any) => {
+  try {
+    if (!currentNote.value?.path) return;
+    
+    console.log('Initialisation de la vue de note pour:', currentNote.value.path);
+    
+    // Nettoyer l'élément existant
+    if (element.empty) {
+      element.empty();
+    } else {
+      element.innerHTML = '';
+    }
+    
+    // Créer une nouvelle leaf
+    const leaf = new WorkspaceLeaf();
+    
+    // Obtenir le fichier
+    const file = app.vault.getAbstractFileByPath(currentNote.value.path);
+    if (!(file instanceof TFile)) {
+      throw new Error('Fichier non trouvé ou invalide');
+    }
+
+    // Configurer la vue markdown
+    await leaf.setViewState({
+      type: 'markdown',
+      state: { 
+        file: file.path,
+        mode: 'source',
+        source: true
+      }
+    });
+
+    // Monter la vue dans l'élément
+    element.appendChild(leaf.view.containerEl);
+
+    // Configurer l'éditeur
+    const view = leaf.view as MarkdownView;
+    if (view?.editor) {
+      const editor = view.editor;
+      editor.refresh();
+
+      // Ajouter l'écouteur pour la sauvegarde automatique
+      editor.on('change', async () => {
+        const content = editor.getValue();
+        if (content !== undefined) {
+          await app.vault.modify(file, content);
+        }
+      });
+    }
+
+    console.log('Vue de note initialisée avec succès');
+
+  } catch (error: any) {
+    console.error('Erreur lors de l\'initialisation de la vue de note:', error);
+    new Notice('Erreur lors du chargement de la note: ' + (error.message || 'Erreur inconnue'));
+    element.innerHTML = 'Erreur lors du chargement de la note: ' + (error.message || 'Erreur inconnue');
+  }
+};
+
+// Refs
+const noteContentRef = ref<HTMLElement | null>(null);
+
+// Watcher pour initialiser la vue quand la note change
+watch([noteContentRef, () => currentNote.value?.path], async ([el, path]) => {
+  if (el && path) {
+    await initializeNoteView(el, props.app);
   }
 });
 
-// Initialisation avec gestion d'erreurs
-onMounted(() => {
-    try {
-        console.log('DayView mounted');
-        habitsStore.initializeDefaultHabits();
-        const date = dateUtils.formatDate(currentDate.value);
-        dayNotes.value = habitsStore.getDayStats(date).notes || '';
-        console.log('DayView initialized with date:', date);
-    } catch (error) {
-        console.error('Erreur d\'initialisation DayView:', error);
+// Watchers et lifecycle hooks
+watch(currentDate, async (newDate) => {
+  await loadDayNote(newDate);
+});
+
+onMounted(async () => {
+  try {
+    console.log('DayView mounted');
+    habitsStore.initializeDefaultHabits();
+    
+    // Retourner à la date du jour si on ouvre une nouvelle leaf
+    if (!props.app.workspace.activeLeaf || props.app.workspace.activeLeaf.getViewState().type === 'empty') {
+      currentDate.value = DateTime.now();
     }
+    
+    await loadDayNote(currentDate.value);
+    const date = dateUtils.formatDate(currentDate.value);
+    dayNotes.value = habitsStore.getDayStats(date).notes || '';
+    console.log('DayView initialized with date:', date);
+  } catch (error) {
+    console.error('Erreur d\'initialisation DayView:', error);
+  }
 });
 
 onUnmounted(() => {
@@ -414,4 +560,48 @@ onUnmounted(() => {
         console.error('Erreur lors du démontage de DayView:', error);
     }
 });
+
+// Fonction pour générer les mois de l'année
+const generateMonths = () => {
+  const currentYear = DateTime.now().year;
+  const months = [];
+  
+  for (let month = 0; month < 12; month++) {
+    const date = DateTime.fromObject({ year: currentYear, month: month + 1 });
+    const daysInMonth = date.daysInMonth || 31;
+    
+    const days = Array.from({ length: daysInMonth }, (_, i) => ({
+      date: date.set({ day: i + 1 }).toFormat('yyyy-MM-dd'),
+      day: i + 1
+    }));
+    
+    months.push({
+      name: date.setLocale('fr').toFormat('MMMM'),
+      days
+    });
+  }
+  
+  return months;
+};
+
+const months = computed(() => generateMonths());
+
+const isDateCompleted = (date: string) => {
+  try {
+    const stats = habitsStore.getDayStats(date);
+    return stats.completionRate === 100;
+  } catch (error) {
+    console.warn('Erreur de vérification de date complétée:', error);
+    return false;
+  }
+};
+
+const isFutureDate = (date: string) => {
+  try {
+    return DateTime.fromISO(date) > DateTime.now();
+  } catch (error) {
+    console.warn('Erreur de vérification de date future:', error);
+    return false;
+  }
+};
 </script>

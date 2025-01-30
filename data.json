@@ -23,11 +23,11 @@
   },
   "openAIKey": "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",
   "openRouterKey": "",
-  "lastActiveTab": "goals",
+  "lastActiveTab": "day",
   "recentGoals": [],
   "notesPath": "Journal",
   "folderStructure": "monthly",
-  "monthLanguage": "fr",
+  "monthLanguage": "en",
   "notesFormat": "1",
   "noteTemplate": "# {{title}}\n\n## Objectif\n\n## Tâches\n\n## Notes",
   "lastMainWidth": 50,
@@ -50,48 +50,6 @@
     {
       "label": "Nouvelle tâche",
       "isCompleted": false,
-      "linkToOptimizer": false,
-      "linkToGenerator": false
-    }
-  ],
-  "goals": [],
-  "tasks": [
-    {
-      "id": "23c5f034-9ff0-400f-8cba-dd202bff1c04",
-      "title": "efzef",
-      "description": "",
-      "startDate": "2025-01-30T13:25:13.144Z",
-      "priority": "medium",
-      "status": "todo",
-      "tags": [],
-      "createdAt": "2025-01-30T13:25:13.144Z",
-      "updatedAt": "2025-01-30T13:25:13.144Z",
-      "linkToOptimizer": true,
-      "linkToGenerator": true
-    },
-    {
-      "id": "3fa63928-1b2a-47a7-bcfc-0cec90088035",
-      "title": "zeczeczec",
-      "description": "",
-      "startDate": "2025-01-30T13:25:13.144Z",
-      "priority": "medium",
-      "status": "todo",
-      "tags": [],
-      "createdAt": "2025-01-30T13:25:13.144Z",
-      "updatedAt": "2025-01-30T13:25:13.144Z",
-      "linkToOptimizer": false,
-      "linkToGenerator": true
-    },
-    {
-      "id": "dd5404d6-302d-4853-94c4-3b7cf8dbf7f7",
-      "title": "Nouvelle tâche",
-      "description": "",
-      "startDate": "2025-01-30T13:25:13.144Z",
-      "priority": "medium",
-      "status": "todo",
-      "tags": [],
-      "createdAt": "2025-01-30T13:25:13.144Z",
-      "updatedAt": "2025-01-30T13:25:13.144Z",
       "linkToOptimizer": false,
       "linkToGenerator": false
     }

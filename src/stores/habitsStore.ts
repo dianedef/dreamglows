@@ -175,6 +175,8 @@ export const useHabitsStore = defineStore('habits', {
                     name: 'Sport',
                     icon: '🏃',
                     category: 'health',
+                    unit: 'h',
+                    target: 8,
                     active: true
                 },
                 {
@@ -182,7 +184,7 @@ export const useHabitsStore = defineStore('habits', {
                     icon: '🥗',
                     category: 'health',
                     target: 5,
-                    unit: 'portions',
+                    unit: '',
                     active: true
                 },
                 {
@@ -190,12 +192,12 @@ export const useHabitsStore = defineStore('habits', {
                     icon: '😴',
                     category: 'health',
                     target: 8,
-                    unit: 'heures',
+                    unit: 'h',
                     active: true
                 },
                 {
                     name: 'Musique',
-                    icon: '🎵',
+                    icon: '🎹',
                     category: 'personal',
                     active: true
                 },
@@ -204,7 +206,7 @@ export const useHabitsStore = defineStore('habits', {
                     icon: '🧘',
                     category: 'lifestyle',
                     target: 10,
-                    unit: 'minutes',
+                    unit: 'min',
                     active: true
                 }
             ];
