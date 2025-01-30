@@ -15,8 +15,34 @@
     </div>
 
     <div class="goalflowz-modal-field">
-      <label>Date</label>
-      <input v-model="taskData.date" type="date" />
+      <label>Date de début</label>
+      <input v-model="taskData.startDate" type="date" required />
+    </div>
+
+    <div class="goalflowz-modal-field">
+      <label>Date de fin (optionnelle)</label>
+      <input v-model="taskData.dueDate" type="date" />
+    </div>
+
+    <div class="goalflowz-modal-field">
+      <label>Notes</label>
+      <textarea 
+        v-model="taskData.notes" 
+        placeholder="Notes additionnelles"
+        rows="3"
+      ></textarea>
+    </div>
+
+    <div class="goalflowz-modal-field">
+      <label>Objectif lié (optionnel)</label>
+      <select v-model="taskData.goalId">
+        <option value="">Aucun objectif</option>
+        <option v-for="goal in goalsStore.getGoals" 
+                :key="goal.id" 
+                :value="goal.id">
+          {{ goal.title }}
+        </option>
+      </select>
     </div>
 
     <div class="goalflowz-modal-field">
@@ -63,32 +89,36 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, inject } from 'vue';
 import { useTasksStore } from '@/stores/tasksStore';
+import { useGoalsStore } from '@/stores/goalsStore';
 import type { Task } from '@/types/tasks';
 
 const props = defineProps<{
-  task?: Task;
-  onSave: () => void;
-  onClose: () => void;
+  editingTask?: Task;
 }>();
 
 const tasksStore = useTasksStore();
-const isEditing = !!props.task;
+const goalsStore = useGoalsStore();
+const closeModal = inject('closeModal') as () => void;
+const isEditing = !!props.editingTask;
 const newTag = ref('');
 
 const taskData = reactive<Partial<Task>>({
   title: '',
   description: '',
-  date: '',
+  startDate: new Date().toISOString().split('T')[0],
+  dueDate: '',
   priority: 'medium',
   status: 'todo',
+  goalId: '',
+  notes: '',
   tags: []
 });
 
 onMounted(() => {
-  if (props.task) {
-    Object.assign(taskData, props.task);
+  if (props.editingTask) {
+    Object.assign(taskData, props.editingTask);
   }
 });
 
@@ -106,20 +136,56 @@ const removeTag = (tag: string) => {
   }
 };
 
-const save = () => {
-  if (isEditing) {
-    tasksStore.updateTask({ ...taskData, id: props.task!.id });
-  } else {
-    tasksStore.addTask(taskData);
+const save = async () => {
+  console.log('💾 Début de la sauvegarde de la tâche');
+  const completeTaskData = {
+    ...taskData,
+    title: taskData.title || '',
+    description: taskData.description || '',
+    startDate: taskData.startDate || new Date().toISOString(),
+    dueDate: taskData.dueDate,
+    priority: taskData.priority || 'medium',
+    status: taskData.status || 'todo',
+    goalId: taskData.goalId || undefined,
+    notes: taskData.notes || '',
+    tags: taskData.tags || [],
+    createdAt: taskData.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    linkToOptimizer: taskData.linkToOptimizer || false,
+    linkToGenerator: taskData.linkToGenerator || false
+  };
+
+  console.log('💾 Données complètes de la tâche:', completeTaskData);
+
+  try {
+    let savedTask;
+    if (isEditing) {
+      console.log('✏️ Mise à jour de la tâche existante');
+      savedTask = await tasksStore.updateTask({ ...completeTaskData, id: props.editingTask!.id });
+    } else {
+      console.log('➕ Ajout d\'une nouvelle tâche');
+      savedTask = await tasksStore.addTask(completeTaskData);
+    }
+
+    // Si la tâche est liée à un objectif, mettre à jour l'objectif
+    if (savedTask && savedTask.goalId) {
+      await goalsStore.addTaskToGoal(savedTask.goalId, savedTask.id);
+    }
+
+    console.log('✅ Sauvegarde réussie');
+    closeModal();
+  } catch (error) {
+    console.error('❌ Erreur lors de la sauvegarde:', error);
   }
-  props.onSave();
-  props.onClose();
 };
 
-const deleteTask = () => {
+const deleteTask = async () => {
   if (isEditing) {
-    tasksStore.deleteTask(props.task!.id);
-    props.onClose();
+    const deletedTask = await tasksStore.deleteTask(props.editingTask!.id);
+    if (deletedTask && deletedTask.goalId) {
+      await goalsStore.removeTaskFromGoal(deletedTask.goalId, deletedTask.id);
+    }
+    closeModal();
   }
 };
 </script>

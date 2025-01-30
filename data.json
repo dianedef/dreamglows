@@ -2,11 +2,13 @@
   "defaultTasks": [
     {
       "label": "efzef",
+      "isCompleted": false,
       "linkToOptimizer": true,
       "linkToGenerator": true
     },
     {
       "label": "zeczeczec",
+      "isCompleted": false,
       "linkToOptimizer": false,
       "linkToGenerator": true
     },
@@ -18,30 +20,22 @@
     }
   ],
   "projectFolders": [],
-  "frequencyColors": [
-    {
-      "frequency": "une semaine",
-      "color": "#ff1414"
-    },
-    {
-      "frequency": "un an",
-      "color": "#2afe90"
-    }
-  ],
+  "frequencyColors": {
+    "high": "#ff3db8",
+    "medium": "#ffff00",
+    "low": "#00ff00"
+  },
   "openAIKey": "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",
   "openRouterKey": "",
   "lastActiveTab": "goals",
   "recentGoals": [],
   "notesPath": "Journal",
   "folderStructure": "flat",
+  "monthLanguage": "fr",
   "notesFormat": "1",
   "noteTemplate": "# {{title}}\n\n## Objectif\n\n## Tâches\n\n## Notes",
   "lastMainWidth": 50,
   "timelineStartHour": "08:00",
   "timelineEndHour": "21:00",
-  "timeFormat": "24h",
-  "googleApiKey": "",
-  "searchEngineId": "",
-  "serpApiKey": "",
-  "recentArticles": []
+  "timeFormat": "24h"
 }

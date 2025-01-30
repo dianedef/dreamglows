@@ -97,9 +97,6 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
 
 `;
 
-        // Ajout du format des notes
-        containerEl.createEl('h3', { text: 'Format des noms de fichiers' });
-
         new Setting(containerEl)
             .setName('Structure des notes')
             .setDesc('Choisissez comment organiser vos notes')

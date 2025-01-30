@@ -1,202 +1,339 @@
-import type { Goal } from '@/types/goals';
-import type { Task } from '@/types/tasks';
+import { App, TFile, Notice } from 'obsidian';
+import { Goal, Task, DataStore } from '../types/models';
+import { StorageError } from '../types/errors';
+import { DateService } from './DateService';
+import { ValidationService } from './ValidationService';
+import { FormatterService } from './FormatterService';
+import { ParserService } from './ParserService';
+import { EventService } from './EventService';
+import { DateTime } from 'luxon';
+
+export interface DailyMood {
+    mood: number;  // 1-5
+    energyLevel: number;  // 1-5
+    notes?: string;
+    timestamp: string;
+}
 
 export class StorageService {
-    private app: any;
-    private readonly DATA_FILE_NAME = 'goalflowz-data.md';
-    private readonly TASKS_FILE_NAME = 'goalflowz-tasks.md';
-    private readonly GOALS_FILE_NAME = 'goalflowz-goals.md';
-    private readonly CHUNK_SIZE = 100; // Nombre d'éléments par fichier
+    private app: App;
+    private dataFile: string = '.obsidian/plugins/obs-GoalFlowz/data.json';
+    private dateService: DateService;
+    private validationService: ValidationService;
+    private formatterService: FormatterService;
+    private parserService: ParserService;
+    private eventService: EventService;
 
-    constructor(app: any) {
+    constructor(
+        app: App,
+        dateService: DateService,
+        validationService: ValidationService,
+        formatterService: FormatterService,
+        parserService: ParserService,
+        eventService: EventService
+    ) {
         this.app = app;
+        this.dateService = dateService;
+        this.validationService = validationService;
+        this.formatterService = formatterService;
+        this.parserService = parserService;
+        this.eventService = eventService;
+
+        // Initialiser les données
+        this.initializeData();
     }
 
-    private async getFile(fileName: string) {
-        const files = this.app.vault.getFiles();
-        return files.find((file: any) => file.name === fileName);
-    }
-
-    private async createFile(fileName: string, initialContent: string) {
-        return await this.app.vault.create(fileName, initialContent);
-    }
-
-    private async parseDataFile(content: string) {
-        const goalsMatch = content.match(/\`\`\`json:goals\n([\s\S]*?)\n\`\`\`/);
-        const tasksMatch = content.match(/\`\`\`json:tasks\n([\s\S]*?)\n\`\`\`/);
-
-        return {
-            goals: goalsMatch ? JSON.parse(goalsMatch[1]) : [],
-            tasks: tasksMatch ? JSON.parse(tasksMatch[1]) : []
-        };
-    }
-
-    private createInitialContent(type: 'data' | 'tasks' | 'goals', index?: number) {
-        const now = new Date().toISOString();
-        const metadata = {
-            version: '1.0',
-            lastUpdated: now,
-            type: type,
-            index: index
-        };
-
-        return `---
-${Object.entries(metadata).map(([key, value]) => `${key}: ${value}`).join('\n')}
----
-
-${type === 'data' ? `\`\`\`json:goals
-[]
-\`\`\`
-
-\`\`\`json:tasks
-[]
-\`\`\`` : `\`\`\`json:${type}
-[]
-\`\`\``}`;
-    }
-
-    private async saveToFile(fileName: string, content: string) {
-        let file = await this.getFile(fileName);
-        if (!file) {
-            file = await this.createFile(fileName, content);
-        } else {
-            await this.app.vault.modify(file, content);
-        }
-    }
-
-    private shouldSplitFiles(goals: Goal[], tasks: Task[]) {
-        return goals.length > this.CHUNK_SIZE || tasks.length > this.CHUNK_SIZE;
-    }
-
-    private async saveDataToSingleFile(goals: Goal[], tasks: Task[]) {
-        const content = `---
-version: 1.0
-lastUpdated: ${new Date().toISOString()}
-storage: single
----
-
-\`\`\`json:goals
-${JSON.stringify(goals, null, 2)}
-\`\`\`
-
-\`\`\`json:tasks
-${JSON.stringify(tasks, null, 2)}
-\`\`\``;
-
-        await this.saveToFile(this.DATA_FILE_NAME, content);
-    }
-
-    private async saveDataToMultipleFiles(goals: Goal[], tasks: Task[]) {
-        // Sauvegarder les objectifs
-        const goalsChunks = this.chunkArray(goals, this.CHUNK_SIZE);
-        for (let i = 0; i < goalsChunks.length; i++) {
-            const content = `---
-version: 1.0
-lastUpdated: ${new Date().toISOString()}
-type: goals
-index: ${i}
-total: ${goalsChunks.length}
----
-
-\`\`\`json:goals
-${JSON.stringify(goalsChunks[i], null, 2)}
-\`\`\``;
-            await this.saveToFile(`goalflowz-goals-${i}.md`, content);
-        }
-
-        // Sauvegarder les tâches
-        const tasksChunks = this.chunkArray(tasks, this.CHUNK_SIZE);
-        for (let i = 0; i < tasksChunks.length; i++) {
-            const content = `---
-version: 1.0
-lastUpdated: ${new Date().toISOString()}
-type: tasks
-index: ${i}
-total: ${tasksChunks.length}
----
-
-\`\`\`json:tasks
-${JSON.stringify(tasksChunks[i], null, 2)}
-\`\`\``;
-            await this.saveToFile(`goalflowz-tasks-${i}.md`, content);
-        }
-
-        // Mettre à jour le fichier principal avec les métadonnées
-        const indexContent = `---
-version: 1.0
-lastUpdated: ${new Date().toISOString()}
-storage: split
-goalsFiles: ${goalsChunks.length}
-tasksFiles: ${tasksChunks.length}
----`;
-        await this.saveToFile(this.DATA_FILE_NAME, indexContent);
-    }
-
-    private chunkArray<T>(array: T[], size: number): T[][] {
-        const chunks: T[][] = [];
-        for (let i = 0; i < array.length; i += size) {
-            chunks.push(array.slice(i, i + size));
-        }
-        return chunks;
-    }
-
-    async loadData() {
-        const mainFile = await this.getFile(this.DATA_FILE_NAME);
-        if (!mainFile) {
-            return { goals: [], tasks: [] };
-        }
-
-        const content = await this.app.vault.read(mainFile);
-        const storageMatch = content.match(/storage: (\w+)/);
-        const storage = storageMatch ? storageMatch[1] : 'single';
-
-        if (storage === 'single') {
-            return this.parseDataFile(content);
-        } else {
-            // Charger depuis plusieurs fichiers
-            const goalsFilesMatch = content.match(/goalsFiles: (\d+)/);
-            const tasksFilesMatch = content.match(/tasksFiles: (\d+)/);
+    /**
+     * Initialise les données depuis le stockage
+     */
+    private async initializeData(): Promise<void> {
+        try {
+            const now = new Date();
+            const startDate = new Date(now.getFullYear() - 1, 0, 1);
+            const data = await this.loadDataForRange(startDate, now);
             
-            const goals: Goal[] = [];
-            const tasks: Task[] = [];
-
-            if (goalsFilesMatch) {
-                const numGoalsFiles = parseInt(goalsFilesMatch[1]);
-                for (let i = 0; i < numGoalsFiles; i++) {
-                    const file = await this.getFile(`goalflowz-goals-${i}.md`);
-                    if (file) {
-                        const content = await this.app.vault.read(file);
-                        const match = content.match(/\`\`\`json:goals\n([\s\S]*?)\n\`\`\`/);
-                        if (match) {
-                            goals.push(...JSON.parse(match[1]));
-                        }
-                    }
-                }
-            }
-
-            if (tasksFilesMatch) {
-                const numTasksFiles = parseInt(tasksFilesMatch[1]);
-                for (let i = 0; i < numTasksFiles; i++) {
-                    const file = await this.getFile(`goalflowz-tasks-${i}.md`);
-                    if (file) {
-                        const content = await this.app.vault.read(file);
-                        const match = content.match(/\`\`\`json:tasks\n([\s\S]*?)\n\`\`\`/);
-                        if (match) {
-                            tasks.push(...JSON.parse(match[1]));
-                        }
-                    }
-                }
-            }
-
-            return { goals, tasks };
+            this.eventService.emit('data:synced', {
+                goals: data.goals,
+                tasks: data.tasks,
+                moods: data.moods.reduce((acc, mood) => ({
+                    ...acc,
+                    [mood.timestamp.split('T')[0]]: mood
+                }), {})
+            });
+        } catch (error) {
+            console.error('Erreur lors de l\'initialisation des données:', error);
         }
     }
 
-    async saveData(goals: Goal[], tasks: Task[]) {
-        if (this.shouldSplitFiles(goals, tasks)) {
-            await this.saveDataToMultipleFiles(goals, tasks);
+    /**
+     * Récupère une note quotidienne
+     */
+    private async getDailyNote(date: string): Promise<TFile | null> {
+        const files = await this.app.vault.getFiles();
+        return files.find(file => 
+            file.path === `${this.dateService.getNotesDirectory()}/${date}.md`
+        ) || null;
+    }
+
+    /**
+     * Sauvegarde l'humeur et le niveau d'énergie pour une journée
+     */
+    async saveDailyMood(date: string, mood: DailyMood): Promise<void> {
+        const dailyNote = await this.getDailyNote(date);
+        const content = dailyNote ? await this.app.vault.read(dailyNote) : '';
+
+        // Formatter la section d'humeur
+        const moodSection = this.formatterService.formatMoodSection(mood);
+
+        if (dailyNote) {
+            // Mettre à jour la section d'humeur existante ou l'ajouter
+            const updatedContent = this.updateOrAddMoodSection(content, moodSection);
+            await this.app.vault.modify(dailyNote, updatedContent);
         } else {
-            await this.saveDataToSingleFile(goals, tasks);
+            // Créer une nouvelle note avec la section d'humeur
+            const newContent = this.formatterService.formatDailyNote(date, [], [], [], mood);
+            const notePath = `${this.dateService.getNotesDirectory()}/${date}.md`;
+            await this.app.vault.create(notePath, newContent);
+        }
+
+        // Émettre l'événement de mise à jour
+        this.eventService.updateMood(date, mood);
+    }
+
+    /**
+     * Récupère l'humeur et le niveau d'énergie pour une journée
+     */
+    async getDailyMood(date: string): Promise<DailyMood | null> {
+        const dailyNote = await this.getDailyNote(date);
+        if (!dailyNote) return null;
+
+        const content = await this.app.vault.read(dailyNote);
+        return this.parserService.parseMoodSection(content);
+    }
+
+    /**
+     * Charge les données pour une période donnée, incluant l'humeur et l'énergie
+     */
+    async loadDataForRange(start: Date, end: Date): Promise<DataStore & { moods: DailyMood[] }> {
+        const data = {
+            goals: [] as Goal[],
+            tasks: [] as Task[],
+            moods: [] as DailyMood[]
+        };
+
+        let current = DateTime.fromJSDate(start);
+        const endDt = DateTime.fromJSDate(end);
+
+        while (current <= endDt) {
+            const dateStr = current.toFormat('yyyy-MM-dd');
+            const dailyNote = await this.getDailyNote(dateStr);
+            
+            if (dailyNote) {
+                const content = await this.app.vault.read(dailyNote);
+                const parsed = this.parserService.parseDailyNote(content, dateStr);
+                data.goals.push(...parsed.goals);
+                data.tasks.push(...parsed.tasksToStart, ...parsed.tasksToEnd);
+                
+                if (parsed.mood) {
+                    data.moods.push(parsed.mood);
+                }
+            }
+
+            current = current.plus({ days: 1 });
+        }
+
+        return data;
+    }
+
+    /**
+     * Met à jour ou ajoute la section d'humeur dans le contenu
+     */
+    private updateOrAddMoodSection(content: string, moodSection: string): string {
+        const moodSectionRegex = /## 😊 Humeur[\s\S]*?(?=##|$)/;
+        
+        if (moodSectionRegex.test(content)) {
+            // Remplacer la section existante
+            return content.replace(moodSectionRegex, moodSection);
+        } else {
+            // Ajouter la nouvelle section après l'en-tête
+            const headerRegex = /^# .*\n/;
+            if (headerRegex.test(content)) {
+                return content.replace(headerRegex, `$&\n${moodSection}`);
+            } else {
+                return `${content}\n${moodSection}`;
+            }
+        }
+    }
+
+    /**
+     * Sauvegarde un goal
+     */
+    async saveGoal(goal: Goal): Promise<void> {
+        try {
+            // Valider le goal
+            this.validationService.validateGoal(goal);
+
+            // Sauvegarder dans la note de sa dueDate
+            if (goal.dueDate) {
+                const dateStr = DateTime.fromISO(goal.dueDate).toFormat('yyyy-MM-dd');
+                const dailyNote = await this.getDailyNote(dateStr);
+                const content = dailyNote ? await this.app.vault.read(dailyNote) : '';
+
+                if (dailyNote) {
+                    // Mettre à jour la note existante
+                    const parsed = this.parserService.parseDailyNote(content, dateStr);
+                    const updatedGoals = parsed.goals.filter(g => g.id !== goal.id);
+                    updatedGoals.push(goal);
+                    
+                    const newContent = this.formatterService.formatDailyNote(
+                        dateStr,
+                        updatedGoals,
+                        parsed.tasksToStart,
+                        parsed.tasksToEnd,
+                        parsed.mood
+                    );
+                    await this.app.vault.modify(dailyNote, newContent);
+                } else {
+                    // Créer une nouvelle note
+                    const newContent = this.formatterService.formatDailyNote(dateStr, [goal], [], []);
+                    const notePath = `${this.dateService.getNotesDirectory()}/${dateStr}.md`;
+                    await this.app.vault.create(notePath, newContent);
+                }
+            }
+
+            // Sauvegarder dans data.json
+            const data = await this.loadFromDataJson();
+            const index = data.goals.findIndex(g => g.id === goal.id);
+            if (index >= 0) {
+                data.goals[index] = goal;
+            } else {
+                data.goals.push(goal);
+            }
+            await this.saveToDataJson(data);
+
+            // Émettre l'événement approprié
+            const eventType = index >= 0 ? 'goal:updated' : 'goal:created';
+            this.eventService.emit(eventType, goal);
+
+        } catch (error) {
+            throw new StorageError('Erreur lors de la sauvegarde du goal', error as Error);
+        }
+    }
+
+    /**
+     * Sauvegarde une tâche
+     */
+    async saveTask(task: Task): Promise<void> {
+        try {
+            // Valider la tâche
+            this.validationService.validateTask(task);
+
+            // Sauvegarder dans la note de startDate
+            if (task.startDate) {
+                const dateStr = DateTime.fromISO(task.startDate).toFormat('yyyy-MM-dd');
+                const dailyNote = await this.getDailyNote(dateStr);
+                const content = dailyNote ? await this.app.vault.read(dailyNote) : '';
+
+                if (dailyNote) {
+                    // Mettre à jour la note existante
+                    const parsed = this.parserService.parseDailyNote(content, dateStr);
+                    const updatedTasksToStart = parsed.tasksToStart.filter(t => t.id !== task.id);
+                    updatedTasksToStart.push(task);
+                    
+                    const newContent = this.formatterService.formatDailyNote(
+                        dateStr,
+                        parsed.goals,
+                        updatedTasksToStart,
+                        parsed.tasksToEnd,
+                        parsed.mood
+                    );
+                    await this.app.vault.modify(dailyNote, newContent);
+                } else {
+                    // Créer une nouvelle note
+                    const newContent = this.formatterService.formatDailyNote(dateStr, [], [task], []);
+                    const notePath = `${this.dateService.getNotesDirectory()}/${dateStr}.md`;
+                    await this.app.vault.create(notePath, newContent);
+                }
+            }
+
+            // Sauvegarder dans la note de dueDate
+            if (task.dueDate) {
+                const dateStr = DateTime.fromISO(task.dueDate).toFormat('yyyy-MM-dd');
+                const dailyNote = await this.getDailyNote(dateStr);
+                const content = dailyNote ? await this.app.vault.read(dailyNote) : '';
+
+                if (dailyNote) {
+                    // Mettre à jour la note existante
+                    const parsed = this.parserService.parseDailyNote(content, dateStr);
+                    const updatedTasksToEnd = parsed.tasksToEnd.filter(t => t.id !== task.id);
+                    updatedTasksToEnd.push(task);
+                    
+                    const newContent = this.formatterService.formatDailyNote(
+                        dateStr,
+                        parsed.goals,
+                        parsed.tasksToStart,
+                        updatedTasksToEnd,
+                        parsed.mood
+                    );
+                    await this.app.vault.modify(dailyNote, newContent);
+                } else {
+                    // Créer une nouvelle note
+                    const newContent = this.formatterService.formatDailyNote(dateStr, [], [], [task]);
+                    const notePath = `${this.dateService.getNotesDirectory()}/${dateStr}.md`;
+                    await this.app.vault.create(notePath, newContent);
+                }
+            }
+
+            // Sauvegarder dans data.json
+            const data = await this.loadFromDataJson();
+            const index = data.tasks.findIndex(t => t.id === task.id);
+            if (index >= 0) {
+                data.tasks[index] = task;
+            } else {
+                data.tasks.push(task);
+            }
+            await this.saveToDataJson(data);
+
+            // Émettre l'événement approprié
+            const eventType = index >= 0 ? 'task:updated' : 'task:created';
+            this.eventService.emit(eventType, task);
+
+        } catch (error) {
+            throw new StorageError('Erreur lors de la sauvegarde de la tâche', error as Error);
+        }
+    }
+
+    /**
+     * Charge les données depuis data.json
+     */
+    private async loadFromDataJson(): Promise<DataStore> {
+        try {
+            const exists = await this.app.vault.adapter.exists(this.dataFile);
+            if (!exists) {
+                return { goals: [], tasks: [] };
+            }
+            const content = await this.app.vault.adapter.read(this.dataFile);
+            const data = JSON.parse(content);
+            return {
+                goals: this.validationService.validateGoalsList(data.goals),
+                tasks: this.validationService.validateTasksList(data.tasks)
+            };
+        } catch (error) {
+            throw new StorageError('Erreur lors de la lecture de data.json', error as Error);
+        }
+    }
+
+    /**
+     * Sauvegarde les données dans data.json
+     */
+    private async saveToDataJson(data: DataStore): Promise<void> {
+        try {
+            await this.app.vault.adapter.write(
+                this.dataFile,
+                JSON.stringify(data, null, 2)
+            );
+        } catch (error) {
+            throw new StorageError('Erreur lors de la sauvegarde dans data.json', error as Error);
         }
     }
 } 

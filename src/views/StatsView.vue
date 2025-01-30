@@ -2,15 +2,15 @@
 <template>
   <div class="goalflowz-statistics-view">
     <div class="goalflowz-statistics-header">
-    <h2>Statistiques</h2>
+      <h2>Statistiques</h2>
       <div class="goalflowz-period-selector">
         <button 
-          v-for="period in ['7j', '30j', '90j', '365j']" 
-          :key="period"
-          :class="{ active: selectedPeriod === period }"
-          @click="selectedPeriod = period"
+          v-for="period in periods" 
+          :key="period.days"
+          :class="{ active: selectedPeriod === period.days }"
+          @click="selectedPeriod = period.days"
         >
-          {{ period }}
+          {{ period.label }}
         </button>
       </div>
     </div>
@@ -66,20 +66,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, onUnmounted } from 'vue';
 import { Chart, registerables } from 'chart.js';
 import { DateTime } from 'luxon';
-import { useHabitsStore } from '@/stores/habitsStore';
-import { useGoalsStore } from '@/stores/goalsStore';
-import { useTasksStore } from '@/stores/tasksStore';
+import { MetricsService } from '@/services/MetricsService';
+import { DateService } from '@/services/DateService';
+import { StorageService } from '@/services/StorageService';
+import { EventService } from '@/services/EventService';
+import { Subscription } from 'rxjs';
 
 // Enregistrer les composants Chart.js
 Chart.register(...registerables);
 
-// Stores
-const habitsStore = useHabitsStore();
-const goalsStore = useGoalsStore();
-const tasksStore = useTasksStore();
+// Services
+const dateService = new DateService();
+const storageService = new StorageService();
+const metricsService = new MetricsService(dateService, storageService);
+const eventService = new EventService();
+
+// Périodes disponibles
+const periods = [
+  { label: '7j', days: 7 },
+  { label: '30j', days: 30 },
+  { label: '90j', days: 90 },
+  { label: '365j', days: 365 }
+];
 
 // Refs pour les canvas
 const moodChart = ref<HTMLCanvasElement | null>(null);
@@ -90,7 +101,7 @@ const tasksChart = ref<HTMLCanvasElement | null>(null);
 const categoriesChart = ref<HTMLCanvasElement | null>(null);
 
 // État local
-const selectedPeriod = ref('30j');
+const selectedPeriod = ref(30);
 const charts = ref<{ [key: string]: Chart | null }>({
   mood: null,
   energy: null,
@@ -100,181 +111,93 @@ const charts = ref<{ [key: string]: Chart | null }>({
   categories: null
 });
 
-// Calcul des données
-const calculateData = () => {
-  const endDate = DateTime.now();
-  const days = parseInt(selectedPeriod.value);
-  const startDate = endDate.minus({ days });
-
-  return {
-    mood: calculateMoodData(startDate, endDate),
-    energy: calculateEnergyData(startDate, endDate),
-    habits: calculateHabitsData(startDate, endDate),
-    goals: calculateGoalsData(startDate, endDate),
-    tasks: calculateTasksData(startDate, endDate),
-    categories: calculateCategoriesData(startDate, endDate)
-  };
-};
-
-// Fonctions de calcul spécifiques
-const calculateMoodData = (startDate: DateTime, endDate: DateTime) => {
-  const data: number[] = [];
-  const labels: string[] = [];
-  let current = startDate;
-
-  while (current <= endDate) {
-    const dateStr = current.toFormat('yyyy-MM-dd');
-    const stats = habitsStore.getDayStats(dateStr);
-    data.push(stats.mood || 0);
-    labels.push(current.toFormat('dd/MM'));
-    current = current.plus({ days: 1 });
-  }
-
-  return { data, labels };
-};
-
-const calculateEnergyData = (startDate: DateTime, endDate: DateTime) => {
-  const data: number[] = [];
-  const labels: string[] = [];
-  let current = startDate;
-
-  while (current <= endDate) {
-    const dateStr = current.toFormat('yyyy-MM-dd');
-    const stats = habitsStore.getDayStats(dateStr);
-    data.push(stats.energyLevel || 0);
-    labels.push(current.toFormat('dd/MM'));
-    current = current.plus({ days: 1 });
-  }
-
-  return { data, labels };
-};
-
-const calculateHabitsData = (startDate: DateTime, endDate: DateTime) => {
-  const data: number[] = [];
-  const labels: string[] = [];
-  let current = startDate;
-
-  while (current <= endDate) {
-    const dateStr = current.toFormat('yyyy-MM-dd');
-    const stats = habitsStore.getDayStats(dateStr);
-    data.push(stats.completionRate || 0);
-    labels.push(current.toFormat('dd/MM'));
-    current = current.plus({ days: 1 });
-  }
-
-  return { data, labels };
-};
-
-const calculateGoalsData = (startDate: DateTime, endDate: DateTime) => {
-  const completed = goalsStore.goals.filter(g => 
-    g.status === 'done' && 
-    DateTime.fromISO(g.completedDate || '').valueOf() >= startDate.valueOf() &&
-    DateTime.fromISO(g.completedDate || '').valueOf() <= endDate.valueOf()
-  ).length;
-
-  const inProgress = goalsStore.goals.filter(g => 
-    g.status === 'in-progress'
-  ).length;
-
-  const todo = goalsStore.goals.filter(g => 
-    g.status === 'todo'
-  ).length;
-
-  return {
-    data: [completed, inProgress, todo],
-    labels: ['Terminés', 'En cours', 'À faire']
-  };
-};
-
-const calculateTasksData = (startDate: DateTime, endDate: DateTime) => {
-  const data: number[] = [];
-  const labels: string[] = [];
-  let current = startDate;
-
-  while (current <= endDate) {
-    const dateStr = current.toFormat('yyyy-MM-dd');
-    const completedTasks = tasksStore.getTasks.filter(t => 
-      t.status === 'done' && 
-      t.date === dateStr
-    ).length;
-    data.push(completedTasks);
-    labels.push(current.toFormat('dd/MM'));
-    current = current.plus({ days: 1 });
-  }
-
-  return { data, labels };
-};
-
-const calculateCategoriesData = (startDate: DateTime, endDate: DateTime) => {
-  const categories = new Map<string, number>();
-  
-  goalsStore.goals.forEach(goal => {
-    if (!goal.category) return;
-    const count = categories.get(goal.category) || 0;
-    categories.set(goal.category, count + 1);
-  });
-
-  return {
-    data: Array.from(categories.values()),
-    labels: Array.from(categories.keys())
-  };
-};
+// Souscriptions aux événements
+let subscriptions: Subscription[] = [];
 
 // Mise à jour des graphiques
-const updateCharts = () => {
-  const data = calculateData();
+const updateCharts = async () => {
+  const stats = await metricsService.calculatePeriodStats(selectedPeriod.value);
   
   // Mettre à jour chaque graphique
   if (charts.value.mood && moodChart.value) {
-    charts.value.mood.data.labels = data.mood.labels;
-    charts.value.mood.data.datasets[0].data = data.mood.data;
+    const labels = Object.keys(stats.dailyStats).map(date => 
+      DateTime.fromISO(date).toFormat('dd/MM')
+    );
+    const data = Object.values(stats.dailyStats).map(day => day.mood || 0);
+    
+    charts.value.mood.data.labels = labels;
+    charts.value.mood.data.datasets[0].data = data;
     charts.value.mood.update();
   }
 
   if (charts.value.energy && energyChart.value) {
-    charts.value.energy.data.labels = data.energy.labels;
-    charts.value.energy.data.datasets[0].data = data.energy.data;
+    const labels = Object.keys(stats.dailyStats).map(date => 
+      DateTime.fromISO(date).toFormat('dd/MM')
+    );
+    const data = Object.values(stats.dailyStats).map(day => day.energyLevel || 0);
+    
+    charts.value.energy.data.labels = labels;
+    charts.value.energy.data.datasets[0].data = data;
     charts.value.energy.update();
   }
 
   if (charts.value.habits && habitsChart.value) {
-    charts.value.habits.data.labels = data.habits.labels;
-    charts.value.habits.data.datasets[0].data = data.habits.data;
+    const labels = Object.keys(stats.dailyStats).map(date => 
+      DateTime.fromISO(date).toFormat('dd/MM')
+    );
+    const data = Object.values(stats.dailyStats).map(day => day.completionRate || 0);
+    
+    charts.value.habits.data.labels = labels;
+    charts.value.habits.data.datasets[0].data = data;
     charts.value.habits.update();
   }
 
   if (charts.value.goals && goalsChart.value) {
-    charts.value.goals.data.labels = data.goals.labels;
-    charts.value.goals.data.datasets[0].data = data.goals.data;
+    charts.value.goals.data.labels = ['Terminés', 'En cours', 'À faire'];
+    charts.value.goals.data.datasets[0].data = [
+      stats.goals.completed,
+      stats.goals.inProgress,
+      stats.goals.todo
+    ];
     charts.value.goals.update();
   }
 
   if (charts.value.tasks && tasksChart.value) {
-    charts.value.tasks.data.labels = data.tasks.labels;
-    charts.value.tasks.data.datasets[0].data = data.tasks.data;
+    const labels = Object.keys(stats.dailyStats).map(date => 
+      DateTime.fromISO(date).toFormat('dd/MM')
+    );
+    const data = Object.values(stats.dailyStats).map(day => day.completedTasks);
+    
+    charts.value.tasks.data.labels = labels;
+    charts.value.tasks.data.datasets[0].data = data;
     charts.value.tasks.update();
   }
 
   if (charts.value.categories && categoriesChart.value) {
-    charts.value.categories.data.labels = data.categories.labels;
-    charts.value.categories.data.datasets[0].data = data.categories.data;
+    const categoryData = Object.entries(stats.categories).map(([category, data]) => ({
+      category,
+      completed: data.completed
+    }));
+    
+    charts.value.categories.data.labels = categoryData.map(d => d.category);
+    charts.value.categories.data.datasets[0].data = categoryData.map(d => d.completed);
     charts.value.categories.update();
   }
 };
 
 // Initialisation des graphiques
-onMounted(() => {
-  const data = calculateData();
+onMounted(async () => {
+  const stats = await metricsService.calculatePeriodStats(selectedPeriod.value);
   
   // Créer chaque graphique avec sa configuration spécifique
   if (moodChart.value) {
     charts.value.mood = new Chart(moodChart.value, {
       type: 'line',
       data: {
-        labels: data.mood.labels,
+        labels: [],
         datasets: [{
           label: 'Humeur',
-          data: data.mood.data,
+          data: [],
           borderColor: '#FF9F43',
           tension: 0.4
         }]
@@ -298,10 +221,10 @@ onMounted(() => {
     charts.value.energy = new Chart(energyChart.value, {
       type: 'line',
       data: {
-        labels: data.energy.labels,
+        labels: [],
         datasets: [{
           label: 'Énergie',
-          data: data.energy.data,
+          data: [],
           borderColor: '#28C76F',
           tension: 0.4
         }]
@@ -325,10 +248,10 @@ onMounted(() => {
     charts.value.habits = new Chart(habitsChart.value, {
       type: 'line',
       data: {
-        labels: data.habits.labels,
+        labels: [],
         datasets: [{
           label: 'Complétion (%)',
-          data: data.habits.data,
+          data: [],
           borderColor: '#7367F0',
           tension: 0.4
         }]
@@ -352,9 +275,13 @@ onMounted(() => {
     charts.value.goals = new Chart(goalsChart.value, {
       type: 'doughnut',
       data: {
-        labels: data.goals.labels,
+        labels: ['Terminés', 'En cours', 'À faire'],
         datasets: [{
-          data: data.goals.data,
+          data: [
+            stats.goals.completed,
+            stats.goals.inProgress,
+            stats.goals.todo
+          ],
           backgroundColor: [
             '#28C76F',
             '#FF9F43',
@@ -372,10 +299,10 @@ onMounted(() => {
     charts.value.tasks = new Chart(tasksChart.value, {
       type: 'bar',
       data: {
-        labels: data.tasks.labels,
+        labels: [],
         datasets: [{
           label: 'Tâches complétées',
-          data: data.tasks.data,
+          data: [],
           backgroundColor: '#7367F0'
         }]
       },
@@ -394,12 +321,17 @@ onMounted(() => {
   }
 
   if (categoriesChart.value) {
+    const categoryData = Object.entries(stats.categories).map(([category, data]) => ({
+      category,
+      completed: data.completed
+    }));
+
     charts.value.categories = new Chart(categoriesChart.value, {
       type: 'pie',
       data: {
-        labels: data.categories.labels,
+        labels: categoryData.map(d => d.category),
         datasets: [{
-          data: data.categories.data,
+          data: categoryData.map(d => d.completed),
           backgroundColor: [
             '#7367F0',
             '#28C76F',
@@ -414,16 +346,97 @@ onMounted(() => {
       }
     });
   }
+
+  // S'abonner aux événements
+  subscriptions = [
+    eventService.on('goal:created').subscribe(() => updateCharts()),
+    eventService.on('goal:updated').subscribe(() => updateCharts()),
+    eventService.on('goal:deleted').subscribe(() => updateCharts()),
+    eventService.on('task:created').subscribe(() => updateCharts()),
+    eventService.on('task:updated').subscribe(() => updateCharts()),
+    eventService.on('task:deleted').subscribe(() => updateCharts()),
+    eventService.on('mood:updated').subscribe(() => updateCharts()),
+    eventService.on('data:synced').subscribe(() => updateCharts())
+  ];
+
+  // Mettre à jour les graphiques initialement
+  await updateCharts();
+});
+
+// Se désabonner des événements lors du démontage
+onUnmounted(() => {
+  subscriptions.forEach(sub => sub.unsubscribe());
 });
 
 // Mettre à jour les graphiques quand la période change
 watch(selectedPeriod, updateCharts);
+</script>
 
-// Mettre à jour les graphiques quand les données changent
-watch(() => [
-  habitsStore.logs,
-  habitsStore.dayStats,
-  goalsStore.goals,
-  tasksStore.tasks
-], updateCharts, { deep: true });
-</script> 
+<style scoped>
+.goalflowz-statistics-view {
+  padding: 20px;
+}
+
+.goalflowz-statistics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.goalflowz-period-selector {
+  display: flex;
+  gap: 10px;
+}
+
+.goalflowz-period-selector button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.goalflowz-period-selector button.active {
+  background: #7367F0;
+  color: white;
+  border-color: #7367F0;
+}
+
+.goalflowz-statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.goalflowz-statistics-section {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.goalflowz-chart-container {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f8f8;
+  border-radius: 6px;
+}
+
+h2 {
+  margin: 0;
+  color: #5e5873;
+}
+
+h3 {
+  margin: 0 0 20px;
+  color: #5e5873;
+}
+
+h4 {
+  margin: 0 0 15px;
+  color: #6e6b7b;
+  font-size: 1em;
+}
+</style> 

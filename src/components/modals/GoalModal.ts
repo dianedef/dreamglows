@@ -1,14 +1,16 @@
 import { App, Modal } from 'obsidian';
 import { createApp, type App as VueApp } from 'vue';
-import { pinia } from '@/stores';
+import { pinia } from '../../stores';
 import GoalModalContent from './GoalModalContent.vue';
-import { useModalStore } from '@/stores/modalStore';
+import type { Goal } from '../../types/goals';
 
 export class GoalModal extends Modal {
     private vueApp: VueApp | null = null;
+    private goal?: Goal;
 
-    constructor(app: App) {
+    constructor(app: App, goal?: Goal) {
         super(app);
+        this.goal = goal;
         console.log('GoalModal: Constructor called');
     }
 
@@ -25,18 +27,14 @@ export class GoalModal extends Modal {
 
         // Créer l'application Vue
         this.vueApp = createApp(GoalModalContent, {
-            onSubmit: () => {
-                console.log('GoalModal: Submit callback called');
-                this.close();
-            },
-            onCancel: () => {
-                console.log('GoalModal: Cancel callback called');
-                this.close();
-            }
+            editingGoal: this.goal
         });
-
+        
         // Configurer l'application Vue
         this.vueApp.use(pinia);
+        
+        // Fournir la fonction closeModal via provide/inject
+        this.vueApp.provide('closeModal', () => this.close());
 
         // Monter l'application Vue
         this.vueApp.mount(container);
@@ -59,11 +57,6 @@ export class GoalModal extends Modal {
                 this.vueApp.unmount();
                 this.vueApp = null;
             }
-
-            // Réinitialiser le store modal
-            const modalStore = useModalStore();
-            modalStore.closeGoalModal();
-            console.log('GoalModal: Modal store reset');
         } catch (error) {
             console.error('GoalModal: Error during cleanup:', error);
         } finally {

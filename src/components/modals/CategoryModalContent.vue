@@ -69,15 +69,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, inject } from 'vue';
 import { useGoalsStore } from '@/stores/goalsStore';
 
 const props = defineProps<{
   category: string;
-  closeModal: () => void;
 }>();
 
 const goalsStore = useGoalsStore();
+const closeModal = inject('closeModal') as () => void;
 
 const categoryName = ref(props.category);
 const description = ref('');
@@ -90,17 +90,17 @@ const handleSubmit = () => {
     // Mettre à jour la catégorie dans tous les objectifs
     goalsStore.updateCategory(props.category, categoryName.value);
   }
-  props.closeModal();
+  closeModal();
 };
 
 const cancel = () => {
-  props.closeModal();
+  closeModal();
 };
 
 const handleDelete = () => {
   if (confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ? Les objectifs associés ne seront pas supprimés mais n\'auront plus de catégorie.')) {
     goalsStore.deleteCategory(props.category);
-    props.closeModal();
+    closeModal();
   }
 };
 </script>

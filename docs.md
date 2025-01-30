@@ -84,3 +84,218 @@ Les numéros de semaine peuvent changer d'une année à l'autre, même s'ils sui
 
 ### Conclusion
 Donc, bien que les saisons et les trimestres soient des divisions de l'année, elles ne coïncident pas parfaitement. En ce qui concerne les numéros de semaine, même si vous utilisez le même calendrier chaque année, les numéros de semaine peuvent varier en fonction de l'année et du jour de la semaine sur lequel commence l'année.
+
+
+Ah oui, excellente idée ! Cela a beaucoup plus de sens d'intégrer les goals et les tâches directement dans les notes journalières existantes. Modifions le `StorageService` pour cette nouvelle approche :
+
+```typescript:src/services/StorageService.ts
+import { App, TFile, Notice } from 'obsidian';
+import { Goal } from '../types/goals';
+import { Task } from '../types/tasks';
+import { format, parse, isValid } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
+export class StorageService {
+    private app: App;
+    private dataFile: string = '.obsidian/plugins/obs-GoalFlowz/data.json';
+
+    constructor(app: App) {
+        this.app = app;
+    }
+
+    private async getDailyNote(date: Date): Promise<TFile | null> {
+        const formattedDate = format(date, 'yyyy-MM-dd', { locale: fr });
+        const notePath = `${formattedDate}.md`;
+        const file = this.app.vault.getAbstractFileByPath(notePath);
+        return file instanceof TFile ? file : null;
+    }
+
+    private async createOrUpdateDailyNote(date: Date, content: string): Promise<void> {
+        const formattedDate = format(date, 'yyyy-MM-dd', { locale: fr });
+        const notePath = `${formattedDate}.md`;
+        
+        try {
+            const file = await this.getDailyNote(date);
+            if (file) {
+                const existingContent = await this.app.vault.read(file);
+                // Vérifier si la section GoalFlowz existe déjà
+                const regex = /## 🎯 GoalFlowz[\s\S]*?(?=\n## |$)/;
+                const newContent = existingContent.includes('## 🎯 GoalFlowz') 
+                    ? existingContent.replace(regex, content)
+                    : `${existingContent}\n\n${content}`;
+                await this.app.vault.modify(file, newContent);
+            } else {
+                const newContent = `# ${format(date, 'dd MMMM yyyy', { locale: fr })}\n\n${content}`;
+                await this.app.vault.create(notePath, newContent);
+            }
+        } catch (error) {
+            console.error(`Erreur lors de la mise à jour de la note du ${formattedDate}:`, error);
+            throw error;
+        }
+    }
+
+    private async saveToDataJson(data: { goals: Goal[], tasks: Task[] }): Promise<void> {
+        try {
+            await this.app.vault.adapter.write(this.dataFile, JSON.stringify(data, null, 2));
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde dans data.json:', error);
+            throw error;
+        }
+    }
+
+    private async loadFromDataJson(): Promise<{ goals: Goal[], tasks: Task[] }> {
+        try {
+            const exists = await this.app.vault.adapter.exists(this.dataFile);
+            if (!exists) {
+                return { goals: [], tasks: [] };
+            }
+            const content = await this.app.vault.adapter.read(this.dataFile);
+            return JSON.parse(content);
+        } catch (error) {
+            console.error('Erreur lors de la lecture de data.json:', error);
+            return { goals: [], tasks: [] };
+        }
+    }
+
+    private formatGoalForNote(goal: Goal): string {
+        return [
+            `- [ ] ${goal.title}`,
+            `  - ID: ${goal.id}`,
+            `  - Catégorie: ${goal.category}`,
+            `  - Priorité: ${goal.priority}`,
+            `  - Description: ${goal.description}`,
+            goal.tasks.length > 0 ? `  - Tâches: ${goal.tasks.map(id => `#task-${id}`).join(', ')}` : '',
+            ''
+        ].filter(Boolean).join('\n');
+    }
+
+    private formatTaskForNote(task: Task): string {
+        return [
+            `- [ ] ${task.title}`,
+            `  - ID: ${task.id}`,
+            task.goalId ? `  - Objectif: #goal-${task.goalId}` : '',
+            `  - Priorité: ${task.priority}`,
+            task.description ? `  - Description: ${task.description}` : '',
+            task.notes ? `  - Notes: ${task.notes}` : '',
+            ''
+        ].filter(Boolean).join('\n');
+    }
+
+    async saveGoal(goal: Goal): Promise<void> {
+        try {
+            // Si le goal a une date, l'ajouter à la note du jour
+            if (goal.startDate && isValid(new Date(goal.startDate))) {
+                const date = new Date(goal.startDate);
+                const content = `## 🎯 GoalFlowz\n\n### Objectifs\n${this.formatGoalForNote(goal)}`;
+                await this.createOrUpdateDailyNote(date, content);
+            }
+
+            // Sauvegarder aussi dans data.json pour la persistance globale
+            const data = await this.loadFromDataJson();
+            const index = data.goals.findIndex(g => g.id === goal.id);
+            if (index >= 0) {
+                data.goals[index] = goal;
+            } else {
+                data.goals.push(goal);
+            }
+            await this.saveToDataJson(data);
+
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde du goal:', error);
+            new Notice('Erreur lors de la sauvegarde de l\'objectif');
+        }
+    }
+
+    async saveTask(task: Task): Promise<void> {
+        try {
+            // Si la tâche a une date, l'ajouter à la note du jour
+            if (task.startDate && isValid(new Date(task.startDate))) {
+                const date = new Date(task.startDate);
+                const content = `## 🎯 GoalFlowz\n\n### Tâches\n${this.formatTaskForNote(task)}`;
+                await this.createOrUpdateDailyNote(date, content);
+            }
+
+            // Sauvegarder aussi dans data.json pour la persistance globale
+            const data = await this.loadFromDataJson();
+            const index = data.tasks.findIndex(t => t.id === task.id);
+            if (index >= 0) {
+                data.tasks[index] = task;
+            } else {
+                data.tasks.push(task);
+            }
+            await this.saveToDataJson(data);
+
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde de la tâche:', error);
+            new Notice('Erreur lors de la sauvegarde de la tâche');
+        }
+    }
+
+    async loadGoals(): Promise<Goal[]> {
+        try {
+            // Charger les goals depuis data.json
+            const { goals } = await this.loadFromDataJson();
+            return goals;
+        } catch (error) {
+            console.error('Erreur lors du chargement des objectifs:', error);
+            new Notice('Erreur lors du chargement des objectifs');
+            return [];
+        }
+    }
+
+    async loadTasks(): Promise<Task[]> {
+        try {
+            // Charger les tâches depuis data.json
+            const { tasks } = await this.loadFromDataJson();
+            return tasks;
+        } catch (error) {
+            console.error('Erreur lors du chargement des tâches:', error);
+            new Notice('Erreur lors du chargement des tâches');
+            return [];
+        }
+    }
+}
+```
+
+
+Cette nouvelle approche offre plusieurs avantages :
+
+1. **Intégration avec le journal** : Les goals et les tâches sont directement intégrés dans les notes journalières, ce qui permet d'avoir une vue complète de ce qui a été fait chaque jour.
+
+2. **Double stockage intelligent** :
+   - Les goals et tâches avec date sont ajoutés aux notes journalières correspondantes
+   - Tous les goals et tâches (avec ou sans date) sont stockés dans `data.json` pour la persistance globale et la timeline
+
+3. **Format lisible** :
+```markdown
+# 20 Mars 2024
+
+... contenu existant de la note ...
+
+## 🎯 GoalFlowz
+
+### Objectifs
+- [ ] Refactorer le plugin
+  - ID: abc-123
+  - Catégorie: Développement
+  - Priorité: Haute
+  - Description: Améliorer l'architecture du plugin
+  - Tâches: #task-xyz-789, #task-def-456
+
+### Tâches
+- [ ] Implémenter le nouveau stockage
+  - ID: xyz-789
+  - Objectif: #goal-abc-123
+  - Priorité: Haute
+  - Description: Créer le StorageService
+  - Notes: Utiliser les notes journalières
+```
+
+4. **Recherche facilitée** :
+   - Les utilisateurs peuvent facilement rechercher des tâches et des objectifs via la recherche standard d'Obsidian
+   - Les IDs et les liens entre goals et tâches sont maintenus via les tags (#task-id, #goal-id)
+
+Voulez-vous que j'ajoute d'autres fonctionnalités à cette architecture ? Par exemple :
+- Ajouter une section pour le statut de progression
+- Inclure des liens vers d'autres notes liées
+- Ajouter des statistiques journalières

@@ -1,146 +1,205 @@
-import { Plugin, WorkspaceLeaf, TFile, Notice, ItemView, App, Modal } from 'obsidian';
-import { createApp, watch } from 'vue';
+import { Plugin, WorkspaceLeaf, TFile, Notice, ItemView, App } from 'obsidian';
+import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import MainView from './views/MainView.vue';
 import { registerStyles, unregisterStyles } from './styles/RegisterStyles';
 import { MetadataService } from './services/MetadataService';
-import { pinia } from './stores';
 import { useSettingsStore } from './stores/settingsStore';
 import { useGoalsStore } from './stores/goalsStore';
-import type { Goal } from './types/goals';
-import type { GoalFlowzSettings } from './types/settings';
-import { DEFAULT_SETTINGS } from './types/settings';
+import { useTasksStore } from './stores/tasksStore';
 import { GoalFlowzSettingsTab } from './services/SettingsTabService';
 import { NotesGeneratorService } from './services/NotesGeneratorService';
 import { TimeManagementService } from './services/TimeManagementService';
-import { useModalStore } from './stores/modalStore';
-import { GoalsView } from './views/GoalsView';
-import GoalModalContent from './components/modals/GoalModalContent.vue';
-import CategoryModalContent from './components/modals/CategoryModalContent.vue';
-import { useTasksStore } from './stores/tasksStore';
-import { StorageService } from './services/StorageService';
-import TaskModalContent from './components/modals/TaskModalContent.vue';
-import type { Task } from './types/tasks';
 import { GoalModal } from './components/modals/GoalModal';
 import { TaskModal } from './components/modals/TaskModal';
+import { GoalFlowzView, IGoalFlowz } from './views/GoalFlowzView';
+import { DateService } from './services/DateService';
+import { ValidationService } from './services/ValidationService';
+import { FormatterService } from './services/FormatterService';
+import { ParserService } from './services/ParserService';
+import { EventService } from './services/EventService';
+import { StorageService } from './services/StorageService';
+import type { Goal } from './types/goals';
+import type { Task } from './types/tasks';
+import type { GoalFlowzSettings } from './types/settings';
+import { DEFAULT_SETTINGS } from './types/settings';
 
 const VIEW_TYPE_GOALFLOWZ = 'goalflowz-view';
 
-class GoalFlowzView extends ItemView {
-    private vueApp: any;
-    private plugin: GoalFlowz;
-
-    constructor(leaf: WorkspaceLeaf, plugin: GoalFlowz) {
-        super(leaf);
-        this.plugin = plugin;
-    }
-
-    getViewType(): string {
-        return VIEW_TYPE_GOALFLOWZ;
-    }
-
-    getDisplayText(): string {
-        return 'GoalFlowz';
-    }
-
-    getIcon(): string {
-        return 'target';
-    }
-
-    async onOpen() {
-        const container = this.containerEl.children[1];
-        container.empty();
-        container.createEl("div", { cls: "goalflowz-container" });
-
-        // Enregistrer les styles
-        registerStyles('all');
-
-        // Créer l'application Vue avec Pinia
-        this.vueApp = createApp(MainView, {
-            contentFiles: this.app.vault.getMarkdownFiles(),
-            app: this.app
-        });
-        
-        // S'assurer que Pinia est initialisé avant de l'utiliser
-        const pinia = createPinia();
-        this.vueApp.use(pinia);
-        
-        // Initialiser les stores après Pinia
-        const tasksStore = useTasksStore();
-        const goalsStore = useGoalsStore();
-        const storageService = new StorageService(this.app);
-        
-        // Charger les données initiales
-        const { goals, tasks } = await storageService.loadData();
-        goalsStore.goals = goals;
-        tasksStore.tasks = tasks;
-        
-        // Configurer les watchers pour la sauvegarde automatique
-        watch(() => goalsStore.goals, async () => {
-            await storageService.saveData(goalsStore.goals, tasksStore.tasks);
-        }, { deep: true });
-        
-        watch(() => tasksStore.tasks, async () => {
-            await storageService.saveData(goalsStore.goals, tasksStore.tasks);
-        }, { deep: true });
-        
-        // Monter l'application
-        this.vueApp.mount(container.children[0]);
-    }
-
-    async onClose() {
-        if (this.vueApp) {
-            this.vueApp.unmount();
-        }
-    }
-}
-
-export default class GoalFlowz extends Plugin {
-    settings!: GoalFlowzSettings;
-    metadataService!: MetadataService;
-    settingsStore!: ReturnType<typeof useSettingsStore>;
-    goalsStore!: ReturnType<typeof useGoalsStore>;
-    modalStore!: ReturnType<typeof useModalStore>;
+export default class GoalFlowz extends Plugin implements IGoalFlowz {
+    // Services
+    private dateService!: DateService;
+    private validationService!: ValidationService;
+    private formatterService!: FormatterService;
+    private parserService!: ParserService;
+    private eventService!: EventService;
+    private storageService!: StorageService;
+    private metadataService!: MetadataService;
     private notesGenerator!: NotesGeneratorService;
     private timeManager!: TimeManagementService;
+
+    // Stores
+    private _pinia!: ReturnType<typeof createPinia>;
+    private settingsStore!: ReturnType<typeof useSettingsStore>;
+    private goalsStore!: ReturnType<typeof useGoalsStore>;
     private tasksStore!: ReturnType<typeof useTasksStore>;
-    private pinia!: ReturnType<typeof createPinia>;
+
+    // Vue
     private view: GoalFlowzView | null = null;
+
+    // Settings
+    settings!: GoalFlowzSettings;
+
+    // Getter pour pinia (requis par l'interface IGoalFlowz)
+    get pinia(): ReturnType<typeof createPinia> {
+        return this._pinia;
+    }
 
     async onload() {
         try {
-            // Charger les settings en premier
-            await this.loadSettings();
+            console.log('Initialisation de GoalFlowz...');
             
-            // Initialiser Pinia
-            this.pinia = createPinia();
+            // 1. Initialiser les settings (requis pour tout le reste)
+            await this.initializeSettings();
+            
+            // 2. Initialiser les services de base
+            await this.initializeBaseServices();
+            
+            // 3. Initialiser les services dépendants
+            await this.initializeDependentServices();
+            
+            // 4. Initialiser les stores et la gestion d'état
+            await this.initializeStores();
+            
+            // 5. Initialiser l'interface utilisateur
+            await this.initializeUI();
+            
+            console.log('GoalFlowz initialisé avec succès');
+        } catch (error) {
+            console.error('Erreur fatale lors de l\'initialisation de GoalFlowz:', error);
+            new Notice('Erreur lors du chargement de GoalFlowz. Vérifiez la console pour plus de détails.');
+            throw error;
+        }
+    }
+
+    private async initializeSettings() {
+        console.log('Initialisation des settings...');
+        try {
+            const loadedData = await this.loadData();
+            this.settings = this.validateSettings(loadedData);
+            console.log('Settings initialisés:', this.settings);
+        } catch (error) {
+            console.error('Erreur lors de l\'initialisation des settings:', error);
+            this.settings = { ...DEFAULT_SETTINGS };
+            console.log('Utilisation des settings par défaut');
+        }
+    }
+
+    private async initializeBaseServices() {
+        console.log('Initialisation des services de base...');
+        try {
+            // Services sans dépendances
+            this.dateService = new DateService(this.settings.monthLanguage);
+            this.eventService = new EventService();
+            this.validationService = new ValidationService(this.dateService);
+            
+            console.log('Services de base initialisés');
+        } catch (error) {
+            console.error('Erreur lors de l\'initialisation des services de base:', error);
+            throw new Error('Échec de l\'initialisation des services de base');
+        }
+    }
+
+    private async initializeDependentServices() {
+        console.log('Initialisation des services dépendants...');
+        try {
+            // Services avec dépendances
+            this.formatterService = new FormatterService(this.validationService);
+            this.parserService = new ParserService(this.validationService, this.dateService);
+            this.storageService = new StorageService(
+                this.app,
+                this.dateService,
+                this.validationService,
+                this.formatterService,
+                this.parserService,
+                this.eventService
+            );
+            this.metadataService = new MetadataService(this.app.vault, this.app.metadataCache);
+            this.notesGenerator = new NotesGeneratorService(
+                this.app,
+                this.settings,
+                this.dateService,
+                this.validationService,
+                this.storageService
+            );
+            this.timeManager = new TimeManagementService(this.app, this.settings);
+            
+            console.log('Services dépendants initialisés');
+        } catch (error) {
+            console.error('Erreur lors de l\'initialisation des services dépendants:', error);
+            throw new Error('Échec de l\'initialisation des services dépendants');
+        }
+    }
+
+    private async initializeStores() {
+        console.log('Initialisation des stores...');
+        try {
+            // Créer et configurer Pinia
+            this._pinia = createPinia();
             
             // Initialiser les stores
-            this.settingsStore = useSettingsStore(this.pinia);
-            this.goalsStore = useGoalsStore(this.pinia);
-            this.tasksStore = useTasksStore(this.pinia);
-            this.modalStore = useModalStore();
+            this.settingsStore = useSettingsStore(this._pinia);
+            this.goalsStore = useGoalsStore(this._pinia);
+            this.tasksStore = useTasksStore(this._pinia);
             
-            // Initialiser le store avec les settings actuels
+            // Charger les données initiales
+            const data = await this.loadPluginData();
+            
+            // Mettre à jour les stores
             this.settingsStore.$patch({ settings: this.settings });
+            this.goalsStore.$patch({ goals: data.goals });
+            this.tasksStore.$patch({ tasks: data.tasks });
             
-            // Watcher pour la synchronisation bidirectionnelle
-            this.register(
-                this.settingsStore.$subscribe(async (_mutation, state) => {
-                    // Vérifier si les settings ont réellement changé
-                    if (JSON.stringify(this.settings) !== JSON.stringify(state.settings)) {
-                        this.settings = { ...state.settings };
-                        await this.saveSettings();
-                    }
-                })
-            );
+            // Configurer les watchers
+            this.setupStoreWatchers();
+            
+            console.log('Stores initialisés');
+        } catch (error) {
+            console.error('Erreur lors de l\'initialisation des stores:', error);
+            throw new Error('Échec de l\'initialisation des stores');
+        }
+    }
 
-            // Initialiser les services avec les settings à jour
-            this.modalStore.initialize(this.app);
-            this.metadataService = new MetadataService(this.app.vault, this.app.metadataCache);
-            this.notesGenerator = new NotesGeneratorService(this.app, this.settings);
-            this.timeManager = new TimeManagementService(this.app, this.settings);
+    private setupStoreWatchers() {
+        // Watcher pour les settings
+        this.register(
+            this.settingsStore.$subscribe(async (_mutation, state) => {
+                if (JSON.stringify(this.settings) !== JSON.stringify(state.settings)) {
+                    this.settings = { ...state.settings };
+                    await this.saveSettings();
+                }
+            })
+        );
 
+        // Watcher pour les goals
+        this.register(
+            this.goalsStore.$subscribe(async (_mutation, state) => {
+                console.log('🎯 Sauvegarde automatique des goals:', state.goals.length, 'goals');
+                await this.savePluginData(state.goals, this.tasksStore.tasks);
+            })
+        );
+
+        // Watcher pour les tâches
+        this.register(
+            this.tasksStore.$subscribe(async (_mutation, state) => {
+                console.log('📝 Sauvegarde automatique des tâches:', state.tasks.length, 'tâches');
+                await this.savePluginData(this.goalsStore.goals, state.tasks);
+            })
+        );
+    }
+
+    private async initializeUI() {
+        console.log('Initialisation de l\'interface...');
+        try {
             // Enregistrer la vue
             this.registerView(VIEW_TYPE_GOALFLOWZ, (leaf) => {
                 this.view = new GoalFlowzView(leaf, this);
@@ -166,7 +225,6 @@ export default class GoalFlowz extends Plugin {
                 hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "G" }]
             });
 
-            // Commande pour créer une nouvelle tâche
             this.addCommand({
                 id: 'create-new-task',
                 name: 'Créer une nouvelle tâche',
@@ -184,53 +242,78 @@ export default class GoalFlowz extends Plugin {
 
             // Ajouter l'onglet de paramètres
             this.addSettingTab(new GoalFlowzSettingsTab(this.app, this));
-
-            // Chargement des données
-            const storageService = new StorageService(this.app);
-            const data = await storageService.loadData();
-            this.goalsStore.$patch({ goals: data.goals });
-            this.tasksStore.$patch({ tasks: data.tasks });
-
-            // Sauvegarde automatique des données
-            watch(
-                [() => this.goalsStore.goals, () => this.tasksStore.tasks],
-                async ([goals, tasks]) => {
-                    await storageService.saveData(goals, tasks);
-                },
-                { deep: true }
-            );
+            
+            console.log('Interface initialisée');
         } catch (error) {
-            console.error('Erreur lors du chargement de GoalFlowz:', error);
-            new Notice('Erreur lors du chargement de GoalFlowz. Vérifiez la console pour plus de détails.');
+            console.error('Erreur lors de l\'initialisation de l\'interface:', error);
+            throw new Error('Échec de l\'initialisation de l\'interface');
         }
     }
 
     onunload() {
-        unregisterStyles();
-        this.app.workspace.detachLeavesOfType(VIEW_TYPE_GOALFLOWZ);
+        console.log('Déchargement de GoalFlowz...');
+        try {
+            unregisterStyles();
+            this.app.workspace.detachLeavesOfType(VIEW_TYPE_GOALFLOWZ);
+            console.log('GoalFlowz déchargé avec succès');
+        } catch (error) {
+            console.error('Erreur lors du déchargement de GoalFlowz:', error);
+        }
     }
 
-    async loadSettings() {
+    // Méthodes utilitaires existantes
+    async loadPluginData() {
         try {
-            const loadedData = await this.loadData();
-            console.log('Données chargées:', loadedData);
-
-            // Valider et fusionner avec les paramètres par défaut
-            const validatedSettings = this.validateSettings(loadedData);
-            this.settings = validatedSettings;
-            
-            console.log('Settings chargés et validés:', this.settings);
+            const data = await this.loadData();
+            return {
+                goals: data?.goals || [],
+                tasks: data?.tasks || []
+            };
         } catch (error) {
-            console.error('Erreur lors du chargement des settings:', error);
-            // En cas d'erreur, utiliser les paramètres par défaut
-            this.settings = { ...DEFAULT_SETTINGS };
+            console.error('Erreur lors du chargement des données:', error);
+            return { goals: [], tasks: [] };
         }
+    }
+
+    async savePluginData(goals: Goal[], tasks: Task[]) {
+        try {
+            await this.saveData({ goals, tasks });
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde des données:', error);
+            new Notice('Erreur lors de la sauvegarde des données');
+        }
+    }
+
+    async saveSettings() {
+        console.log('Sauvegarde des settings:', this.settings);
+        try {
+            const validatedSettings = this.validateSettings(this.settings);
+            await this.saveData(validatedSettings);
+            console.log('Settings sauvegardés avec succès');
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde des settings:', error);
+            new Notice('Erreur lors de la sauvegarde des paramètres');
+        }
+    }
+
+    async activateView() {
+        const { workspace } = this.app;
+        let leaf = workspace.getLeavesOfType(VIEW_TYPE_GOALFLOWZ)[0];
+        
+        if (!leaf) {
+            leaf = workspace.getLeaf('tab');
+            await leaf.setViewState({
+                type: VIEW_TYPE_GOALFLOWZ,
+                active: true,
+            });
+        }
+        
+        workspace.revealLeaf(leaf);
     }
 
     private validateSettings(loadedData: any): GoalFlowzSettings {
         const settings = { ...DEFAULT_SETTINGS };
 
-        // Valider et fusionner chaque propriété
         if (loadedData) {
             // Valider lastActiveTab
             if (loadedData.lastActiveTab && ['day', 'goals', 'planning', 'stats'].includes(loadedData.lastActiveTab)) {
@@ -292,137 +375,5 @@ export default class GoalFlowz extends Plugin {
         }
 
         return settings;
-    }
-
-    async saveSettings() {
-        console.log('Sauvegarde des settings:', this.settings);
-        try {
-            // Valider les settings avant la sauvegarde
-            const validatedSettings = this.validateSettings(this.settings);
-            await this.saveData(validatedSettings);
-            console.log('Settings sauvegardés avec succès');
-        } catch (error) {
-            console.error('Erreur lors de la sauvegarde des settings:', error);
-            new Notice('Erreur lors de la sauvegarde des paramètres');
-        }
-    }
-
-    async activateView() {
-        const { workspace } = this.app;
-        
-        let leaf = workspace.getLeavesOfType(VIEW_TYPE_GOALFLOWZ)[0];
-        
-        if (!leaf) {
-            leaf = workspace.getRightLeaf(false);
-            await leaf.setViewState({
-                type: VIEW_TYPE_GOALFLOWZ,
-                active: true,
-            });
-        }
-        
-        workspace.revealLeaf(leaf);
-    }
-
-    async generateNotes(): Promise<void> {
-        await this.notesGenerator.generateNotes();
-    }
-}
-
-// Classes de base pour les modales
-class BaseModal extends Modal {
-    protected vueApp: any = null;
-
-    onClose() {
-        if (this.vueApp) {
-            this.vueApp.unmount();
-            this.vueApp = null;
-        }
-        super.onClose();
-    }
-}
-
-export class GoalModal extends BaseModal {
-    private goal?: Goal;
-
-    constructor(app: App, goal?: Goal) {
-        super(app);
-        this.goal = goal;
-    }
-
-    onOpen() {
-        const { contentEl } = this;
-        contentEl.empty();
-        
-        const modalContent = contentEl.createDiv('goalflowz-modal-content');
-        
-        const modalStore = useModalStore();
-        if (this.goal) {
-            modalStore.openGoalModal(this.goal);
-        } else {
-            modalStore.openGoalModal();
-        }
-
-        this.vueApp = createApp(GoalModalContent, {
-            editingGoal: this.goal
-        });
-
-        this.vueApp.use(pinia);
-        this.vueApp.provide('closeModal', () => this.close());
-        this.vueApp.mount(modalContent);
-    }
-
-    onClose() {
-        super.onClose();
-        const modalStore = useModalStore();
-        modalStore.closeGoalModal();
-    }
-}
-
-export class CategoryModal extends BaseModal {
-    private category: string;
-
-    constructor(app: App, category: string) {
-        super(app);
-        this.category = category;
-    }
-
-    onOpen() {
-        const { contentEl } = this;
-        contentEl.empty();
-        
-        const modalContent = contentEl.createDiv('goalflowz-modal-content');
-        
-        this.vueApp = createApp(CategoryModalContent, {
-            category: this.category,
-            closeModal: () => this.close()
-        });
-
-        this.vueApp.use(pinia);
-        this.vueApp.mount(modalContent);
-    }
-}
-
-export class TaskModal extends BaseModal {
-    private task?: Task;
-
-    constructor(app: App, task?: Task) {
-        super(app);
-        this.task = task;
-    }
-
-    onOpen() {
-        const { contentEl } = this;
-        contentEl.empty();
-        
-        const modalContent = contentEl.createDiv('goalflowz-modal-content');
-        
-        this.vueApp = createApp(TaskModalContent, {
-            task: this.task,
-            onSave: () => this.close(),
-            onClose: () => this.close()
-        });
-
-        this.vueApp.use(pinia);
-        this.vueApp.mount(modalContent);
     }
 }

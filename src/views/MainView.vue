@@ -20,7 +20,6 @@
             :contentFiles="contentFiles"
             :app="app"
         />
-        <GoalModal />
     </div>
 </template>
 
@@ -31,7 +30,6 @@ import GoalsView from './GoalsView.vue';
 import StatsView from './StatsView.vue';
 import DayView from './DayView.vue';
 import PlanningView from './PlanningView.vue';
-import GoalModal from '@/components/modals/GoalModal.vue';
 import { useSettingsStore } from '../stores/settingsStore';
 
 const props = defineProps<{

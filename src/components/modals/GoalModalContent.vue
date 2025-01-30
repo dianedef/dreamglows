@@ -150,6 +150,63 @@
             </div>
           </div>
         </div>
+
+        <div class="goalflowz-setting-item">
+          <div class="goalflowz-setting-item-info">
+            <div class="goalflowz-setting-item-name">Métriques</div>
+            <div class="goalflowz-setting-item-description">Définissez des métriques pour suivre votre progression</div>
+          </div>
+          <div class="goalflowz-setting-item-control">
+            <div class="goalflowz-setting-item-control-grid">
+              <div>
+                <div class="goalflowz-setting-item-name">Objectif</div>
+                <input 
+                  type="number" 
+                  class="text-input-reset"
+                  v-model="formData.metrics.target"
+                  placeholder="Valeur cible"
+                >
+              </div>
+              <div>
+                <div class="goalflowz-setting-item-name">Unité</div>
+                <input 
+                  type="text" 
+                  class="text-input-reset"
+                  v-model="formData.metrics.unit"
+                  placeholder="ex: heures, km, etc."
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="goalflowz-setting-item">
+          <div class="goalflowz-setting-item-info">
+            <div class="goalflowz-setting-item-name">Récurrence</div>
+            <div class="goalflowz-setting-item-description">Définissez si cet objectif est récurrent</div>
+          </div>
+          <div class="goalflowz-setting-item-control">
+            <div class="goalflowz-setting-item-control-grid">
+              <div>
+                <select v-model="formData.recurring.frequency" class="dropdown">
+                  <option value="">Non récurrent</option>
+                  <option value="daily">Quotidien</option>
+                  <option value="weekly">Hebdomadaire</option>
+                  <option value="monthly">Mensuel</option>
+                  <option value="yearly">Annuel</option>
+                </select>
+              </div>
+              <div v-if="formData.recurring.frequency">
+                <div class="goalflowz-setting-item-name">Date de fin</div>
+                <input 
+                  type="date" 
+                  class="text-input-reset"
+                  v-model="formData.recurring.endDate"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="goalflowz-modal-button-container">
@@ -173,10 +230,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, inject, onMounted } from 'vue';
+import { ref, computed, onMounted, inject } from 'vue';
 import { useGoalsStore } from '@/stores/goalsStore';
-import type { Goal } from '@/types/goals';
-import { useModalStore } from '@/stores/modalStore';
+import type { Goal, GoalStatus, GoalPriority, GoalFrequency } from '@/types/goals';
+import { Notice } from 'obsidian';
+import { v4 as uuidv4 } from 'uuid';
 
 const props = defineProps<{
   editingGoal?: Goal;
@@ -184,27 +242,52 @@ const props = defineProps<{
 
 const goalsStore = useGoalsStore();
 const closeModal = inject('closeModal') as () => void;
-const modalStore = useModalStore();
 
 const isEditing = computed(() => !!props.editingGoal);
 const showNewCategoryInput = ref(false);
 const newCategory = ref('');
+const tagInput = ref('');
+
+// État initial du formulaire
+const defaultFormData: Goal = {
+  id: uuidv4(),
+  title: '',
+  description: '',
+  category: '',
+  startDate: new Date().toISOString().split('T')[0],
+  status: 'todo' as GoalStatus,
+  priority: 'medium' as GoalPriority,
+  tasks: [],
+  subGoalIds: [],
+  progress: 0,
+  tags: [],
+  metrics: {
+    target: 0,
+    current: 0,
+    unit: ''
+  },
+  recurring: {
+    frequency: '' as GoalFrequency,
+    endDate: undefined
+  }
+};
+
+// Initialiser le formulaire avec les données d'édition ou les valeurs par défaut
+const formData = ref<Goal>(props.editingGoal ? { ...props.editingGoal } : { ...defaultFormData });
 
 // Récupérer toutes les catégories existantes
 const categories = computed(() => {
-  const allCategories = new Set(goalsStore.goals.map(g => g.category).filter(Boolean));
-  return Array.from(allCategories);
+  return [...new Set(goalsStore.goals.map(g => g.category).filter(Boolean))];
 });
 
 // Récupérer tous les tags existants
 const existingTags = computed(() => {
-  const allTags = new Set(goalsStore.goals.flatMap(g => g.tags || []));
-  return Array.from(allTags);
+  const allTags = goalsStore.goals.flatMap(g => g.tags || []);
+  return [...new Set(allTags)];
 });
 
-const handleCategoryChange = (event: Event) => {
-  const value = (event.target as HTMLSelectElement).value;
-  if (value === 'new') {
+const handleCategoryChange = () => {
+  if (formData.value.category === 'new') {
     showNewCategoryInput.value = true;
     formData.value.category = '';
   }
@@ -214,87 +297,153 @@ const addNewCategory = () => {
   if (newCategory.value.trim()) {
     formData.value.category = newCategory.value.trim();
     newCategory.value = '';
-    showNewCategoryInput.value = false;
   }
+  showNewCategoryInput.value = false;
 };
 
-const formData = ref<Partial<Goal>>({
-  title: '',
-  description: '',
-  startDate: new Date().toISOString().split('T')[0],
-  dueDate: '',
-  priority: 'medium',
-  status: 'todo',
-  category: '',
-  tags: [],
-  tasks: [],
-  progress: 0,
-  subGoalIds: []
-});
-
-// Initialiser le formulaire avec les valeurs de l'objectif à modifier ou les valeurs initiales
-onMounted(() => {
-  if (props.editingGoal) {
-    formData.value = { ...props.editingGoal };
-  } else if (modalStore.initialGoalData) {
-    formData.value = {
-      ...formData.value,  // Garder les valeurs par défaut
-      ...modalStore.initialGoalData  // Écraser avec les valeurs initiales
-    };
-  }
-});
-
-const tagInput = ref('');
-
 const addTag = () => {
-  if (tagInput.value.trim() && !formData.value.tags?.includes(tagInput.value.trim())) {
-    formData.value.tags = [...(formData.value.tags || []), tagInput.value.trim()];
-    tagInput.value = '';
+  const tag = tagInput.value.trim();
+  if (tag && !formData.value.tags?.includes(tag)) {
+    if (!formData.value.tags) {
+      formData.value.tags = [];
+    }
+    formData.value.tags.push(tag);
   }
+  tagInput.value = '';
 };
 
 const removeTag = (tag: string) => {
-  formData.value.tags = formData.value.tags?.filter(t => t !== tag) || [];
+  if (formData.value.tags) {
+    formData.value.tags = formData.value.tags.filter(t => t !== tag);
+  }
+};
+
+const handleSubmit = async () => {
+  try {
+    if (isEditing.value) {
+      await goalsStore.updateGoal(formData.value);
+      new Notice('Objectif mis à jour avec succès');
+    } else {
+      await goalsStore.createGoal(formData.value);
+      new Notice('Objectif créé avec succès');
+    }
+    closeModal();
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde de l\'objectif:', error);
+    new Notice('Erreur lors de la sauvegarde de l\'objectif');
+  }
+};
+
+const handleDelete = async () => {
+  if (formData.value.id) {
+    try {
+      await goalsStore.deleteGoal(formData.value.id);
+      new Notice('Objectif supprimé avec succès');
+      closeModal();
+    } catch (error) {
+      console.error('Erreur lors de la suppression de l\'objectif:', error);
+      new Notice('Erreur lors de la suppression de l\'objectif');
+    }
+  }
 };
 
 const cancel = () => {
   closeModal();
 };
+</script>
 
-const handleSubmit = async () => {
-  try {
-    console.log('GoalModalContent: Starting submit');
-    if (isEditing.value) {
-      await goalsStore.updateGoal({
-        ...props.editingGoal,
-        ...formData.value
-      } as Goal);
-    } else {
-      await goalsStore.addGoal({
-        ...formData.value,
-        id: crypto.randomUUID()
-      } as Goal);
-    }
-    console.log('GoalModalContent: Store operation complete');
+<style scoped>
+.goalflowz-modal-container {
+  padding: 1rem;
+}
 
-    // Fermer la modale immédiatement
-    closeModal();
-  } catch (error) {
-    console.error('GoalModalContent: Error during submit:', error);
-  }
-};
+.goalflowz-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-const handleDelete = async () => {
-  try {
-    if (props.editingGoal?.id) {
-      const confirmDelete = confirm('Êtes-vous sûr de vouloir supprimer cet objectif ?');
-      if (confirmDelete) {
-        await goalsStore.deleteGoal(props.editingGoal.id);
-        closeModal();
-      }
-    }
-  } catch (error) {
-    console.error('GoalModalContent: Error during delete:', error);
-  }
-};
-</script> 
+.goalflowz-setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.goalflowz-setting-item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.goalflowz-setting-item-name {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+.goalflowz-setting-item-description {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.goalflowz-setting-item-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.goalflowz-setting-item-control-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.goalflowz-category-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.goalflowz-tag-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.goalflowz-tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.goalflowz-tag {
+  background-color: var(--background-modifier-hover);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.clickable-icon {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.clickable-icon:hover {
+  opacity: 1;
+}
+
+.goalflowz-modal-button-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.text-input-reset {
+  width: 100%;
+}
+
+.dropdown {
+  width: 100%;
+}
+</style> 

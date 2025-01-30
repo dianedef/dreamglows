@@ -107,7 +107,7 @@
 import { ref, computed } from 'vue';
 import { useTasksStore } from '@/stores/tasksStore';
 import type { Task, TaskStatus, TaskPriority } from '@/types/tasks';
-import { TaskModal } from '@/main';
+import { TaskModal } from '@/components/modals/TaskModal';
 
 const props = defineProps<{
   app: any;
@@ -120,19 +120,25 @@ const searchQuery = ref('');
 const sortBy = ref('date');
 
 // Statistiques
-const todoCount = computed(() => 
-  tasksStore.getTasks.filter(t => t.status === 'todo').length
-);
-const inProgressCount = computed(() => 
-  tasksStore.getTasks.filter(t => t.status === 'in-progress').length
-);
-const doneCount = computed(() => 
-  tasksStore.getTasks.filter(t => t.status === 'done').length
-);
+const todoCount = computed(() => {
+  console.log('📊 Calcul todoCount avec', tasksStore.tasks.length, 'tâches');
+  return tasksStore.tasks.filter(t => t.status === 'todo').length;
+});
+
+const inProgressCount = computed(() => {
+  console.log('📊 Calcul inProgressCount avec', tasksStore.tasks.length, 'tâches');
+  return tasksStore.tasks.filter(t => t.status === 'in-progress').length;
+});
+
+const doneCount = computed(() => {
+  console.log('📊 Calcul doneCount avec', tasksStore.tasks.length, 'tâches');
+  return tasksStore.tasks.filter(t => t.status === 'done').length;
+});
 
 // Filtrage et tri
 const filteredTasks = computed(() => {
-  return tasksStore.getTasks.filter(task => {
+  console.log('🔍 Filtrage des tâches:', tasksStore.tasks.length, 'tâches');
+  return tasksStore.tasks.filter(task => {
     if (filterStatus.value && task.status !== filterStatus.value) return false;
     if (filterPriority.value && task.priority !== filterPriority.value) return false;
     if (searchQuery.value) {
@@ -147,6 +153,7 @@ const filteredTasks = computed(() => {
 
 const sortedAndFilteredTasks = computed(() => {
   const tasks = [...filteredTasks.value];
+  console.log('📋 Tri des tâches filtrées:', tasks.length, 'tâches');
   const priorityOrder = { high: 0, medium: 1, low: 2 };
 
   switch (sortBy.value) {
