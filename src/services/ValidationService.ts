@@ -204,4 +204,61 @@ export class ValidationService {
             );
         }
     }
+
+    validateNoteContent(content: string): void {
+        // Vérifier la présence des sections requises
+        const requiredSections = ['## 🎯 Objectifs du jour', '## 📝 Notes', '## 📊 Bilan de la journée'];
+        for (const section of requiredSections) {
+            if (!content.includes(section)) {
+                throw new ValidationError(
+                    'Structure de note invalide',
+                    `La section "${section}" est manquante`
+                );
+            }
+        }
+
+        // Vérifier les caractères interdits dans les titres
+        const lines = content.split('\n');
+        const titleLines = lines.filter(line => line.startsWith('#'));
+        const forbiddenChars = /[<>:"|?*]/;
+        
+        for (const title of titleLines) {
+            if (forbiddenChars.test(title)) {
+                throw new ValidationError(
+                    'Caractères invalides dans le titre',
+                    `Le titre "${title}" contient des caractères non autorisés`
+                );
+            }
+        }
+
+        // Vérifier le format des tags
+        const tagRegex = /#[a-zA-Z0-9-]+/g;
+        const tags = content.match(/#[^\s#]+/g) || [];
+        for (const tag of tags) {
+            if (!tagRegex.test(tag)) {
+                throw new ValidationError(
+                    'Format de tag invalide',
+                    `Le tag "${tag}" ne respecte pas le format #tag-name`
+                );
+            }
+        }
+    }
+
+    validateLatexAndCode(content: string): void {
+        // Détecter le LaTeX inline
+        if (content.includes('$')) {
+            throw new ValidationError(
+                'LaTeX non supporté',
+                'Le LaTeX inline ($...$) n\'est pas supporté pour éviter les conflits de parsing'
+            );
+        }
+
+        // Détecter les blocs de code
+        if (content.includes('```')) {
+            throw new ValidationError(
+                'Blocs de code non supportés',
+                'Les blocs de code ne sont pas supportés pour éviter les conflits de parsing'
+            );
+        }
+    }
 } 

@@ -182,7 +182,7 @@ export class StorageService {
                 if (dailyNote) {
                     // Mettre à jour la note existante
                     const parsed = this.parserService.parseDailyNote(content, dateStr);
-                    const updatedGoals = parsed.goals.filter(g => g.id !== goal.id);
+                    const updatedGoals = parsed.goals.filter((g: Goal) => g.id !== goal.id);
                     updatedGoals.push(goal);
                     
                     const newContent = this.formatterService.formatDailyNote(
@@ -237,7 +237,7 @@ export class StorageService {
                 if (dailyNote) {
                     // Mettre à jour la note existante
                     const parsed = this.parserService.parseDailyNote(content, dateStr);
-                    const updatedTasksToStart = parsed.tasksToStart.filter(t => t.id !== task.id);
+                    const updatedTasksToStart = parsed.tasksToStart.filter((t: Task) => t.id !== task.id);
                     updatedTasksToStart.push(task);
                     
                     const newContent = this.formatterService.formatDailyNote(
@@ -265,7 +265,7 @@ export class StorageService {
                 if (dailyNote) {
                     // Mettre à jour la note existante
                     const parsed = this.parserService.parseDailyNote(content, dateStr);
-                    const updatedTasksToEnd = parsed.tasksToEnd.filter(t => t.id !== task.id);
+                    const updatedTasksToEnd = parsed.tasksToEnd.filter((t: Task) => t.id !== task.id);
                     updatedTasksToEnd.push(task);
                     
                     const newContent = this.formatterService.formatDailyNote(

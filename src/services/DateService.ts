@@ -11,9 +11,16 @@ export class DateService {
         FULL: 'EEEE d MMMM yyyy'
     };
 
-    constructor(private locale: string = 'fr') {
+    private notesDirectory: string;
+
+    constructor(private locale: string = 'fr', notesDirectory: string = 'Journal') {
         // Configurer la locale par défaut
         DateTime.local().setLocale(locale);
+        this.notesDirectory = notesDirectory;
+    }
+
+    getNotesDirectory(): string {
+        return this.notesDirectory;
     }
 
     /**

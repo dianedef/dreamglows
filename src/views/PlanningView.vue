@@ -1,5 +1,26 @@
 <template>
     <div class="goalflowz-planning-view">
+        <div class="goalflowz-toolbar">
+            <div class="goalflowz-toolbar-left">
+                <NotesGenerator :notesGenerator="props.app.plugins.plugins.goalflowz?.notesGenerator" />
+            </div>
+            <div class="goalflowz-toolbar-right">
+                <button 
+                    class="goalflowz-button"
+                    :class="{ active: viewType === 'list' }"
+                    @click="viewType = 'list'"
+                >
+                    📋 Liste
+                </button>
+                <button 
+                    class="goalflowz-button"
+                    :class="{ active: viewType === 'week' }"
+                    @click="viewType = 'week'"
+                >
+                    📅 Semaine
+                </button>
+            </div>
+        </div>
         <div class="goalflowz-planning-controls">
             <button @click="previousWeek">◀</button>
             <span>{{ weekLabel }}</span>
@@ -116,6 +137,7 @@ import type { TFile } from 'obsidian';
 import { useSettingsStore } from '../stores/settingsStore';
 import ListViewNotes from './planning/ListViewNotes.vue';
 import WeekViewNotes from './planning/WeekViewNotes.vue';
+import NotesGenerator from '../components/notes/NotesGenerator.vue';
 import { DateTime } from 'luxon';
 import type { WeekNotes } from '../services/TimeManagementService';
 import type { Note, Task, TaskPriority, TaskStatus } from '../types';
@@ -601,6 +623,15 @@ const weekNotes = computed(() => {
     return currentWeek.value?.notes || [];
 });
 
+const generateNotes = async () => {
+    try {
+        await props.app.plugins.plugins.goalflowz.generateNotes();
+        await loadNotes(); // Recharger les notes après la génération
+    } catch (error) {
+        console.error('Erreur lors de la génération des notes:', error);
+    }
+};
+
 onMounted(() => {
     registerStyles('list');
     loadNotes();
@@ -618,4 +649,42 @@ interface WeekViewData {
     weekNumber: number;
 }
 </script>
+
+<style>
+.goalflowz-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--background-secondary);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.goalflowz-toolbar-left,
+.goalflowz-toolbar-right {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.goalflowz-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.goalflowz-button:hover {
+    background: var(--background-primary-alt);
+    border-color: var(--text-accent);
+}
+
+.goalflowz-button.active {
+    background: var(--text-accent);
+    color: var(--text-on-accent);
+    border-color: var(--text-accent);
+}
+</style>
 

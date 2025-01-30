@@ -39,9 +39,9 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
             .addDropdown(dropdown => dropdown
                 .addOption('monthly', 'Par mois (ex: Janvier/notes)')
                 .addOption('flat', 'Structure plate (toutes les notes dans le même dossier)')
-                .setValue(this.plugin.settings.folderStructure || 'monthly')
+                .setValue(this.plugin.settings.folderStructure === 'flat' ? 'flat' : 'monthly')
                 .onChange(async (value) => {
-                    this.plugin.settings.folderStructure = value;
+                    this.plugin.settings.folderStructure = value as 'monthly' | 'flat';
                     await this.plugin.saveSettings();
                     this.display(); // Rafraîchir pour afficher/masquer les options de langue
                 }));
@@ -56,7 +56,7 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
                     .addOption('en', 'Anglais (ex: January)')
                     .setValue(this.plugin.settings.monthLanguage || 'fr')
                     .onChange(async (value) => {
-                        this.plugin.settings.monthLanguage = value;
+                        this.plugin.settings.monthLanguage = value as 'fr' | 'en';
                         await this.plugin.saveSettings();
                     }));
         }
@@ -71,18 +71,6 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
                 .onClick(async () => {
                     await this.plugin.generateNotes();
                 }));
-
-        // Template des notes
-        new Setting(containerEl)
-            .setName('Template des notes')
-            .setDesc('Personnalisez le template de vos notes journalières')
-            .addTextArea(text => text
-                .setValue(this.plugin.settings.noteTemplate || defaultTemplate)
-                .onChange(async (value) => {
-                    this.plugin.settings.noteTemplate = value;
-                    await this.plugin.saveSettings();
-                }))
-            .setClass('template-setting');
 
         // Le template par défaut qu'on peut définir comme constante
         const defaultTemplate = `# 📓 {day}{suffix} {month}
@@ -103,29 +91,13 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
             .addDropdown(dropdown => dropdown
                 .addOption('1', '📓 1er Janvier 01/01')
                 .addOption('2', '📓 1er Février 02/01')
-                .addOption('custom', 'Format personnalisé')
-                .setValue(this.plugin.settings.notesFormat || 'daily')
+                .setValue(this.plugin.settings.notesFormat || '1')
                 .onChange(async (value) => {
-                    this.plugin.settings.notesFormat = value;
+                    this.plugin.settings.notesFormat = value as '1' | '2';
                     await this.plugin.saveSettings();
                     this.display();
                 }));
 
-        // Afficher le champ de format personnalisé si nécessaire
-        if (this.plugin.settings.notesFormat === 'custom') {
-            new Setting(containerEl)
-                .setName('Format personnalisé')
-                .setDesc('Utilisez les variables : YYYY (année), MM (mois), DD (jour), WW (semaine)')
-                .addText(text => text
-                    .setPlaceholder('YYYY/MM/DD')
-                    .setValue(this.plugin.settings.customNotesFormat)
-                    .onChange(async (value) => {
-                        this.plugin.settings.customNotesFormat = value;
-                        await this.plugin.saveSettings();
-                    }));
-        }
-
-        
         // Section IA
         containerEl.createEl('h3', { text: '🤖 Intelligence Artificielle' });
 
@@ -187,8 +159,8 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
                 .addOption('24h', '24h (ex: 14:30)')
                 .addOption('12h', '12h (ex: 2:30 PM)')
                 .setValue(this.plugin.settings.timeFormat)
-                .onChange(async (value: '12h' | '24h') => {
-                    this.plugin.settings.timeFormat = value;
+                .onChange(async (value) => {
+                    this.plugin.settings.timeFormat = value as '12h' | '24h';
                     await this.plugin.saveSettings();
                 }));
 
@@ -222,17 +194,17 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }));
 
-        // Tâches par défaut
-        containerEl.createEl('h3', { text: 'Tâches par défaut' });
+        // Rituels
+        containerEl.createEl('h3', { text: '🕯️ Rituels' });
         
         new Setting(containerEl)
-            .setName('Tâches par défaut')
-            .setDesc('Gérez les tâches par défaut pour les nouveaux objectifs')
+            .setName('Rituels')
+            .setDesc('Gérez vos rituels quotidiens')
             .addButton(button => button
-                .setButtonText('Ajouter une tâche')
+                .setButtonText('Ajouter un rituel')
                 .onClick(async () => {
-                    this.plugin.settings.defaultTasks.push({
-                        label: 'Nouvelle tâche',
+                    this.plugin.settings.rituals.push({
+                        label: 'Nouveau rituel',
                         isCompleted: false,
                         linkToOptimizer: false,
                         linkToGenerator: false
@@ -241,35 +213,35 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
                     this.display();
                 }));
 
-        // Liste des tâches existantes
-        const tasksContainer = containerEl.createDiv('goalflowz-tasks-container');
-        this.plugin.settings.defaultTasks.forEach((task, index) => {
-            const taskSetting = new Setting(tasksContainer)
-                .setName('Tâche')
+        // Liste des rituels existants
+        const ritualsContainer = containerEl.createDiv('goalflowz-rituals-container');
+        this.plugin.settings.rituals.forEach((ritual, index) => {
+            const ritualSetting = new Setting(ritualsContainer)
+                .setName('Rituel')
                 .addText(text => text
-                    .setValue(task.label)
+                    .setValue(ritual.label)
                     .onChange(async (value) => {
-                        this.plugin.settings.defaultTasks[index].label = value;
+                        this.plugin.settings.rituals[index].label = value;
                         await this.plugin.saveSettings();
                     }))
                 .addToggle(toggle => toggle
-                    .setValue(task.linkToOptimizer || false)
+                    .setValue(ritual.linkToOptimizer || false)
                     .setTooltip('Lier à l\'optimiseur')
                     .onChange(async (value) => {
-                        this.plugin.settings.defaultTasks[index].linkToOptimizer = value;
+                        this.plugin.settings.rituals[index].linkToOptimizer = value;
                         await this.plugin.saveSettings();
                     }))
                 .addToggle(toggle => toggle
-                    .setValue(task.linkToGenerator || false)
+                    .setValue(ritual.linkToGenerator || false)
                     .setTooltip('Lier au générateur')
                     .onChange(async (value) => {
-                        this.plugin.settings.defaultTasks[index].linkToGenerator = value;
+                        this.plugin.settings.rituals[index].linkToGenerator = value;
                         await this.plugin.saveSettings();
                     }))
                 .addButton(button => button
                     .setIcon('trash')
                     .onClick(async () => {
-                        this.plugin.settings.defaultTasks.splice(index, 1);
+                        this.plugin.settings.rituals.splice(index, 1);
                         await this.plugin.saveSettings();
                         this.display();
                     }));

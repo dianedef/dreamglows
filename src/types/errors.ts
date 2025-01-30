@@ -32,9 +32,10 @@ export class ParsingError extends GoalFlowzError {
     }
 }
 
-export class DateError extends GoalFlowzError {
+export class DateError extends Error {
     constructor(message: string, public readonly date: string) {
-        super(`${message}: ${date}`);
+        super(message);
+        this.name = 'DateError';
     }
 }
 
@@ -54,6 +55,29 @@ export class MetricsError extends GoalFlowzError {
     constructor(message: string, public readonly metricName: string) {
         super(`${message} (Métrique: ${metricName})`);
     }
+}
+
+export class NotesGenerationError extends Error {
+    constructor(
+        message: string, 
+        public readonly code: NotesErrorCode,
+        public readonly details?: any
+    ) {
+        super(message);
+        this.name = 'NotesGenerationError';
+    }
+}
+
+export enum NotesErrorCode {
+    PATH_NOT_DEFINED = 'PATH_NOT_DEFINED',
+    PATH_INVALID = 'PATH_INVALID',
+    PATH_TOO_LONG = 'PATH_TOO_LONG',
+    FOLDER_CREATION_FAILED = 'FOLDER_CREATION_FAILED',
+    FILE_ALREADY_EXISTS = 'FILE_ALREADY_EXISTS',
+    FILE_CREATION_FAILED = 'FILE_CREATION_FAILED',
+    INVALID_DATE = 'INVALID_DATE',
+    TEMPLATE_ERROR = 'TEMPLATE_ERROR',
+    USER_CANCELLED = 'USER_CANCELLED'
 }
 
 // Fonction utilitaire pour gérer les erreurs

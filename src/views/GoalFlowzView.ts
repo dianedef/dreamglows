@@ -10,6 +10,7 @@ import type { Task } from '@/types/tasks';
 
 export interface IGoalFlowz extends Plugin {
     savePluginData(goals: Goal[], tasks: Task[]): Promise<void>;
+    generateNotes(): Promise<void>;
     readonly pinia: ReturnType<typeof createPinia>;
 }
 

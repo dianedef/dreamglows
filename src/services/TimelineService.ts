@@ -8,9 +8,12 @@ export interface TimelineItem {
     type: 'goal' | 'task';
     title: string;
     startDate: Date;
-    endDate: Date;
+    endDate?: Date;
     status: string;
-    group?: string;  // Catégorie pour les goals, goalId pour les tasks
+    group?: string;
+    parentId?: string;  // Pour les sous-tâches
+    progress?: number;  // Pour les objectifs
+    priority?: string;
 }
 
 export interface TimelineGroup {
@@ -46,31 +49,44 @@ export class TimelineService {
                 type: 'goal',
                 title: goal.title,
                 startDate: new Date(goal.startDate),
-                endDate: new Date(goal.dueDate),
+                endDate: goal.dueDate ? new Date(goal.dueDate) : undefined,
                 status: goal.status,
-                group: goal.category
+                group: goal.category || 'Sans catégorie',
+                progress: goal.progress,
+                priority: goal.priority
             });
 
             // Créer ou mettre à jour le groupe de catégorie
             if (!groups.has(goal.category)) {
-                groups.set(goal.category, {
-                    id: goal.category,
-                    content: goal.category
+                groups.set(goal.category || 'Sans catégorie', {
+                    id: goal.category || 'Sans catégorie',
+                    content: goal.category || 'Sans catégorie'
                 });
             }
         }
 
         // Convertir les tasks en items de timeline
         for (const task of data.tasks) {
+            const taskGroup = task.goalId || 'Sans objectif';
             items.push({
                 id: `task-${task.id}`,
                 type: 'task',
                 title: task.title,
                 startDate: new Date(task.startDate),
-                endDate: new Date(task.dueDate),
+                endDate: task.dueDate ? new Date(task.dueDate) : undefined,
                 status: task.status,
-                group: task.goalId || 'Sans objectif'
+                group: taskGroup,
+                parentId: task.parentTaskId,
+                priority: task.priority
             });
+
+            // Ajouter le groupe si c'est une tâche sans objectif
+            if (taskGroup === 'Sans objectif' && !groups.has(taskGroup)) {
+                groups.set(taskGroup, {
+                    id: taskGroup,
+                    content: taskGroup
+                });
+            }
         }
 
         return {
@@ -166,6 +182,11 @@ export class TimelineService {
     async calculateDailyWorkload(start: Date, end: Date): Promise<Map<string, number>> {
         const data = await this.storageService.loadDataForRange(start, end);
         const workload = new Map<string, number>();
+        const priorityWeights = {
+            high: 3,
+            medium: 2,
+            low: 1
+        };
 
         // Créer une entrée pour chaque jour de la période
         const days = eachDayOfInterval({ start, end });
@@ -173,10 +194,10 @@ export class TimelineService {
             workload.set(this.dateService.formatForFile(day), 0);
         }
 
-        // Compter les tâches par jour
+        // Calculer la charge pondérée par priorité
         for (const task of data.tasks) {
             const taskStart = new Date(task.startDate);
-            const taskEnd = new Date(task.dueDate);
+            const taskEnd = task.dueDate ? new Date(task.dueDate) : taskStart;
             
             if (taskStart <= end && taskEnd >= start) {
                 const taskDays = eachDayOfInterval({ 
@@ -184,9 +205,10 @@ export class TimelineService {
                     end: taskEnd < end ? taskEnd : end
                 });
 
+                const weight = priorityWeights[task.priority || 'medium'];
                 for (const day of taskDays) {
                     const key = this.dateService.formatForFile(day);
-                    workload.set(key, (workload.get(key) || 0) + 1);
+                    workload.set(key, (workload.get(key) || 0) + weight);
                 }
             }
         }

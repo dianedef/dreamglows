@@ -1,5 +1,13 @@
+export interface Ritual {
+    label: string;
+    isCompleted: boolean;
+    dueDate?: string;
+    linkToOptimizer?: boolean;
+    linkToGenerator?: boolean;
+}
+
 export interface GoalFlowzSettings {
-    defaultTasks: DefaultTask[];
+    rituals: Ritual[];
     projectFolders: string[];
     frequencyColors: {
         high: string;
@@ -31,19 +39,11 @@ export interface GoalFlowzSettings {
     timeFormat: '12h' | '24h';
 }
 
-export interface DefaultTask {
-    label: string;
-    isCompleted: boolean;
-    dueDate?: string;
-    linkToOptimizer?: boolean;
-    linkToGenerator?: boolean;
-}
-
 export const DEFAULT_SETTINGS: GoalFlowzSettings = {
-    defaultTasks: [
-        { label: "Définir l'objectif", isCompleted: false, linkToGenerator: true },
-        { label: "Planifier les étapes", isCompleted: false, linkToOptimizer: true },
-        { label: "Suivre les progrès", isCompleted: false }
+    rituals: [
+        { label: "Méditation matinale", isCompleted: false, linkToGenerator: false },
+        { label: "Revue des objectifs", isCompleted: false, linkToOptimizer: true },
+        { label: "Planification de la journée", isCompleted: false }
     ],
     projectFolders: [],
     frequencyColors: {
@@ -59,7 +59,37 @@ export const DEFAULT_SETTINGS: GoalFlowzSettings = {
     folderStructure: "flat",
     monthLanguage: "fr",
     notesFormat: "1",
-    noteTemplate: "",
+    noteTemplate: `<!--
+⚠️ IMPORTANT : Pour assurer le bon fonctionnement du plugin
+- Ne pas modifier les titres de sections (## 🎯 GoalFlowz, etc.)
+- Ne pas déplacer les notes vers d'autres dossiers
+- Éviter les caractères spéciaux dans les titres : < > : " | ? * 
+- Les tags doivent suivre le format #tag-name
+-->
+
+# 📓 {day}{suffix} {month}
+
+*{MM}/{DD}*
+
+## 😊 Humeur
+- Niveau d'humeur : _/5
+- Niveau d'énergie : _/5
+- Notes : 
+- Timestamp : {MM}/{DD}
+
+## 🎯 GoalFlowz
+
+### Objectifs
+
+### Tâches à commencer
+
+### Tâches à terminer
+
+## 📝 Journal
+
+## 📊 Bilan de la journée
+
+`,
     lastMainWidth: 50,
     timelineStartHour: "09:00",
     timelineEndHour: "18:00",

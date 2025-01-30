@@ -88,8 +88,11 @@
           </div>
         </div>
         <div class="goalflowz-task-title">{{ task.title }}</div>
-        <div v-if="task.date" class="goalflowz-task-date">
-          {{ formatDate(task.date) }}
+        <div v-if="task.startDate" class="goalflowz-task-date">
+          {{ formatDate(task.startDate) }}
+          <span v-if="task.dueDate" class="goalflowz-task-due-date">
+            → {{ formatDate(task.dueDate) }}
+          </span>
         </div>
         <div v-if="task.tags?.length" class="goalflowz-task-tags">
           <span v-for="tag in task.tags" 
@@ -108,37 +111,39 @@ import { ref, computed } from 'vue';
 import { useTasksStore } from '@/stores/tasksStore';
 import type { Task, TaskStatus, TaskPriority } from '@/types/tasks';
 import { TaskModal } from '@/components/modals/TaskModal';
+import { storeToRefs } from 'pinia';
+import { useApp } from '@/composables/useApp';
 
-const props = defineProps<{
-  app: any;
-}>();
-
+const { app } = useApp();
 const tasksStore = useTasksStore();
+
+// Statistiques avec storeToRefs pour la réactivité
+const { tasks } = storeToRefs(tasksStore);
+
 const filterStatus = ref('');
 const filterPriority = ref('');
 const searchQuery = ref('');
 const sortBy = ref('date');
 
-// Statistiques
 const todoCount = computed(() => {
-  console.log('📊 Calcul todoCount avec', tasksStore.tasks.length, 'tâches');
-  return tasksStore.tasks.filter(t => t.status === 'todo').length;
+  console.log('📊 Calcul todoCount avec', tasks.value.length, 'tâches');
+  return tasks.value.filter(t => t.status === 'todo').length;
 });
 
 const inProgressCount = computed(() => {
-  console.log('📊 Calcul inProgressCount avec', tasksStore.tasks.length, 'tâches');
-  return tasksStore.tasks.filter(t => t.status === 'in-progress').length;
+  console.log('📊 Calcul inProgressCount avec', tasks.value.length, 'tâches');
+  return tasks.value.filter(t => t.status === 'in-progress').length;
 });
 
 const doneCount = computed(() => {
-  console.log('📊 Calcul doneCount avec', tasksStore.tasks.length, 'tâches');
-  return tasksStore.tasks.filter(t => t.status === 'done').length;
+  console.log('📊 Calcul doneCount avec', tasks.value.length, 'tâches');
+  return tasks.value.filter(t => t.status === 'done').length;
 });
 
 // Filtrage et tri
 const filteredTasks = computed(() => {
-  console.log('🔍 Filtrage des tâches:', tasksStore.tasks.length, 'tâches');
-  return tasksStore.tasks.filter(task => {
+  console.log('🔍 Filtrage des tâches:', tasks.value.length, 'tâches');
+  return tasks.value.filter(task => {
     if (filterStatus.value && task.status !== filterStatus.value) return false;
     if (filterPriority.value && task.priority !== filterPriority.value) return false;
     if (searchQuery.value) {
@@ -159,9 +164,9 @@ const sortedAndFilteredTasks = computed(() => {
   switch (sortBy.value) {
     case 'date':
       return tasks.sort((a, b) => {
-        if (!a.date) return 1;
-        if (!b.date) return -1;
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
+        if (!a.startDate) return 1;
+        if (!b.startDate) return -1;
+        return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
       });
     case 'priority':
       return tasks.sort((a, b) => 
@@ -248,12 +253,12 @@ const formatDate = (date: string) => {
 };
 
 const openNewTaskModal = () => {
-  const modal = new TaskModal(props.app);
+  const modal = new TaskModal(app);
   modal.open();
 };
 
 const editTask = (task: Task) => {
-  const modal = new TaskModal(props.app, task);
+  const modal = new TaskModal(app, task);
   modal.open();
 };
 </script>

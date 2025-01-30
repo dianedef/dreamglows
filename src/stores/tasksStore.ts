@@ -4,86 +4,119 @@ import { v4 as uuidv4 } from 'uuid';
 
 interface TasksState {
     tasks: Task[];
+    error: string | null;
 }
 
 export const useTasksStore = defineStore('tasks', {
     state: (): TasksState => ({
-        tasks: []
+        tasks: [],
+        error: null
     }),
 
     getters: {
-        getTasks: (state) => state.tasks,
-        getTaskById: (state) => (id: string) => state.tasks.find(task => task.id === id),
-        getTasksByDate: (state) => (date: string) => state.tasks.filter(task => task.startDate === date),
-        getTasksByGoal: (state) => (goalId: string) => state.tasks.filter(task => task.goalId === goalId)
+        getTasks: (state): Task[] => state.tasks,
+        getTaskById: (state) => (id: string): Task | undefined => state.tasks.find(task => task.id === id),
+        getTasksByDate: (state) => (date: string): Task[] => state.tasks.filter(task => task.startDate === date),
+        getTasksByGoal: (state) => (goalId: string): Task[] => state.tasks.filter(task => task.goalId === goalId),
+        hasError: (state): boolean => !!state.error
     },
 
     actions: {
-        async addTask(taskData: Partial<Task>) {
-            console.log('TasksStore: Adding task', taskData);
-            const newTask: Task = {
-                id: uuidv4(),
-                title: taskData.title || '',
-                description: taskData.description || '',
-                startDate: taskData.startDate || new Date().toISOString(),
-                dueDate: taskData.dueDate,
-                priority: taskData.priority || 'medium',
-                status: taskData.status || 'todo',
-                goalId: taskData.goalId,
-                notes: taskData.notes || '',
-                tags: taskData.tags || [],
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                linkToOptimizer: taskData.linkToOptimizer || false,
-                linkToGenerator: taskData.linkToGenerator || false
-            };
-            
-            // Réaffecter le tableau complet
-            this.tasks = [...this.tasks, newTask];
-            console.log('TasksStore: Task added, now', this.tasks.length, 'tasks');
-            return newTask;
+        setError(message: string | null) {
+            this.error = message;
         },
 
-        async updateTask(taskData: Partial<Task> & { id: string }) {
-            const index = this.tasks.findIndex(task => task.id === taskData.id);
-            if (index !== -1) {
-                // Créer un nouveau tableau avec la tâche mise à jour
-                const updatedTask = {
-                    ...this.tasks[index],
-                    ...taskData,
-                    updatedAt: new Date().toISOString()
+        async addTask(taskData: Partial<Task>): Promise<Task> {
+            try {
+                console.log('TasksStore: Adding task', taskData);
+                const newTask: Task = {
+                    id: uuidv4(),
+                    title: taskData.title || '',
+                    description: taskData.description || '',
+                    startDate: taskData.startDate || new Date().toISOString(),
+                    dueDate: taskData.dueDate,
+                    priority: taskData.priority || 'medium',
+                    status: taskData.status || 'todo',
+                    goalId: taskData.goalId,
+                    notes: taskData.notes || '',
+                    tags: taskData.tags || [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    linkToOptimizer: taskData.linkToOptimizer || false,
+                    linkToGenerator: taskData.linkToGenerator || false
                 };
                 
-                this.tasks = [
-                    ...this.tasks.slice(0, index),
-                    updatedTask,
-                    ...this.tasks.slice(index + 1)
-                ];
-                console.log('TasksStore: Task updated, now', this.tasks.length, 'tasks');
-                return updatedTask;
+                this.tasks = [...this.tasks, newTask];
+                this.setError(null);
+                console.log('TasksStore: Task added, now', this.tasks.length, 'tasks');
+                return newTask;
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Erreur lors de l\'ajout de la tâche';
+                this.setError(message);
+                console.error('TasksStore: Error adding task:', error);
+                throw error;
             }
-            return null;
         },
 
-        async deleteTask(id: string) {
-            const index = this.tasks.findIndex(task => task.id === id);
-            if (index !== -1) {
-                const deletedTask = this.tasks[index];
-                // Créer un nouveau tableau sans la tâche supprimée
-                this.tasks = [
-                    ...this.tasks.slice(0, index),
-                    ...this.tasks.slice(index + 1)
-                ];
-                console.log('TasksStore: Task deleted, now', this.tasks.length, 'tasks');
-                return deletedTask;
+        async updateTask(taskData: Task): Promise<Task> {
+            try {
+                const index = this.tasks.findIndex(task => task.id === taskData.id);
+                if (index !== -1) {
+                    const updatedTask = {
+                        ...taskData,
+                        updatedAt: new Date().toISOString()
+                    };
+                    this.tasks = [
+                        ...this.tasks.slice(0, index),
+                        updatedTask,
+                        ...this.tasks.slice(index + 1)
+                    ];
+                    this.setError(null);
+                    console.log('TasksStore: Task updated');
+                    return updatedTask;
+                }
+                throw new Error('Tâche non trouvée');
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Erreur lors de la mise à jour de la tâche';
+                this.setError(message);
+                console.error('TasksStore: Error updating task:', error);
+                throw error;
             }
-            return null;
+        },
+
+        async deleteTask(id: string): Promise<Task> {
+            try {
+                const index = this.tasks.findIndex(task => task.id === id);
+                if (index !== -1) {
+                    const deletedTask = this.tasks[index];
+                    this.tasks = [
+                        ...this.tasks.slice(0, index),
+                        ...this.tasks.slice(index + 1)
+                    ];
+                    this.setError(null);
+                    console.log('TasksStore: Task deleted, now', this.tasks.length, 'tasks');
+                    return deletedTask;
+                }
+                throw new Error('Tâche non trouvée');
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Erreur lors de la suppression de la tâche';
+                this.setError(message);
+                console.error('TasksStore: Error deleting task:', error);
+                throw error;
+            }
         },
 
         async setTasks(tasks: Task[]) {
-            // Réaffecter directement le tableau
-            this.tasks = [...tasks];
-            console.log('TasksStore: Tasks set, now', this.tasks.length, 'tasks');
+            try {
+                this.tasks = [...tasks];
+                this.setError(null);
+                console.log('TasksStore: Tasks set, now', this.tasks.length, 'tasks');
+            } catch (error) {
+                const message = error instanceof Error ? error.message : 'Erreur lors de la définition des tâches';
+                this.setError(message);
+                console.error('TasksStore: Error setting tasks:', error);
+                throw error;
+            }
         }
     }
 }); 

@@ -22,8 +22,16 @@ import type { Goal } from './types/goals';
 import type { Task } from './types/tasks';
 import type { GoalFlowzSettings } from './types/settings';
 import { DEFAULT_SETTINGS } from './types/settings';
+import { v4 as uuidv4 } from 'uuid';
 
 const VIEW_TYPE_GOALFLOWZ = 'goalflowz-view';
+
+interface DefaultTask {
+    label: string;
+    isCompleted: boolean;
+    linkToOptimizer: boolean;
+    linkToGenerator: boolean;
+}
 
 export default class GoalFlowz extends Plugin implements IGoalFlowz {
     // Services
@@ -61,16 +69,19 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
             // 1. Initialiser les settings (requis pour tout le reste)
             await this.initializeSettings();
             
-            // 2. Initialiser les services de base
+            // 2. Initialiser le fichier de données
+            await this.initializeDataFile();
+            
+            // 3. Initialiser les services de base
             await this.initializeBaseServices();
             
-            // 3. Initialiser les services dépendants
+            // 4. Initialiser les services dépendants
             await this.initializeDependentServices();
             
-            // 4. Initialiser les stores et la gestion d'état
+            // 5. Initialiser les stores et la gestion d'état
             await this.initializeStores();
             
-            // 5. Initialiser l'interface utilisateur
+            // 6. Initialiser l'interface utilisateur
             await this.initializeUI();
             
             console.log('GoalFlowz initialisé avec succès');
@@ -91,6 +102,55 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
             console.error('Erreur lors de l\'initialisation des settings:', error);
             this.settings = { ...DEFAULT_SETTINGS };
             console.log('Utilisation des settings par défaut');
+        }
+    }
+
+    private async initializeDataFile() {
+        try {
+            const dataPath = '.obsidian/plugins/obs-GoalFlowz/data.json';
+            const exists = await this.app.vault.adapter.exists(dataPath);
+            
+            if (!exists) {
+                console.log('Création du fichier de données initial');
+                await this.saveData({
+                    goals: [],
+                    tasks: [],
+                    ...DEFAULT_SETTINGS
+                });
+            } else {
+                // Charger les données existantes
+                const existingData = await this.loadData();
+                console.log('Données existantes:', existingData);
+                
+                // S'assurer que la structure est complète
+                const updatedData = {
+                    ...existingData,
+                    goals: existingData.goals || [],
+                    tasks: existingData.tasks || [],
+                    // Convertir les defaultTasks en tâches réelles si nécessaire
+                    ...(existingData.defaultTasks && !existingData.tasks ? {
+                        tasks: (existingData.defaultTasks as DefaultTask[]).map(dt => ({
+                            id: uuidv4(),
+                            title: dt.label,
+                            description: '',
+                            startDate: new Date().toISOString(),
+                            priority: 'medium',
+                            status: dt.isCompleted ? 'done' : 'todo',
+                            tags: [],
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                            linkToOptimizer: dt.linkToOptimizer,
+                            linkToGenerator: dt.linkToGenerator
+                        }))
+                    } : {})
+                };
+                
+                console.log('Structure mise à jour:', updatedData);
+                await this.saveData(updatedData);
+            }
+        } catch (error) {
+            console.error('Erreur lors de l\'initialisation du fichier de données:', error);
+            throw new Error('Échec de l\'initialisation du fichier de données');
         }
     }
 
@@ -153,16 +213,17 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
             
             // Charger les données initiales
             const data = await this.loadPluginData();
+            console.log('Données chargées:', data);
             
-            // Mettre à jour les stores
+            // Mettre à jour les stores en utilisant les actions
             this.settingsStore.$patch({ settings: this.settings });
-            this.goalsStore.$patch({ goals: data.goals });
-            this.tasksStore.$patch({ tasks: data.tasks });
+            await this.goalsStore.setGoals(data.goals);
+            await this.tasksStore.setTasks(data.tasks);
             
             // Configurer les watchers
             this.setupStoreWatchers();
             
-            console.log('Stores initialisés');
+            console.log('Stores initialisés avec', data.tasks.length, 'tâches');
         } catch (error) {
             console.error('Erreur lors de l\'initialisation des stores:', error);
             throw new Error('Échec de l\'initialisation des stores');
@@ -171,30 +232,23 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
 
     private setupStoreWatchers() {
         // Watcher pour les settings
-        this.register(
-            this.settingsStore.$subscribe(async (_mutation, state) => {
-                if (JSON.stringify(this.settings) !== JSON.stringify(state.settings)) {
-                    this.settings = { ...state.settings };
-                    await this.saveSettings();
-                }
-            })
-        );
+        this.settingsStore.$subscribe(async (_mutation, state) => {
+            if (JSON.stringify(this.settings) !== JSON.stringify(state.settings)) {
+                this.settings = { ...state.settings };
+                await this.saveSettings();
+            }
+        });
 
-        // Watcher pour les goals
-        this.register(
-            this.goalsStore.$subscribe(async (_mutation, state) => {
-                console.log('🎯 Sauvegarde automatique des goals:', state.goals.length, 'goals');
-                await this.savePluginData(state.goals, this.tasksStore.tasks);
-            })
-        );
+        // Watcher pour les goals et les tâches
+        this.goalsStore.$subscribe(async () => {
+            console.log('🎯 Sauvegarde automatique des données');
+            await this.savePluginData(this.goalsStore.goals, this.tasksStore.getTasks);
+        });
 
-        // Watcher pour les tâches
-        this.register(
-            this.tasksStore.$subscribe(async (_mutation, state) => {
-                console.log('📝 Sauvegarde automatique des tâches:', state.tasks.length, 'tâches');
-                await this.savePluginData(this.goalsStore.goals, state.tasks);
-            })
-        );
+        this.tasksStore.$subscribe(async () => {
+            console.log('📝 Sauvegarde automatique des données');
+            await this.savePluginData(this.goalsStore.goals, this.tasksStore.getTasks);
+        });
     }
 
     private async initializeUI() {
@@ -375,5 +429,14 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
         }
 
         return settings;
+    }
+
+    async generateNotes(): Promise<void> {
+        try {
+            await this.notesGenerator.generateNotes();
+        } catch (error) {
+            console.error('Erreur lors de la génération des notes:', error);
+            new Notice('Erreur lors de la génération des notes. Vérifiez la console pour plus de détails.');
+        }
     }
 }
