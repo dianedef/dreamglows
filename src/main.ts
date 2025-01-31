@@ -205,13 +205,13 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
         try {
             // Créer et configurer Pinia
             this._pinia = createPinia();
-            
-            // Initialiser les stores
+        
+        // Initialiser les stores
             this.settingsStore = useSettingsStore(this._pinia);
             this.goalsStore = useGoalsStore(this._pinia);
             this.tasksStore = useTasksStore(this._pinia);
-            
-            // Charger les données initiales
+        
+        // Charger les données initiales
             const data = await this.loadPluginData();
             console.log('Données chargées:', data);
             
@@ -260,24 +260,24 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
                 return this.view;
             });
 
-            // Ajouter les commandes
-            this.addCommand({
-                id: 'open-goalflowz',
-                name: 'Ouvrir GoalFlowz',
-                callback: () => this.activateView(),
-                hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "O" }]
-            });
+        // Ajouter les commandes
+        this.addCommand({
+            id: 'open-goalflowz',
+            name: 'Ouvrir GoalFlowz',
+            callback: () => this.activateView(),
+            hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "O" }]
+        });
 
-            this.addCommand({
-                id: 'new-goal',
-                name: 'Nouvel objectif',
-                callback: () => {
-                    console.log('Command: Opening goal modal');
-                    const modal = new GoalModal(this.app);
-                    modal.open();
-                },
-                hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "G" }]
-            });
+        this.addCommand({
+            id: 'new-goal',
+            name: 'Nouvel objectif',
+            callback: () => {
+                console.log('Command: Opening goal modal');
+                const modal = new GoalModal(this.app);
+                modal.open();
+            },
+            hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "G" }]
+        });
 
             this.addCommand({
                 id: 'create-new-task',
@@ -289,14 +289,14 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
                 hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "T" }]
             });
 
-            // Ajouter le ruban
-            this.addRibbonIcon('target', 'GoalFlowz', () => {
-                this.activateView();
-            });
+        // Ajouter le ruban
+        this.addRibbonIcon('target', 'GoalFlowz', () => {
+            this.activateView();
+        });
 
-            // Ajouter l'onglet de paramètres
-            this.addSettingTab(new GoalFlowzSettingsTab(this.app, this));
-            
+        // Ajouter l'onglet de paramètres
+        this.addSettingTab(new GoalFlowzSettingsTab(this.app, this));
+
             console.log('Interface initialisée');
         } catch (error) {
             console.error('Erreur lors de l\'initialisation de l\'interface:', error);
@@ -307,8 +307,8 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
     onunload() {
         console.log('Déchargement de GoalFlowz...');
         try {
-            unregisterStyles();
-            this.app.workspace.detachLeavesOfType(VIEW_TYPE_GOALFLOWZ);
+        unregisterStyles();
+        this.app.workspace.detachLeavesOfType(VIEW_TYPE_GOALFLOWZ);
             console.log('GoalFlowz déchargé avec succès');
         } catch (error) {
             console.error('Erreur lors du déchargement de GoalFlowz:', error);
@@ -357,9 +357,9 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
         if (!leaf) {
             leaf = workspace.getLeaf('tab');
             await leaf.setViewState({
-                type: VIEW_TYPE_GOALFLOWZ,
-                active: true,
-            });
+                    type: VIEW_TYPE_GOALFLOWZ,
+                    active: true,
+                });
         }
         
         workspace.revealLeaf(leaf);

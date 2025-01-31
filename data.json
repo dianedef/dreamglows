@@ -53,5 +53,47 @@
       "linkToOptimizer": false,
       "linkToGenerator": false
     }
+  ],
+  "goals": [],
+  "tasks": [
+    {
+      "id": "81d25537-b071-423d-8a62-bd6e01895d11",
+      "title": "efzef",
+      "description": "",
+      "startDate": "2025-01-31T12:06:58.186Z",
+      "priority": "medium",
+      "status": "todo",
+      "tags": [],
+      "createdAt": "2025-01-31T12:06:58.186Z",
+      "updatedAt": "2025-01-31T12:06:58.186Z",
+      "linkToOptimizer": true,
+      "linkToGenerator": true
+    },
+    {
+      "id": "547347b6-d73f-46fd-87f2-a36e48b0af22",
+      "title": "zeczeczec",
+      "description": "",
+      "startDate": "2025-01-31T12:06:58.186Z",
+      "priority": "medium",
+      "status": "todo",
+      "tags": [],
+      "createdAt": "2025-01-31T12:06:58.186Z",
+      "updatedAt": "2025-01-31T12:06:58.186Z",
+      "linkToOptimizer": false,
+      "linkToGenerator": true
+    },
+    {
+      "id": "2e625879-3c0a-4de4-a8d5-be37569fd607",
+      "title": "Nouvelle tâche",
+      "description": "",
+      "startDate": "2025-01-31T12:06:58.186Z",
+      "priority": "medium",
+      "status": "todo",
+      "tags": [],
+      "createdAt": "2025-01-31T12:06:58.186Z",
+      "updatedAt": "2025-01-31T12:06:58.186Z",
+      "linkToOptimizer": false,
+      "linkToGenerator": false
+    }
   ]
 }

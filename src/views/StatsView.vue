@@ -2,7 +2,7 @@
 <template>
   <div class="goalflowz-statistics-view">
     <div class="goalflowz-statistics-header">
-      <h2>Statistiques</h2>
+    <h2>Statistiques</h2>
       <div class="goalflowz-period-selector">
         <button 
           v-for="period in periods" 
@@ -370,7 +370,7 @@ onUnmounted(() => {
 
 // Mettre à jour les graphiques quand la période change
 watch(selectedPeriod, updateCharts);
-</script>
+</script> 
 
 <style scoped>
 .goalflowz-statistics-view {

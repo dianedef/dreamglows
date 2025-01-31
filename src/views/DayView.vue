@@ -57,6 +57,14 @@
 
     <!-- Trackers d'habitudes -->
     <div class="goalflowz-habits-section">
+      <div class="goalflowz-habits-background">
+        <div 
+          class="progress-background" 
+          :style="{ width: `${dayStats.completionRate}%` }"
+          @vue:mounted="() => console.log('Progress width:', dayStats.completionRate + '%')"
+        ></div>
+      </div>
+
       <!-- Calendrier des flammes -->
       <div class="goalflowz-flames-calendar">
         <div class="goalflowz-flames-row">
@@ -64,6 +72,7 @@
             v-for="month in months" 
             :key="month.name"
             class="goalflowz-month-flames"
+            :data-month="month.name"
           >
             <div 
               v-for="day in month.days" 
