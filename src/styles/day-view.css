@@ -445,7 +445,17 @@
   display: flex;
   width: 100%;
   margin-top: var(--goalflowz-spacing-sm);
-  justify-content: space-between;
+  gap: calc(var(--goalflowz-spacing-lg) * 2);
+}
+
+.goalflowz-mood-line {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.goalflowz-mood-line:last-child {
+  justify-content: center;
   gap: calc(var(--goalflowz-spacing-lg) * 3);
 }
 
@@ -453,21 +463,25 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1;
 }
 
 .goalflowz-mood-buttons {
   display: flex;
   white-space: nowrap;
   justify-content: center;
+  gap: 1px;
+  width: 100%;
+  min-width: 0;
 }
 
 .goalflowz-mood-btn,
 .goalflowz-energy-btn {
-  width: 2.4em;
-  height: 2em;
-  padding: 2px;
+  flex: 1;
+  aspect-ratio: 1.2;
+  padding: 1px;
   border-radius: var(--goalflowz-border-radius);
-  font-size: clamp(1.4em, calc(1em + 1.5vw), 2em);
+  font-size: min(1.8em, calc((100vw - 4rem) / 75));
   transition: opacity 0.2s ease;
   opacity: 0.4;
   cursor: pointer;
@@ -476,6 +490,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  min-width: 0;
 }
 
 .goalflowz-mood-btn:hover,
@@ -617,13 +632,12 @@ h2, h3 {
   }
 
   .goalflowz-mood-row {
-    gap: var(--goalflowz-spacing-md);
+    flex-direction: column;
+    gap: var(--goalflowz-spacing-lg);
   }
-
+  
   .goalflowz-mood-btn,
   .goalflowz-energy-btn {
-    width: 2em;
-    height: 1.8em;
-    font-size: clamp(1.2em, calc(0.8em + 1.2vw), 1.8em);
+    font-size: min(1.8em, calc((100vw - 2rem) / 15));
   }
 }

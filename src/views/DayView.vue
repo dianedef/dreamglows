@@ -132,43 +132,47 @@
 
       <!-- Humeur, amour et énergie -->
       <div class="goalflowz-mood-row">
-        <div class="goalflowz-mood-item">
-          <div class="goalflowz-mood-buttons">
-            <button 
-              v-for="level in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] as MoodLevel[]" 
-              :key="'mood-'+level"
-              class="goalflowz-mood-btn"
-              :class="{ active: dayStats.mood === level }"
-              @click="setDayMood(level)"
-            >
-              {{ getMoodEmoji(level) }}
-            </button>
+        <div class="goalflowz-mood-line">
+          <div class="goalflowz-mood-item">
+            <div class="goalflowz-mood-buttons">
+              <button 
+                v-for="level in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] as MoodLevel[]" 
+                :key="'mood-'+level"
+                class="goalflowz-mood-btn"
+                :class="{ active: dayStats.mood === level }"
+                @click="setDayMood(level)"
+              >
+                {{ getMoodEmoji(level) }}
+              </button>
+            </div>
           </div>
         </div>
-        <div class="goalflowz-mood-item">
-          <div class="goalflowz-mood-buttons">
-            <button 
-              v-for="level in [1, 2, 3, 4, 5, 6, 7] as LoveLevel[]" 
-              :key="'love-'+level"
-              class="goalflowz-mood-btn"
-              :class="{ active: dayStats.love === level }"
-              @click="setDayLove(level)"
-            >
-              {{ getLoveEmoji(level) }}
-            </button>
+        <div class="goalflowz-mood-line">
+          <div class="goalflowz-mood-item">
+            <div class="goalflowz-mood-buttons">
+              <button 
+                v-for="level in [1, 2, 3, 4, 5, 6, 7] as LoveLevel[]" 
+                :key="'love-'+level"
+                class="goalflowz-mood-btn"
+                :class="{ active: dayStats.love === level }"
+                @click="setDayLove(level)"
+              >
+                {{ getLoveEmoji(level) }}
+              </button>
+            </div>
           </div>
-        </div>
-        <div class="goalflowz-mood-item">
-          <div class="goalflowz-mood-buttons">
-            <button 
-              v-for="level in [1, 2, 3, 4, 5] as EnergyLevel[]" 
-              :key="'energy-'+level"
-              class="goalflowz-energy-btn"
-              :class="{ active: dayStats.energyLevel === level }"
-              @click="setDayEnergyLevel(level)"
-            >
-              {{ getEnergyEmoji(level) }}
-            </button>
+          <div class="goalflowz-mood-item">
+            <div class="goalflowz-mood-buttons">
+              <button 
+                v-for="level in [1, 2, 3, 4, 5] as EnergyLevel[]" 
+                :key="'energy-'+level"
+                class="goalflowz-energy-btn"
+                :class="{ active: dayStats.energyLevel === level }"
+                @click="setDayEnergyLevel(level)"
+              >
+                {{ getEnergyEmoji(level) }}
+              </button>
+            </div>
           </div>
         </div>
       </div>
