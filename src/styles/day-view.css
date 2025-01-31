@@ -160,12 +160,20 @@
 }
 
 /* Calendrier des flammes */
+.goalflowz-flames-calendar,
+.goalflowz-flames-row,
+.goalflowz-month-flames {
+  line-height: 0;
+  padding: 0;
+  margin: 0;
+}
+
 .goalflowz-flames-calendar {
   position: relative;
   z-index: 2;
   width: 100%;
-  padding: var(--goalflowz-spacing-xs) 0;
-  line-height: 0;
+  padding-top: var(--goalflowz-spacing-xs);
+  padding-bottom: var(--goalflowz-spacing-xs);
 }
 
 .goalflowz-flames-row {
@@ -174,16 +182,50 @@
   gap: var(--goalflowz-spacing-md) 0.33rem;
   padding-top: var(--goalflowz-spacing-md);
   padding-bottom: var(--goalflowz-spacing-md);
-  line-height: 0;
 }
 
 .goalflowz-month-flames {
   display: flex;
-  padding: 0 !important;
-  margin: 0 !important;
   align-items: flex-start;
   position: relative;
   transition: transform 0.2s ease;
+}
+
+/* Styles communs pour les flammes */
+.goalflowz-flame-day,
+.flame-emoji {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center;
+  line-height: 1 !important;
+}
+
+.goalflowz-flame-day {
+  font-size: 1.2em;
+  opacity: 0.4;
+  cursor: pointer;
+  margin: 0 -0.35em !important;
+}
+
+.flame-emoji {
+  display: inline-block !important;
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  vertical-align: top !important;
+}
+
+.goalflowz-flame-day.completed {
+  opacity: 1;
+}
+
+.goalflowz-flame-day.future {
+  opacity: 0.15;
 }
 
 /* Tooltip pour le nom du mois */
@@ -211,36 +253,6 @@
 .goalflowz-month-flames:hover::before {
   opacity: 0.95;
   visibility: visible;
-}
-
-.goalflowz-flame-day {
-  font-size: 1.2em;
-  opacity: 0.4;
-  cursor: pointer;
-  padding: 0 !important;
-  margin: 0 -0.35em !important;
-  width: auto !important;
-  display: flex !important;
-  align-items: flex-start !important;
-  justify-content: center;
-}
-
-.flame-emoji {
-  display: inline-block !important;
-  width: auto !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  line-height: 1 !important;
-  text-align: center !important;
-  vertical-align: top !important;
-}
-
-.goalflowz-flame-day.completed {
-  opacity: 1;
-}
-
-.goalflowz-flame-day.future {
-  opacity: 0.15;
 }
 
 /* Grille des habitudes */
