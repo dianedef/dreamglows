@@ -66,7 +66,7 @@
       </div>
 
       <!-- Calendrier des flammes -->
-      <div class="goalflowz-flames-calendar">
+      <div class="goalflowz-flames-calendar" :class="{ 'mobile': isMobile }">
         <div class="goalflowz-flames-row">
           <div 
             v-for="month in months" 
@@ -560,30 +560,68 @@ onUnmounted(() => {
     }
 });
 
-// Fonction pour générer les mois de l'année
-const generateMonths = () => {
-  const currentYear = DateTime.now().year;
+// Ajouter un watcher pour la largeur de la fenêtre
+const isMobile = ref(window.innerWidth <= 768);
+
+onMounted(() => {
+  const handleResize = () => {
+    isMobile.value = window.innerWidth <= 768;
+    console.log('Mobile mode:', isMobile.value, 'Width:', window.innerWidth);
+  };
+  window.addEventListener('resize', handleResize);
+  handleResize(); // Call it once on mount
+});
+
+onUnmounted(() => {
+  const handleResize = () => {
+    isMobile.value = window.innerWidth <= 768;
+  };
+  window.removeEventListener('resize', handleResize);
+});
+
+const months = computed(() => {
+  console.log('Computing months, isMobile:', isMobile.value);
+  const now = DateTime.now();
   const months = [];
   
-  for (let month = 0; month < 12; month++) {
-    const date = DateTime.fromObject({ year: currentYear, month: month + 1 });
-    const daysInMonth = date.daysInMonth || 31;
-    
-    const days = Array.from({ length: daysInMonth }, (_, i) => ({
-      date: date.set({ day: i + 1 }).toFormat('yyyy-MM-dd'),
-      day: i + 1
-    }));
-    
-    months.push({
-      name: date.setLocale('fr').toFormat('MMMM'),
-      days
-    });
+  if (isMobile.value) {
+    // Version mobile : 3 derniers mois
+    for (let i = 2; i >= 0; i--) {
+      const monthDate = now.minus({ months: i });
+      console.log('Adding month:', monthDate.toFormat('MMMM'));
+      const daysInMonth = monthDate.daysInMonth || 31;
+      
+      const days = Array.from({ length: daysInMonth }, (_, i) => ({
+        date: monthDate.set({ day: i + 1 }).toFormat('yyyy-MM-dd'),
+        day: i + 1
+      }));
+      
+      months.push({
+        name: monthDate.setLocale('fr').toFormat('MMMM'),
+        days
+      });
+    }
+  } else {
+    // Version desktop : tous les mois de l'année
+    for (let month = 0; month < 12; month++) {
+      const monthDate = DateTime.fromObject({ year: now.year, month: month + 1 });
+      const daysInMonth = monthDate.daysInMonth || 31;
+      
+      const days = Array.from({ length: daysInMonth }, (_, i) => ({
+        date: monthDate.set({ day: i + 1 }).toFormat('yyyy-MM-dd'),
+        day: i + 1
+      }));
+      
+      months.push({
+        name: monthDate.setLocale('fr').toFormat('MMMM'),
+        days
+      });
+    }
   }
   
+  console.log('Final months array:', months.map(m => m.name));
   return months;
-};
-
-const months = computed(() => generateMonths());
+});
 
 const isDateCompleted = (date: string) => {
   try {

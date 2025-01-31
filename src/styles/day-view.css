@@ -8,6 +8,16 @@
   --goalflowz-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Styles communs pour les boutons */
+.goalflowz-nav-btn,
+.goalflowz-today-btn,
+.goalflowz-view-switch button {
+  border-radius: var(--goalflowz-border-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
 /* Layout principal */
 .goalflowz-container {
   display: flex;
@@ -19,22 +29,19 @@
   background-color: var(--background-primary);
 }
 
+/* En-tête et navigation */
 .goalflowz-view-switch {
   display: flex;
-  gap: 0.5rem;
-  padding: 0.5rem;
+  gap: var(--goalflowz-spacing-md);
+  padding: var(--goalflowz-spacing-md);
   background-color: var(--background-secondary);
   border-radius: 6px;
 }
 
 .goalflowz-view-switch button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
+  padding: var(--goalflowz-spacing-md) var(--goalflowz-spacing-lg);
   background: none;
   color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .goalflowz-view-switch button:hover {
@@ -45,6 +52,59 @@
 .goalflowz-view-switch button.active {
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
+}
+
+.goalflowz-nav-btn {
+  padding: var(--goalflowz-spacing-xs) var(--goalflowz-spacing-sm);
+  opacity: 0.8;
+}
+
+.goalflowz-nav-btn:hover {
+  opacity: 1;
+  background-color: var(--background-modifier-hover);
+}
+
+.goalflowz-today-btn {
+  padding: var(--goalflowz-spacing-md) var(--goalflowz-spacing-lg);
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+/* Styles communs pour les cartes */
+.goalflowz-summary-card,
+.goalflowz-habits-section {
+  background-color: var(--background-primary);
+  border-radius: var(--goalflowz-border-radius);
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: var(--goalflowz-card-shadow);
+  padding: var(--goalflowz-spacing-sm);
+}
+
+/* Cartes de résumé */
+.goalflowz-day-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--goalflowz-spacing-sm);
+}
+
+.goalflowz-card-content {
+  display: flex;
+  align-items: center;
+  gap: var(--goalflowz-spacing-xs);
+  margin-top: var(--goalflowz-spacing-xs);
+}
+
+.goalflowz-card-text {
+  flex: 1;
+}
+
+.goalflowz-card-title {
+  font-weight: 500;
+}
+
+.goalflowz-card-subtitle {
+  font-size: 0.8em;
+  color: var(--text-muted);
 }
 
 .goalflowz-day-view {
@@ -91,41 +151,6 @@
   cursor: pointer;
 }
 
-/* Cartes de résumé */
-.goalflowz-day-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--goalflowz-spacing-sm);
-}
-
-.goalflowz-summary-card {
-  padding: var(--goalflowz-spacing-sm);
-  border-radius: var(--goalflowz-border-radius);
-  background-color: var(--background-primary);
-  border: 1px solid var(--background-modifier-border);
-  box-shadow: var(--goalflowz-card-shadow);
-}
-
-.goalflowz-card-content {
-  display: flex;
-  align-items: center;
-  gap: var(--goalflowz-spacing-xs);
-  margin-top: var(--goalflowz-spacing-xs);
-}
-
-.goalflowz-card-text {
-  flex: 1;
-}
-
-.goalflowz-card-title {
-  font-weight: 500;
-}
-
-.goalflowz-card-subtitle {
-  font-size: 0.8em;
-  color: var(--text-muted);
-}
-
 /* Section des habitudes */
 .goalflowz-habits-section {
   position: relative;
@@ -160,35 +185,53 @@
 }
 
 /* Calendrier des flammes */
-.goalflowz-flames-calendar,
-.goalflowz-flames-row,
-.goalflowz-month-flames {
-  line-height: 0;
-  padding: 0;
-  margin: 0;
-}
-
 .goalflowz-flames-calendar {
   position: relative;
   z-index: 2;
   width: 100%;
-  padding-top: var(--goalflowz-spacing-xs);
-  padding-bottom: var(--goalflowz-spacing-xs);
+  padding: var(--goalflowz-spacing-xs) 0;
+  max-height: calc(4 * (1em + var(--goalflowz-spacing-md) * 2));
+  overflow: hidden;
+}
+
+.goalflowz-flames-calendar.mobile {
+  max-height: calc(3 * (2em + var(--goalflowz-spacing-md) * 2));
+}
+
+.goalflowz-flames-calendar.mobile .goalflowz-flames-row {
+  flex-direction: column;
+  gap: var(--goalflowz-spacing-md);
+}
+
+.goalflowz-flames-calendar.mobile .goalflowz-month-flames {
+  flex: 1 1 100%;
+  max-width: 100%;
+}
+
+.goalflowz-flames-calendar.mobile .goalflowz-flame-day {
+  font-size: clamp(0.8em, calc(0.6em + 1.8vw), 2.8em);
+  margin: 0 -0.5em !important;
 }
 
 .goalflowz-flames-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--goalflowz-spacing-md) 0.33rem;
+  gap: var(--goalflowz-spacing-md) 1.5rem;
   padding-top: var(--goalflowz-spacing-md);
   padding-bottom: var(--goalflowz-spacing-md);
+  width: 100%;
 }
 
 .goalflowz-month-flames {
   display: flex;
+  padding: 0;
+  margin: 0;
   align-items: flex-start;
   position: relative;
   transition: transform 0.2s ease;
+  flex: 1 1 calc(33.33% - 1.5rem);
+  min-width: calc(33.33% - 1.5rem);
+  max-width: calc(33.33% - 1.5rem);
 }
 
 /* Styles communs pour les flammes */
@@ -201,13 +244,19 @@
   align-items: flex-start !important;
   justify-content: center;
   line-height: 1 !important;
+  flex: 1;
 }
 
 .goalflowz-flame-day {
-  font-size: 1.2em;
-  opacity: 0.4;
+  font-size: clamp(0.4em, calc(0.3em + 1vw), 2.2em);
+  opacity: 1;
   cursor: pointer;
-  margin: 0 -0.35em !important;
+  margin: 0 calc(-0.3em - 0.1vw) !important;
+  width: auto !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center;
+  flex: 1;
 }
 
 .flame-emoji {
@@ -225,7 +274,7 @@
 }
 
 .goalflowz-flame-day.future {
-  opacity: 0.15;
+  opacity: 0.3;
 }
 
 /* Tooltip pour le nom du mois */
@@ -235,11 +284,11 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding: 0.25rem 0.5rem;
+  padding: 0.15rem 0.3rem;
   background-color: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--goalflowz-border-radius);
-  font-size: 1.1em;
+  font-size: 0.9em;
   font-weight: 500;
   color: var(--text-normal);
   opacity: 0;
@@ -435,4 +484,36 @@
 h2, h3 {
   margin: 0;
   font-size: 1.1em;
+}
+
+/* Masquer la barre de défilement mais garder la fonctionnalité */
+.goalflowz-flames-calendar::-webkit-scrollbar {
+  display: none;
+}
+
+.goalflowz-flames-calendar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Version mobile */
+@media screen and (max-width: 768px) {
+  .goalflowz-flames-calendar {
+    max-height: none !important;
+  }
+
+  .goalflowz-flames-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .goalflowz-month-flames {
+    width: 100%;
+  }
+
+  .goalflowz-flame-day {
+    font-size: clamp(0.8em, calc(0.6em + 1.8vw), 2.8em);
+    margin: 0 -0.5em !important;
+  }
 }

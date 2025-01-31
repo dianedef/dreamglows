@@ -287,7 +287,7 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
                     modal.open();
                 },
                 hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "T" }]
-            });
+        });
 
         // Ajouter le ruban
         this.addRibbonIcon('target', 'GoalFlowz', () => {
