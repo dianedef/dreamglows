@@ -1,13 +1,7 @@
 import { defineStore } from 'pinia';
-import type { Habit, DailyHabitLog, DayStats } from '@/types/habits';
+import type { Habit, DailyHabitLog, DayStats, MoodLevel, LoveLevel, EnergyLevel, HabitsState } from '@/types/habits';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
-
-interface HabitsState {
-    habits: Habit[];
-    logs: DailyHabitLog[];
-    dayStats?: { [date: string]: DayStats };
-}
 
 export const useHabitsStore = defineStore('habits', {
     state: (): HabitsState => ({
@@ -21,6 +15,7 @@ export const useHabitsStore = defineStore('habits', {
                 completionRate: 0,
                 streaks: {},
                 mood: undefined,
+                love: undefined,
                 energyLevel: undefined,
                 notes: ''
             }
@@ -28,15 +23,15 @@ export const useHabitsStore = defineStore('habits', {
     }),
 
     getters: {
-        activeHabits: (state) => state.habits.filter(h => h.active),
+        activeHabits: (state): Habit[] => state.habits.filter((h: Habit) => h.active),
         
-        getHabitsByCategory: (state) => (category: string) => 
-            state.habits.filter(h => h.category === category && h.active),
+        getHabitsByCategory: (state) => (category: string): Habit[] => 
+            state.habits.filter((h: Habit) => h.category === category && h.active),
         
-        getDayLogs: (state) => (date: string) => 
-            state.logs.filter(log => log.date === date),
+        getDayLogs: (state) => (date: string): DailyHabitLog[] => 
+            state.logs.filter((log: DailyHabitLog) => log.date === date),
         
-        getHabitStreak: (state) => (habitId: string) => {
+        getHabitStreak: (state) => (habitId: string): number => {
             const today = DateTime.now().toFormat('yyyy-MM-dd');
             let streak = 0;
             let currentDate = DateTime.fromISO(today);
@@ -44,7 +39,7 @@ export const useHabitsStore = defineStore('habits', {
             while (true) {
                 const dateStr = currentDate.toFormat('yyyy-MM-dd');
                 const log = state.logs.find(
-                    l => l.habitId === habitId && l.date === dateStr && l.completed
+                    (l: DailyHabitLog) => l.habitId === habitId && l.date === dateStr && l.completed
                 );
 
                 if (log) {
@@ -255,7 +250,7 @@ export const useHabitsStore = defineStore('habits', {
             }
         },
 
-        setDayMood(date: string, mood: 1 | 2 | 3 | 4 | 5) {
+        setDayMood(date: string, mood: MoodLevel) {
             if (!this.dayStats) this.dayStats = {};
             if (!this.dayStats[date]) {
                 this.dayStats[date] = {
@@ -273,7 +268,7 @@ export const useHabitsStore = defineStore('habits', {
             }
         },
 
-        setDayEnergyLevel(date: string, level: 1 | 2 | 3 | 4 | 5) {
+        setDayEnergyLevel(date: string, level: EnergyLevel) {
             if (!this.dayStats) this.dayStats = {};
             if (!this.dayStats[date]) {
                 this.dayStats[date] = {
@@ -282,8 +277,8 @@ export const useHabitsStore = defineStore('habits', {
                     totalHabits: 0,
                     completionRate: 0,
                     streaks: {},
-                    mood: undefined,
                     energyLevel: level,
+                    mood: undefined,
                     notes: undefined
                 };
             } else {
@@ -307,6 +302,68 @@ export const useHabitsStore = defineStore('habits', {
             } else {
                 this.dayStats[date].notes = notes;
             }
+        },
+
+        setDayLove(date: string, level: LoveLevel) {
+            if (!this.dayStats) this.dayStats = {};
+            if (!this.dayStats[date]) {
+                this.dayStats[date] = {
+                    date,
+                    completedHabits: 0,
+                    totalHabits: 0,
+                    completionRate: 0,
+                    streaks: {},
+                    love: level,
+                    mood: undefined,
+                    energyLevel: undefined,
+                    notes: undefined
+                };
+            } else {
+                this.dayStats[date].love = level;
+            }
         }
     }
 });
+
+export const getMoodEmoji = (level: MoodLevel): string => {
+    const emojis: Record<MoodLevel, string> = {
+        1: '😭',
+        2: '😡',
+        3: '😵‍💫',
+        4: '😩',
+        5: '😓',
+        6: '😢',
+        7: '😐',
+        8: '🙂',
+        9: '🫣',
+        10: '😊',
+        11: '🌞',
+        12: '🥳',
+        13: '🤠'
+    };
+    return emojis[level];
+};
+
+export const getLoveEmoji = (level: LoveLevel): string => {
+    const emojis: Record<LoveLevel, string> = {
+        1: '🖤',
+        2: '💔',
+        3: '❤️‍🩹',
+        4: '🤍',
+        5: '🩷',
+        6: '💖',
+        7: '❤️‍🔥'
+    };
+    return emojis[level];
+};
+
+export const getEnergyEmoji = (level: EnergyLevel): string => {
+    const emojis: Record<EnergyLevel, string> = {
+        1: '💤',
+        2: '🪫',
+        3: '⚡',
+        4: '🔋',
+        5: '🚀',
+    };
+    return emojis[level];
+};

@@ -130,12 +130,12 @@
         </div>
       </div>
 
-      <!-- Humeur et énergie -->
+      <!-- Humeur, amour et énergie -->
       <div class="goalflowz-mood-row">
         <div class="goalflowz-mood-item">
           <div class="goalflowz-mood-buttons">
             <button 
-              v-for="level in [1, 2, 3, 4, 5] as MoodLevel[]" 
+              v-for="level in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] as MoodLevel[]" 
               :key="'mood-'+level"
               class="goalflowz-mood-btn"
               :class="{ active: dayStats.mood === level }"
@@ -148,13 +148,26 @@
         <div class="goalflowz-mood-item">
           <div class="goalflowz-mood-buttons">
             <button 
-              v-for="level in [1, 2, 3, 4, 5] as MoodLevel[]" 
+              v-for="level in [1, 2, 3, 4, 5, 6, 7] as LoveLevel[]" 
+              :key="'love-'+level"
+              class="goalflowz-mood-btn"
+              :class="{ active: dayStats.love === level }"
+              @click="setDayLove(level)"
+            >
+              {{ getLoveEmoji(level) }}
+            </button>
+          </div>
+        </div>
+        <div class="goalflowz-mood-item">
+          <div class="goalflowz-mood-buttons">
+            <button 
+              v-for="level in [1, 2, 3, 4, 5] as EnergyLevel[]" 
               :key="'energy-'+level"
               class="goalflowz-energy-btn"
               :class="{ active: dayStats.energyLevel === level }"
               @click="setDayEnergyLevel(level)"
             >
-              🔋
+              {{ getEnergyEmoji(level) }}
             </button>
           </div>
         </div>
@@ -184,6 +197,7 @@ import { DateTime } from 'luxon';
 import { useHabitsStore } from '@/stores/habitsStore';
 import { useGoalsStore } from '@/stores/goalsStore';
 import { useTasksStore } from '@/stores/tasksStore';
+import { getMoodEmoji, getLoveEmoji, getEnergyEmoji, type MoodLevel, type LoveLevel, type EnergyLevel } from '@/stores/habitsStore';
 import type { Habit } from '@/types/habits';
 import type { Task, TaskStatus } from '@/types/tasks';
 import type { Note } from '@/types/notes';
@@ -195,8 +209,6 @@ interface DayNote {
   path: string;
   content: string;
 }
-
-type MoodLevel = 1 | 2 | 3 | 4 | 5;
 
 // Services
 const dateService = new DateService();
@@ -404,22 +416,6 @@ const openValueInput = async (habit: Habit) => {
   }
 };
 
-const getMoodEmoji = (level: MoodLevel): string => {
-  const emojis: Record<MoodLevel, string> = {
-    1: '😢',
-    2: '😕',
-    3: '😐',
-    4: '🙂',
-    5: '😄'
-  };
-  return emojis[level];
-};
-
-const getEnergyEmoji = (level: number) => {
-  const emojis = ['🔋', '🔋', '🔋', '🔋', '🔋'];
-  return emojis[level - 1];
-};
-
 const setDayMood = (level: MoodLevel) => {
   try {
     const date = dateUtils.formatDate(currentDate.value);
@@ -430,7 +426,17 @@ const setDayMood = (level: MoodLevel) => {
   }
 };
 
-const setDayEnergyLevel = (level: MoodLevel) => {
+const setDayLove = (level: LoveLevel) => {
+  try {
+    const date = dateUtils.formatDate(currentDate.value);
+    habitsStore.setDayLove(date, level);
+    habitsStore.syncWithDailyNote(date, props.app);
+  } catch (error) {
+    console.warn('Erreur lors de la définition du niveau d\'amour:', error);
+  }
+};
+
+const setDayEnergyLevel = (level: EnergyLevel) => {
   try {
     const date = dateUtils.formatDate(currentDate.value);
     habitsStore.setDayEnergyLevel(date, level);

@@ -1,4 +1,8 @@
-export type HabitCategory = 'health' | 'productivity' | 'lifestyle' | 'personal';
+export type HabitCategory = 'health' | 'productivity' | 'relationships' | 'personal';
+
+export type MoodLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
+export type LoveLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type EnergyLevel = 1 | 2 | 3 | 4 | 5 ;
 
 export interface Habit {
     id: string;
@@ -24,7 +28,7 @@ export interface DayStats {
     completedHabits: number;
     totalHabits: number;
     completionRate: number;
-    streaks: { [habitId: string]: number };
+    streaks: Record<string, number>;
     nextGoal?: {
         id: string;
         title: string;
@@ -40,7 +44,21 @@ export interface DayStats {
         title: string;
         date: string;
     };
-    mood?: 1 | 2 | 3 | 4 | 5; // Échelle de 1 à 5
-    energyLevel?: 1 | 2 | 3 | 4 | 5;
+    mood?: MoodLevel;
+    love?: LoveLevel;
+    energyLevel?: EnergyLevel;
     notes?: string; // Notes personnelles du jour
+}
+
+export interface HabitStreak {
+    habitId: string;
+    currentStreak: number;
+    longestStreak: number;
+    lastCompletedDate?: string;
+}
+
+export interface HabitsState {
+    habits: Habit[];
+    logs: DailyHabitLog[];
+    dayStats?: { [date: string]: DayStats };
 } 
