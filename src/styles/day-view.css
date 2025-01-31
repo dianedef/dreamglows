@@ -344,8 +344,8 @@
 
 .goalflowz-habit-week {
   position: absolute;
-  left: 3em; /* Espace pour l'icône principale */
-  right: 4em; /* Espace pour le bouton de valeur */
+  left: 3em;
+  right: 4em;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -361,6 +361,33 @@
   display: flex;
   justify-content: center;
   transition: opacity 0.2s ease;
+  position: relative;
+}
+
+.goalflowz-habit-day::before {
+  content: attr(data-day);
+  position: absolute;
+  top: -1.5em;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.15rem 0.3rem;
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--goalflowz-border-radius);
+  font-size: 0.4em;
+  font-weight: 500;
+  color: var(--text-normal);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.goalflowz-habit-day:hover::before {
+  opacity: 0.95;
+  visibility: visible;
 }
 
 .goalflowz-habit-day.completed {
@@ -436,20 +463,22 @@
 .goalflowz-energy-btn {
   padding: var(--goalflowz-spacing-xs);
   border-radius: var(--goalflowz-border-radius);
-  font-size: 1em;
-  transition: all 0.2s ease;
+  font-size: 2em;
+  transition: opacity 0.2s ease;
+  opacity: 0.4;
+  cursor: pointer;
+  background: none;
+  border: none;
 }
 
 .goalflowz-mood-btn:hover,
 .goalflowz-energy-btn:hover {
-  background-color: var(--background-modifier-hover);
+  opacity: 0.7;
 }
 
 .goalflowz-mood-btn.active,
 .goalflowz-energy-btn.active {
-  background-color: var(--interactive-success);
-  color: var(--text-on-accent);
-  border-color: var(--interactive-success);
+  opacity: 1;
 }
 
 /* Section des notes avec hauteur dynamique */
@@ -578,5 +607,10 @@ h2, h3 {
     font-size: clamp(0.8em, calc(0.6em + 1.8vw), 2.8em);
     margin: 0 -0.5em !important;
     opacity: 0.4;
+  }
+
+  .goalflowz-mood-btn,
+  .goalflowz-energy-btn {
+    font-size: 1.8em;
   }
 }

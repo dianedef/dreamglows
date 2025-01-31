@@ -108,6 +108,7 @@
                 'completed': isHabitCompleted(habit.id, dateUtils.formatDate(day)),
                 'future': isFutureDate(day)
               }"
+              :data-day="day.setLocale('fr').toFormat('cccc')"
               @click.stop="toggleHabit(habit.id, dateUtils.formatDate(day))"
             >
               {{ habit.icon }}
