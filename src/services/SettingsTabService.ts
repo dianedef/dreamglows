@@ -53,7 +53,7 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
             }));
 
         new Setting(containerEl)
-                .setName('Langue des note')
+                .setName('Langue des notes' )
                 .setDesc('Choisissez la langue pour les noms des mois et le template des notes')
                 .addDropdown(dropdown => dropdown
                     .addOption('fr', 'Français')
@@ -119,8 +119,7 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
                     el.createEl('li', { text: 'Utilisez la vue Planning pour comparer les mêmes jours sur différentes années' });
                     el.createEl('li', { text: 'Profitez des bilans annuels pour définir vos objectifs de l\'année suivante' });
                 });
-            }))
-            .setClass('goalflowz-notes-instructions');
+            }));
             
             // Bouton de génération
         this.notesGeneratorContainer = containerEl.createEl('div');

@@ -20,7 +20,7 @@ export class ProgressTracker {
     }
 
     increment(message?: string) {
-        this.current++;
+        this.current = Math.min(this.current + 1, this.total);
         if (message) {
             this.message = message;
         }
@@ -28,11 +28,12 @@ export class ProgressTracker {
     }
 
     private notifyProgress() {
+        const percentage = this.total > 0 ? Math.min(Math.round((this.current / this.total) * 100), 100) : 0;
         this.onProgress({
             current: this.current,
             total: this.total,
             message: this.message,
-            percentage: Math.round((this.current / this.total) * 100)
+            percentage
         });
     }
 

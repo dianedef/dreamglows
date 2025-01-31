@@ -43,7 +43,6 @@ export interface GoalFlowzSettings {
     monthLanguage: 'fr' | 'en';
     notesFormat: NoteFormat;
     customNotesFormat?: string;
-    noteTemplate: string;
     lastMainWidth: number;
     timelineStartHour: string;
     timelineEndHour: string;
@@ -70,7 +69,6 @@ export const DEFAULT_SETTINGS: GoalFlowzSettings = {
     folderStructure: "flat",
     monthLanguage: "fr",
     notesFormat: "full-date-emoji",
-    noteTemplate: getDefaultTemplate('fr'),
     lastMainWidth: 50,
     timelineStartHour: "09:00",
     timelineEndHour: "18:00",

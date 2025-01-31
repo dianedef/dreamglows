@@ -8,6 +8,7 @@ import {
     CategoryStatsSchema, PeriodStatsSchema
 } from '../types/models';
 import { GoalFlowzSettings } from '../types/settings';
+import { getDefaultTemplate } from '../constants/templates';
 
 export class ValidationService {
     constructor(
@@ -210,8 +211,9 @@ export class ValidationService {
     }
 
     validateNoteContent(content: string): void {
-        // Extraire les sections du template
-        const templateLines = this.settings.noteTemplate.split('\n');
+        // Extraire les sections du template par défaut selon la langue
+        const template = getDefaultTemplate(this.settings.monthLanguage);
+        const templateLines = template.split('\n');
         const requiredSections = templateLines
             .filter(line => line.startsWith('##'))
             .map(line => line.trim());

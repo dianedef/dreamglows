@@ -284,14 +284,27 @@ export class NotesGeneratorService {
             (date.day === 1 ? 'st' : date.day === 2 ? 'nd' : date.day === 3 ? 'rd' : 'th') : 
             (date.day === 1 ? 'er' : '');
             
-        const template = this.settings.noteTemplate || getDefaultTemplate(this.settings.monthLanguage);
-        return template
-            .replace('{day}', date.day.toString())
-            .replace('{suffix}', suffix)
-            .replace('{month}', monthName)
-            .replace('{MM}', localizedDate.toFormat('MM'))
-            .replace('{DD}', localizedDate.toFormat('dd'))
-            .replace('{year}', localizedDate.toFormat('yyyy'));
+        const template = getDefaultTemplate(this.settings.monthLanguage);
+        const year = localizedDate.toFormat('yyyy');
+        
+        console.log('Génération du contenu de la note:', {
+            date: date.toISO(),
+            year,
+            monthName,
+            template: template.slice(0, 100) // On affiche juste le début du template
+        });
+        
+        const content = template
+            .replace(/{day}/g, date.day.toString())
+            .replace(/{suffix}/g, suffix)
+            .replace(/{month}/g, monthName)
+            .replace(/{MM}/g, localizedDate.toFormat('MM'))
+            .replace(/{DD}/g, localizedDate.toFormat('dd'))
+            .replace(/{year}/g, year);
+            
+        console.log('Contenu généré:', content.slice(0, 100)); // On affiche juste le début du contenu
+        
+        return content;
     }
 
     private async fileExists(path: string): Promise<boolean> {

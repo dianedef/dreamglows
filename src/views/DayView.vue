@@ -461,64 +461,52 @@ const loadDayNote = async (date: DateTime) => {
 
 // Fonction d'initialisation de la vue de note
 const initializeNoteView = async (element: HTMLElement, app: any) => {
-  try {
-    if (!currentNote.value?.path) return;
-    
-    console.log('Initialisation de la vue de note pour:', currentNote.value.path);
-    
-    // Nettoyer l'élément existant
-    if (element.empty) {
-      element.empty();
-    } else {
-      element.innerHTML = '';
-    }
-    
-    // Créer une nouvelle leaf avec l'app
-    const leaf = new WorkspaceLeaf(app);
-    
-    // Obtenir le fichier
-    const file = app.vault.getAbstractFileByPath(currentNote.value.path);
-    if (!(file instanceof TFile)) {
-      throw new Error('Fichier non trouvé ou invalide');
-    }
+    try {
+        if (!currentNote.value?.path) return;
+        
+        console.log('Initialisation de la vue de note pour:', currentNote.value.path);
+        
+        // Nettoyer l'élément existant
+        element.innerHTML = '';
+        
+        // Obtenir le fichier
+        const file = app.vault.getAbstractFileByPath(currentNote.value.path);
+        if (!(file instanceof TFile)) {
+            throw new Error('Fichier non trouvé ou invalide');
+        }
 
-    // Configurer la vue markdown
-    await leaf.setViewState({
-      type: 'markdown',
-      state: { 
-        file: file.path,
-        mode: 'source',
-        source: true
-      }
-    });
-
-    // Monter la vue dans l'élément
-    element.appendChild(leaf.view.containerEl);
-
-    // Configurer l'éditeur
-    const view = leaf.view as MarkdownView;
-    if (view?.editor) {
-      const editor = view.editor;
-      editor.refresh();
-
-      // Ajouter l'écouteur pour la sauvegarde automatique
-      if (editor.cm) {
-        editor.cm.on('changes', async () => {
-          const content = editor.getValue();
-          if (content !== undefined) {
-            await app.vault.modify(file, content);
-          }
+        // Créer un conteneur pour la note
+        const noteContainer = element.createDiv('markdown-source-view');
+        
+        // Charger le contenu
+        const content = await app.vault.read(file);
+        
+        // Créer un élément textarea pour l'édition
+        const textarea = noteContainer.createEl('textarea', {
+            cls: 'markdown-source-textarea'
         });
-      }
+        textarea.value = content;
+        
+        // Style de base pour le textarea
+        textarea.style.width = '100%';
+        textarea.style.height = '100%';
+        textarea.style.resize = 'none';
+        textarea.style.border = 'none';
+        textarea.style.padding = '1rem';
+        textarea.style.fontFamily = 'monospace';
+        
+        // Configurer la sauvegarde automatique
+        textarea.addEventListener('input', async () => {
+            await app.vault.modify(file, textarea.value);
+        });
+
+        console.log('Vue de note initialisée avec succès');
+
+    } catch (error: any) {
+        console.error('Erreur lors de l\'initialisation de la vue de note:', error);
+        new Notice('Erreur lors du chargement de la note: ' + (error.message || 'Erreur inconnue'));
+        element.innerHTML = 'Erreur lors du chargement de la note: ' + (error.message || 'Erreur inconnue');
     }
-
-    console.log('Vue de note initialisée avec succès');
-
-  } catch (error: any) {
-    console.error('Erreur lors de l\'initialisation de la vue de note:', error);
-    new Notice('Erreur lors du chargement de la note: ' + (error.message || 'Erreur inconnue'));
-    element.innerHTML = 'Erreur lors du chargement de la note: ' + (error.message || 'Erreur inconnue');
-  }
 };
 
 // Refs
