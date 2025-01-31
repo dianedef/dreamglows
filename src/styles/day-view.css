@@ -211,6 +211,15 @@
 .goalflowz-flames-calendar.mobile .goalflowz-flame-day {
   font-size: clamp(0.8em, calc(0.6em + 1.8vw), 2.8em);
   margin: 0 -0.5em !important;
+  opacity: 0.4;
+}
+
+.goalflowz-flames-calendar.mobile .goalflowz-flame-day.completed {
+  opacity: 1;
+}
+
+.goalflowz-flames-calendar.mobile .goalflowz-flame-day.future {
+  opacity: 0.15;
 }
 
 .goalflowz-flames-row {
@@ -249,7 +258,7 @@
 
 .goalflowz-flame-day {
   font-size: clamp(0.4em, calc(0.3em + 1vw), 2.2em);
-  opacity: 1;
+  opacity: 0.4;
   cursor: pointer;
   margin: 0 calc(-0.3em - 0.1vw) !important;
   width: auto !important;
@@ -274,7 +283,7 @@
 }
 
 .goalflowz-flame-day.future {
-  opacity: 0.3;
+  opacity: 0.15;
 }
 
 /* Tooltip pour le nom du mois */
@@ -324,10 +333,63 @@
   border: 1px solid var(--background-modifier-border);
   transition: all 0.2s ease;
   cursor: pointer;
+  position: relative;
+  overflow: visible;
 }
 
 .goalflowz-habit-icon {
   font-size: 2.4em;
+  z-index: 2;
+}
+
+.goalflowz-habit-week {
+  position: absolute;
+  left: 3em; /* Espace pour l'icône principale */
+  right: 4em; /* Espace pour le bouton de valeur */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.goalflowz-habit-day {
+  font-size: 1.8em;
+  opacity: 0.4;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+.goalflowz-habit-day.completed {
+  opacity: 1;
+}
+
+.goalflowz-habit-day.future {
+  opacity: 0.15;
+}
+
+/* Ajustement de l'overlap en fonction de la largeur */
+@media screen and (max-width: 600px) {
+  .goalflowz-habit-week {
+    left: 2.5em;
+    right: 3.5em;
+  }
+  .goalflowz-habit-day {
+    margin: 0 -0.4em;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  .goalflowz-habit-week {
+    left: 2em;
+    right: 3em;
+  }
+  .goalflowz-habit-day {
+    margin: 0 -0.6em;
+  }
 }
 
 .goalflowz-habit-info {
@@ -515,5 +577,6 @@ h2, h3 {
   .goalflowz-flame-day {
     font-size: clamp(0.8em, calc(0.6em + 1.8vw), 2.8em);
     margin: 0 -0.5em !important;
+    opacity: 0.4;
   }
 }

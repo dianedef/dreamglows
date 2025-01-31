@@ -180,4 +180,35 @@ export class DateService {
         const match = filename.match(/(\d{4}-\d{2}-\d{2})/);
         return match ? match[1] : null;
     }
+
+    /**
+     * Retourne les jours de la semaine courante
+     */
+    getCurrentWeekDays(date: Date | string | DateTime = this.today()): DateTime[] {
+        const currentDate = this.toDateTime(date);
+        const startOfWeek = currentDate.startOf('week');
+        const days: DateTime[] = [];
+        
+        for (let i = 0; i < 7; i++) {
+            days.push(startOfWeek.plus({ days: i }));
+        }
+        
+        return days;
+    }
+
+    /**
+     * Vérifie si une date est dans le futur
+     */
+    isFutureDate(date: Date | string | DateTime): boolean {
+        const dt = this.toDateTime(date);
+        return dt > this.today();
+    }
+
+    /**
+     * Vérifie si une date est aujourd'hui
+     */
+    isToday(date: Date | string | DateTime): boolean {
+        const dt = this.toDateTime(date);
+        return this.isSameDay(dt, this.today());
+    }
 } 

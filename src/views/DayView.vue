@@ -99,6 +99,20 @@
           @click="toggleHabit(habit.id)"
         >
           <div class="goalflowz-habit-icon">{{ habit.icon }}</div>
+          <div class="goalflowz-habit-week">
+            <div 
+              v-for="(day, index) in currentWeekDays" 
+              :key="index"
+              class="goalflowz-habit-day"
+              :class="{
+                'completed': isHabitCompleted(habit.id, dateUtils.formatDate(day)),
+                'future': isFutureDate(day)
+              }"
+              @click.stop="toggleHabit(habit.id, dateUtils.formatDate(day))"
+            >
+              {{ habit.icon }}
+            </div>
+          </div>
           <div class="goalflowz-habit-info">
             <div class="goalflowz-habit-name">{{ habit.name }}</div>
             <div class="goalflowz-habit-streak" v-if="getHabitStreak(habit.id)">
@@ -174,6 +188,8 @@ import type { Task, TaskStatus } from '@/types/tasks';
 import type { Note } from '@/types/notes';
 import { WorkspaceLeaf, MarkdownView, TFile, Notice } from 'obsidian';
 import Goalflowz from '@/main';
+import { DateService } from '@/services/DateService';
+
 interface DayNote {
   path: string;
   content: string;
@@ -181,19 +197,13 @@ interface DayNote {
 
 type MoodLevel = 1 | 2 | 3 | 4 | 5;
 
+// Services
+const dateService = new DateService();
+
 // Utilitaire de gestion des dates
 const dateUtils = {
-  formatDate: (date: string | DateTime | null): string => {
-    try {
-      if (!date) return '';
-      if (date instanceof DateTime) {
-        return date.toFormat('yyyy-MM-dd');
-      }
-      return DateTime.fromISO(date).toFormat('yyyy-MM-dd');
-    } catch (error) {
-      console.warn('Erreur de formatage de date:', error);
-      return '';
-    }
+  formatDate: (date: DateTime): string => {
+    return date.toFormat('yyyy-MM-dd');
   },
   
   formatDisplayDate: (date: string | DateTime | null): string => {
@@ -301,6 +311,11 @@ const nextTask = computed(() => {
   return tasks[0];
 });
 
+// Computed properties pour la semaine courante
+const currentWeekDays = computed(() => {
+  return dateService.getCurrentWeekDays(currentDate.value);
+});
+
 // Methods avec gestion d'erreurs
 const previousDay = () => {
   try {
@@ -333,10 +348,10 @@ const formatDate = (date: string) => {
   });
 };
 
-const isHabitCompleted = (habitId: string): boolean => {
+const isHabitCompleted = (habitId: string, date?: string): boolean => {
   try {
-    const date = dateUtils.formatDate(currentDate.value);
-    const log = habitsStore.getDayLogs(date).find(l => l.habitId === habitId);
+    const targetDate = date || dateUtils.formatDate(currentDate.value);
+    const log = habitsStore.getDayLogs(targetDate).find(l => l.habitId === habitId);
     return log?.completed || false;
   } catch (error) {
     console.warn('Erreur de vérification d\'habitude:', error);
@@ -364,10 +379,10 @@ const getHabitStreak = (habitId: string): number => {
   }
 };
 
-const toggleHabit = (habitId: string) => {
+const toggleHabit = (habitId: string, date?: string) => {
   try {
-    const date = dateUtils.formatDate(currentDate.value);
-    habitsStore.toggleHabit(habitId, date, undefined, props.app);
+    const targetDate = date || dateUtils.formatDate(currentDate.value);
+    habitsStore.toggleHabit(habitId, targetDate, undefined, props.app);
   } catch (error) {
     console.warn('Erreur de basculement d\'habitude:', error);
   }
@@ -623,19 +638,21 @@ const months = computed(() => {
   return months;
 });
 
-const isDateCompleted = (date: string) => {
+const isDateCompleted = (date: string | DateTime) => {
   try {
-    const stats = habitsStore.getDayStats(date);
-    return stats.completionRate === 100;
+    const formattedDate = dateUtils.formatDate(dateUtils.toDateTime(date));
+    const stats = habitsStore.getDayStats(formattedDate);
+    return stats.completionRate >= 100;
   } catch (error) {
     console.warn('Erreur de vérification de date complétée:', error);
     return false;
   }
 };
 
-const isFutureDate = (date: string) => {
+const isFutureDate = (date: string | DateTime) => {
   try {
-    return DateTime.fromISO(date) > DateTime.now();
+    const dt = dateUtils.toDateTime(date);
+    return dt > DateTime.now().endOf('day');
   } catch (error) {
     console.warn('Erreur de vérification de date future:', error);
     return false;
