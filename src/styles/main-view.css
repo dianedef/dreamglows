@@ -19,6 +19,10 @@
 .goalflowz-view-switch {
     display: flex;
     align-items: center;
+}
+
+.goalflowz-view-switch-buttons {
+    display: flex;
     gap: 1rem;
 }
 

@@ -2,18 +2,20 @@
     <div class="goalflowz-container">
         <div class="goalflowz-header">
             <div class="goalflowz-view-switch">
-                <button 
-                    :class="{ active: ['day', 'planning'].includes(activeTab) }"
-                    @click="setActiveTab(['day', 'planning'].includes(activeTab) ? (activeTab === 'day' ? 'planning' : 'day') : 'day')"
-                >
-                    {{ activeTab === 'planning' ? '📋 Planning' : '📅 Aujourd\'hui' }}
-                </button>
-                <button 
-                    :class="{ active: ['goals', 'stats'].includes(activeTab) }"
-                    @click="setActiveTab(['goals', 'stats'].includes(activeTab) ? (activeTab === 'goals' ? 'stats' : 'goals') : 'goals')"
-                >
-                    {{ activeTab === 'stats' ? '📊 Statistiques' : '🎯 Objectifs' }}
-                </button>
+                <div class="goalflowz-view-switch-buttons">
+                    <button 
+                        :class="{ active: ['day', 'planning'].includes(activeTab) }"
+                        @click="setActiveTab(['day', 'planning'].includes(activeTab) ? (activeTab === 'day' ? 'planning' : 'day') : 'day')"
+                    >
+                        {{ activeTab === 'planning' ? '📋 Planning' : '📅 Aujourd\'hui' }}
+                    </button>
+                    <button 
+                        :class="{ active: ['goals', 'stats'].includes(activeTab) }"
+                        @click="setActiveTab(['goals', 'stats'].includes(activeTab) ? (activeTab === 'goals' ? 'stats' : 'goals') : 'goals')"
+                    >
+                        {{ activeTab === 'stats' ? '📊 Statistiques' : '🎯 Objectifs' }}
+                    </button>
+                </div>
             </div>
             <TimeNavigation 
                 v-if="['day', 'planning'].includes(activeTab)"
