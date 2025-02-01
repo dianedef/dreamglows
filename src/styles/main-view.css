@@ -1,0 +1,49 @@
+.goalflowz-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: transparent;
+}
+
+.goalflowz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    position: relative;
+    min-height: 48px;
+    background: transparent;
+    border: none;
+}
+
+.goalflowz-view-switch {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.goalflowz-time-nav {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.goalflowz-header button {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-normal);
+}
+
+.goalflowz-header button:hover {
+    background: var(--background-modifier-hover);
+}
+
+.goalflowz-header button.active {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+} 

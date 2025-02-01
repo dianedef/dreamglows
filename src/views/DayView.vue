@@ -1,21 +1,5 @@
 <template>
   <div class="goalflowz-day-view">
-    <!-- En-tête avec navigation -->
-    <div class="goalflowz-day-header">
-      <div class="goalflowz-day-navigation">
-        <button @click="previousDay" class="goalflowz-nav-btn">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <h2>{{ formattedDate }}</h2>
-        <button @click="nextDay" class="goalflowz-nav-btn">
-          <i class="fas fa-chevron-right"></i>
-        </button>
-      </div>
-      <button @click="goToToday" class="goalflowz-today-btn" v-if="!isToday">
-        Aujourd'hui
-      </button>
-    </div>
-
     <!-- Résumé du jour -->
     <div class="goalflowz-day-summary">
       <div class="goalflowz-summary-card next-goal" v-if="nextGoal">
@@ -258,20 +242,20 @@ const dateUtils = {
 const props = defineProps<{
   app: any;
   contentFiles?: any[];
+  currentDate: DateTime;
 }>();
 
 const habitsStore = useHabitsStore();
 const goalsStore = useGoalsStore();
 const tasksStore = useTasksStore();
 
-const currentDate = ref(DateTime.now());
 const dayNotes = ref('');
 const currentNote = ref<DayNote | null>(null);
 
 // Computed properties avec gestion d'erreurs
 const formattedDate = computed(() => {
   try {
-    return currentDate.value.setLocale('fr').toLocaleString({
+    return props.currentDate.setLocale('fr').toLocaleString({
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -286,7 +270,7 @@ const formattedDate = computed(() => {
 const isToday = computed(() => {
   try {
     const today = DateTime.now();
-    return currentDate.value.hasSame(today, 'day');
+    return props.currentDate.hasSame(today, 'day');
   } catch (error) {
     console.warn('Erreur de comparaison de dates:', error);
     return false;
@@ -297,7 +281,7 @@ const activeHabits = computed(() => habitsStore.activeHabits);
 
 const dayStats = computed(() => {
   try {
-    return habitsStore.getDayStats(dateUtils.formatDate(currentDate.value));
+    return habitsStore.getDayStats(dateUtils.formatDate(props.currentDate));
   } catch (error) {
     console.warn('Erreur de récupération des stats:', error);
     return { completionRate: 0, mood: 0, energyLevel: 0, notes: '' };
@@ -330,32 +314,36 @@ const nextTask = computed(() => {
 
 // Computed properties pour la semaine courante
 const currentWeekDays = computed(() => {
-  return dateService.getCurrentWeekDays(currentDate.value);
+  return dateService.getCurrentWeekDays(props.currentDate);
 });
+
+const emit = defineEmits<{
+    'update:currentDate': [date: DateTime]
+}>();
 
 // Methods avec gestion d'erreurs
 const previousDay = () => {
-  try {
-    currentDate.value = currentDate.value.minus({ days: 1 });
-  } catch (error) {
-    console.warn('Erreur de navigation jour précédent:', error);
-  }
+    try {
+        emit('update:currentDate', props.currentDate.minus({ days: 1 }));
+    } catch (error) {
+        console.warn('Erreur de navigation jour précédent:', error);
+    }
 };
 
 const nextDay = () => {
-  try {
-    currentDate.value = currentDate.value.plus({ days: 1 });
-  } catch (error) {
-    console.warn('Erreur de navigation jour suivant:', error);
-  }
+    try {
+        emit('update:currentDate', props.currentDate.plus({ days: 1 }));
+    } catch (error) {
+        console.warn('Erreur de navigation jour suivant:', error);
+    }
 };
 
 const goToToday = () => {
-  try {
-    currentDate.value = DateTime.now();
-  } catch (error) {
-    console.warn('Erreur de navigation aujourd\'hui:', error);
-  }
+    try {
+        emit('update:currentDate', DateTime.now());
+    } catch (error) {
+        console.warn('Erreur de navigation aujourd\'hui:', error);
+    }
 };
 
 const formatDate = (date: string) => {
@@ -367,7 +355,7 @@ const formatDate = (date: string) => {
 
 const isHabitCompleted = (habitId: string, date?: string): boolean => {
   try {
-    const targetDate = date || dateUtils.formatDate(currentDate.value);
+    const targetDate = date || dateUtils.formatDate(props.currentDate);
     const log = habitsStore.getDayLogs(targetDate).find(l => l.habitId === habitId);
     return log?.completed || false;
   } catch (error) {
@@ -378,7 +366,7 @@ const isHabitCompleted = (habitId: string, date?: string): boolean => {
 
 const getHabitValue = (habitId: string): number => {
   try {
-    const date = dateUtils.formatDate(currentDate.value);
+    const date = dateUtils.formatDate(props.currentDate);
     const log = habitsStore.getDayLogs(date).find(l => l.habitId === habitId);
     return log?.value || 0;
   } catch (error) {
@@ -398,7 +386,7 @@ const getHabitStreak = (habitId: string): number => {
 
 const toggleHabit = (habitId: string, date?: string) => {
   try {
-    const targetDate = date || dateUtils.formatDate(currentDate.value);
+    const targetDate = date || dateUtils.formatDate(props.currentDate);
     habitsStore.toggleHabit(habitId, targetDate, undefined, props.app);
   } catch (error) {
     console.warn('Erreur de basculement d\'habitude:', error);
@@ -414,7 +402,7 @@ const openValueInput = async (habit: Habit) => {
   if (value !== null) {
     const numValue = parseFloat(value);
     if (!isNaN(numValue)) {
-      const date = dateUtils.formatDate(currentDate.value);
+      const date = dateUtils.formatDate(props.currentDate);
       habitsStore.toggleHabit(habit.id, date, numValue, props.app);
     }
   }
@@ -422,7 +410,7 @@ const openValueInput = async (habit: Habit) => {
 
 const setDayMood = (level: MoodLevel) => {
   try {
-    const date = dateUtils.formatDate(currentDate.value);
+    const date = dateUtils.formatDate(props.currentDate);
     habitsStore.setDayMood(date, level);
     habitsStore.syncWithDailyNote(date, props.app);
   } catch (error) {
@@ -432,7 +420,7 @@ const setDayMood = (level: MoodLevel) => {
 
 const setDayLove = (level: LoveLevel) => {
   try {
-    const date = dateUtils.formatDate(currentDate.value);
+    const date = dateUtils.formatDate(props.currentDate);
     habitsStore.setDayLove(date, level);
     habitsStore.syncWithDailyNote(date, props.app);
   } catch (error) {
@@ -442,7 +430,7 @@ const setDayLove = (level: LoveLevel) => {
 
 const setDayEnergyLevel = (level: EnergyLevel) => {
   try {
-    const date = dateUtils.formatDate(currentDate.value);
+    const date = dateUtils.formatDate(props.currentDate);
     habitsStore.setDayEnergyLevel(date, level);
     habitsStore.syncWithDailyNote(date, props.app);
   } catch (error) {
@@ -452,7 +440,7 @@ const setDayEnergyLevel = (level: EnergyLevel) => {
 
 const updateNotes = () => {
   try {
-    const date = dateUtils.formatDate(currentDate.value);
+    const date = dateUtils.formatDate(props.currentDate);
     habitsStore.setDayNotes(date, dayNotes.value);
     habitsStore.syncWithDailyNote(date, props.app);
   } catch (error) {
@@ -555,27 +543,27 @@ watch([noteContentRef, () => currentNote.value?.path], async ([el, path]) => {
 });
 
 // Watchers et lifecycle hooks
-watch(currentDate, async (newDate) => {
+watch(() => props.currentDate, async (newDate) => {
   await loadDayNote(newDate);
 });
 
 onMounted(async () => {
-  try {
-    console.log('DayView mounted');
-    habitsStore.initializeDefaultHabits();
-    
-    // Retourner à la date du jour si on ouvre une nouvelle leaf
-    if (!props.app.workspace.activeLeaf || props.app.workspace.activeLeaf.getViewState().type === 'empty') {
-      currentDate.value = DateTime.now();
+    try {
+        console.log('DayView mounted');
+        habitsStore.initializeDefaultHabits();
+        
+        // Retourner à la date du jour si on ouvre une nouvelle leaf
+        if (!props.app.workspace.activeLeaf || props.app.workspace.activeLeaf.getViewState().type === 'empty') {
+            emit('update:currentDate', DateTime.now());
+        }
+        
+        await loadDayNote(props.currentDate);
+        const date = dateUtils.formatDate(props.currentDate);
+        dayNotes.value = habitsStore.getDayStats(date).notes || '';
+        console.log('DayView initialized with date:', date);
+    } catch (error) {
+        console.error('Erreur d\'initialisation DayView:', error);
     }
-    
-    await loadDayNote(currentDate.value);
-    const date = dateUtils.formatDate(currentDate.value);
-    dayNotes.value = habitsStore.getDayStats(date).notes || '';
-    console.log('DayView initialized with date:', date);
-  } catch (error) {
-    console.error('Erreur d\'initialisation DayView:', error);
-  }
 });
 
 onUnmounted(() => {

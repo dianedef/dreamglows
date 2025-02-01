@@ -1,16 +1,5 @@
 <template>
     <div class="goalflowz-notes-week" :class="{ 'compact-view': isCompactView }">
-        <div class="week-header">
-            <div v-for="day in displayedDays" 
-                 :key="day.date" 
-                 class="day-header"
-                 :class="{ 'is-today': day.isToday }">
-                {{ formatDay(day.date) }}
-                <span v-if="isCompactView && day.isWeekend" class="weekend-label">
-                    & {{ formatDay(day.date.plus({ days: 1 })) }}
-                </span>
-            </div>
-        </div>
         <div class="week-content">
             <div v-for="day in displayedDays" 
                  :key="day.date" 
@@ -58,6 +47,7 @@ interface Props {
     weekData: WeekNotes | null;
     expandedNotes: string[];
     app: any;
+    currentDate: DateTime;
 }
 
 const props = defineProps<Props>();
@@ -70,7 +60,7 @@ const displayedDays = computed<Day[]>(() => {
     if (!props.weekData) return [];
     
     const days: Day[] = [];
-    let currentDate = props.weekData.startDate;
+    let currentDate = props.currentDate.startOf('week');
     
     if (isCompactView.value) {
         // Vue compacte : Lun-Mar-Mer / Jeu-Ven / Week-end

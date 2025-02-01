@@ -1,24 +1,33 @@
 <template>
     <div class="goalflowz-container">
-        <div class="goalflowz-view-switch">
-            <button 
-                :class="{ active: ['day', 'planning'].includes(activeTab) }"
-                @click="setActiveTab(['day', 'planning'].includes(activeTab) ? (activeTab === 'day' ? 'planning' : 'day') : 'day')"
-            >
-                {{ activeTab === 'planning' ? '📋 Planning' : '📅 Aujourd\'hui' }}
-            </button>
-            <button 
-                :class="{ active: ['goals', 'stats'].includes(activeTab) }"
-                @click="setActiveTab(['goals', 'stats'].includes(activeTab) ? (activeTab === 'goals' ? 'stats' : 'goals') : 'goals')"
-            >
-                {{ activeTab === 'stats' ? '📊 Statistiques' : '🎯 Objectifs' }}
-            </button>
+        <div class="goalflowz-header">
+            <div class="goalflowz-view-switch">
+                <button 
+                    :class="{ active: ['day', 'planning'].includes(activeTab) }"
+                    @click="setActiveTab(['day', 'planning'].includes(activeTab) ? (activeTab === 'day' ? 'planning' : 'day') : 'day')"
+                >
+                    {{ activeTab === 'planning' ? '📋 Planning' : '📅 Aujourd\'hui' }}
+                </button>
+                <button 
+                    :class="{ active: ['goals', 'stats'].includes(activeTab) }"
+                    @click="setActiveTab(['goals', 'stats'].includes(activeTab) ? (activeTab === 'goals' ? 'stats' : 'goals') : 'goals')"
+                >
+                    {{ activeTab === 'stats' ? '📊 Statistiques' : '🎯 Objectifs' }}
+                </button>
+            </div>
+            <TimeNavigation 
+                v-if="['day', 'planning'].includes(activeTab)"
+                :view="activeTab as 'day' | 'planning'"
+                v-model:date="currentDate"
+                class="goalflowz-time-nav"
+            />
         </div>
 
         <component 
             :is="currentComponent" 
             :contentFiles="contentFiles"
             :app="app"
+            :currentDate="currentDate"
         />
     </div>
 </template>
@@ -26,10 +35,12 @@
 <script setup lang="ts">
 import { ref, computed, provide, onMounted, onUnmounted } from 'vue';
 import { App, TFile } from 'obsidian';
+import { DateTime } from 'luxon';
 import GoalsView from './GoalsView.vue';
 import StatsView from './StatsView.vue';
 import DayView from './DayView.vue';
 import PlanningView from './PlanningView.vue';
+import TimeNavigation from '../components/TimeNavigation.vue';
 import { useSettingsStore } from '../stores/settingsStore';
 
 const props = defineProps<{
@@ -41,6 +52,10 @@ provide('app', props.app);
 
 const settingsStore = useSettingsStore();
 const activeTab = ref(settingsStore.settings.lastActiveTab);
+
+// Ajout de l'état global de la date
+const currentDate = ref(DateTime.now());
+provide('currentDate', currentDate);
 
 const setActiveTab = (tab: string) => {
     try {

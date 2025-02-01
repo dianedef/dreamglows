@@ -3,6 +3,23 @@ import type { Habit, DailyHabitLog, DayStats, MoodLevel, LoveLevel, EnergyLevel,
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
 
+// Types pour les niveaux d'humeur et d'énergie
+export type MoodLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
+export type LoveLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type EnergyLevel = 1 | 2 | 3 | 4 | 5;
+
+export interface DayStats {
+    date: string;
+    completedHabits: number;
+    totalHabits: number;
+    completionRate: number;
+    streaks: Record<string, number>;
+    mood?: MoodLevel;
+    love?: LoveLevel;
+    energyLevel?: EnergyLevel;
+    notes?: string;
+}
+
 export const useHabitsStore = defineStore('habits', {
     state: (): HabitsState => ({
         habits: [],
