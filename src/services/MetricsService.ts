@@ -2,6 +2,7 @@ import { Goal, Task } from '../types/models';
 import { DateService } from './DateService';
 import { StorageService } from './StorageService';
 import { DateTime } from 'luxon';
+import { GoalTimeframe, GoalStatus } from '../types/goals';
 
 export interface DayStats {
     mood?: number;
@@ -36,16 +37,18 @@ export interface PeriodStats {
     };
     categories: Record<string, CategoryStats>;
     dailyStats: Record<string, DayStats>;
+    goalChains: {
+        timeframeDistribution: Record<GoalTimeframe, number>;
+        completionRateByTimeframe: Record<GoalTimeframe, number>;
+        averageDecompositionDepth: number;
+    };
 }
 
 export class MetricsService {
-    private dateService: DateService;
-    private storageService: StorageService;
-
-    constructor(dateService: DateService, storageService: StorageService) {
-        this.dateService = dateService;
-        this.storageService = storageService;
-    }
+    constructor(
+        private dateService: DateService,
+        private storageService: StorageService
+    ) {}
 
     /**
      * Calcule les statistiques pour une période donnée
@@ -130,13 +133,69 @@ export class MetricsService {
             current = current.plus({ days: 1 });
         }
 
+        // Ajout des statistiques de goal-chaining
+        const goalChainStats = await this.calculateGoalChainStats();
+        
         return {
             startDate,
             endDate,
             goals,
             tasks,
             categories,
-            dailyStats
+            dailyStats,
+            goalChains: {
+                timeframeDistribution: goalChainStats.timeframeDistribution,
+                completionRateByTimeframe: goalChainStats.completionRateByTimeframe,
+                averageDecompositionDepth: goalChainStats.averageDecompositionDepth
+            }
+        };
+    }
+
+    private async calculateGoalChainStats() {
+        const goals: Goal[] = await this.storageService.loadGoals();
+        
+        // Distribution par timeframe
+        const timeframeDistribution = Object.values(GoalTimeframe).reduce((acc, timeframe) => {
+            acc[timeframe] = goals.filter((g: Goal) => g.timeframe === timeframe).length;
+            return acc;
+        }, {} as Record<GoalTimeframe, number>);
+
+        // Taux de complétion par timeframe
+        const completionRateByTimeframe = Object.values(GoalTimeframe).reduce((acc, timeframe) => {
+            const timeframeGoals = goals.filter((g: Goal) => g.timeframe === timeframe);
+            if (timeframeGoals.length === 0) {
+                acc[timeframe] = 0;
+            } else {
+                const completedCount = timeframeGoals.filter((g: Goal) => g.status === 'completed').length;
+                acc[timeframe] = (completedCount / timeframeGoals.length) * 100;
+            }
+            return acc;
+        }, {} as Record<GoalTimeframe, number>);
+
+        // Profondeur moyenne de décomposition
+        const calculateDepth = (goalId: string, visited: Set<string> = new Set<string>()): number => {
+            if (visited.has(goalId)) return 0;
+            visited.add(goalId);
+            
+            const goal = goals.find((g: Goal) => g.id === goalId);
+            if (!goal || !goal.childGoals || goal.childGoals.length === 0) return 1;
+
+            const childDepths = goal.childGoals.map((childId: string) => 
+                calculateDepth(childId, visited)
+            );
+            return 1 + Math.max(...childDepths);
+        };
+
+        const rootGoals = goals.filter((g: Goal) => !g.parentGoalId);
+        const depths = rootGoals.map((g: Goal) => calculateDepth(g.id));
+        const averageDecompositionDepth = depths.length > 0 
+            ? depths.reduce((sum: number, depth: number) => sum + depth, 0) / depths.length
+            : 0;
+
+        return {
+            timeframeDistribution,
+            completionRateByTimeframe,
+            averageDecompositionDepth
         };
     }
 

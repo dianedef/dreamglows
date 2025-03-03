@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { GoalTimeframe } from './goals';
 
 // Schémas Zod de base
 export const MetricsSchema = z.object({
@@ -30,13 +31,54 @@ export const BaseItemSchema = z.object(baseItemFields).refine(
     }
 );
 
+export interface Goal {
+    id: string;
+    title: string;
+    description: string;
+    status: 'todo' | 'in-progress' | 'done' | 'completed';
+    category: string;
+    progress: number;
+    priority: 'low' | 'medium' | 'high';
+    tags: string[];
+    startDate: string;
+    dueDate: string;
+    timeframe: GoalTimeframe;
+    parentGoalId?: string;
+    childGoals?: string[];
+    tasks: string[];
+    subGoalIds: string[];
+    metrics?: {
+        target: number;
+        current: number;
+        unit: string;
+    };
+}
+
+export interface Task {
+    id: string;
+    title: string;
+    description?: string;
+    status: 'todo' | 'in-progress' | 'done';
+    goalId?: string;
+    startDate?: string;
+    dueDate?: string;
+    updatedAt: string;
+    completedAt?: string;
+    priority: 'low' | 'medium' | 'high';
+    tags: string[];
+}
+
 export const GoalSchema = z.object({
     ...baseItemFields,
     category: z.string().min(1).trim(),
     progress: z.number().min(0).max(100).default(0),
     metrics: MetricsSchema.optional(),
     tasks: z.array(z.string().uuid()).default([]),
-    subGoalIds: z.array(z.string().uuid()).default([])
+    subGoalIds: z.array(z.string().uuid()).default([]),
+    timeframe: z.string().min(1).max(100).trim(),
+    parentGoalId: z.string().uuid().optional(),
+    childGoals: z.array(z.string().uuid()).optional(),
+    status: z.enum(['todo', 'in-progress', 'done', 'completed'])
 });
 
 export const TaskSchema = z.object({
@@ -44,7 +86,10 @@ export const TaskSchema = z.object({
     goalId: z.string().uuid().optional(),
     notes: z.string().default(''),
     createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime()
+    updatedAt: z.string().datetime(),
+    completedAt: z.string().datetime().optional(),
+    priority: PrioritySchema,
+    status: StatusSchema
 }).refine(
     data => new Date(data.updatedAt) >= new Date(data.createdAt),
     {

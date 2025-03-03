@@ -336,4 +336,12 @@ export class StorageService {
             throw new StorageError('Erreur lors de la sauvegarde dans data.json', error as Error);
         }
     }
+
+    async loadGoals(): Promise<Goal[]> {
+        const data = await this.loadDataForRange(
+            new Date(0), // depuis le début
+            new Date()   // jusqu'à maintenant
+        );
+        return data.goals;
+    }
 } 

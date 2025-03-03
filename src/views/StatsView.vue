@@ -61,6 +61,30 @@
           <canvas ref="categoriesChart"></canvas>
         </div>
       </div>
+
+      <!-- Nouvelle section pour le Goal-Chaining -->
+      <div class="goalflowz-statistics-section">
+        <h3>🎯 Planification Stratégique</h3>
+        
+        <!-- Distribution par période -->
+        <div class="goalflowz-chart-container">
+          <h4>📊 Distribution par période</h4>
+          <canvas ref="timeframeChart"></canvas>
+        </div>
+
+        <!-- Taux de complétion -->
+        <div class="goalflowz-chart-container">
+          <h4>✅ Taux de complétion par période</h4>
+          <canvas ref="completionRateChart"></canvas>
+        </div>
+
+        <!-- Profondeur de décomposition -->
+        <div class="goalflowz-metrics-card">
+          <h4>🌳 Profondeur moyenne de décomposition</h4>
+          <div class="metric-value">{{ averageDepth.toFixed(1) }}</div>
+          <div class="metric-description">niveaux de sous-objectifs en moyenne</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -99,6 +123,9 @@ const habitsChart = ref<HTMLCanvasElement | null>(null);
 const goalsChart = ref<HTMLCanvasElement | null>(null);
 const tasksChart = ref<HTMLCanvasElement | null>(null);
 const categoriesChart = ref<HTMLCanvasElement | null>(null);
+const timeframeChart = ref<HTMLCanvasElement | null>(null);
+const completionRateChart = ref<HTMLCanvasElement | null>(null);
+const averageDepth = ref(0);
 
 // État local
 const selectedPeriod = ref(30);
@@ -108,7 +135,9 @@ const charts = ref<{ [key: string]: Chart | null }>({
   habits: null,
   goals: null,
   tasks: null,
-  categories: null
+  categories: null,
+  timeframe: null,
+  completionRate: null
 });
 
 // Souscriptions aux événements
@@ -183,6 +212,38 @@ const updateCharts = async () => {
     charts.value.categories.data.datasets[0].data = categoryData.map(d => d.completed);
     charts.value.categories.update();
   }
+
+  // Mise à jour des graphiques de goal-chaining
+  if (charts.value.timeframe && timeframeChart.value) {
+    const timeframeData = stats.goalChains.timeframeDistribution;
+    charts.value.timeframe.data.labels = Object.keys(timeframeData).map(formatTimeframe);
+    charts.value.timeframe.data.datasets[0].data = Object.values(timeframeData);
+    charts.value.timeframe.update();
+  }
+
+  if (charts.value.completionRate && completionRateChart.value) {
+    const completionData = stats.goalChains.completionRateByTimeframe;
+    charts.value.completionRate.data.labels = Object.keys(completionData).map(formatTimeframe);
+    charts.value.completionRate.data.datasets[0].data = Object.values(completionData);
+    charts.value.completionRate.update();
+  }
+
+  averageDepth.value = stats.goalChains.averageDecompositionDepth;
+
+  // S'abonner aux événements
+  subscriptions = [
+    eventService.on('goal:created').subscribe(() => updateCharts()),
+    eventService.on('goal:updated').subscribe(() => updateCharts()),
+    eventService.on('goal:deleted').subscribe(() => updateCharts()),
+    eventService.on('task:created').subscribe(() => updateCharts()),
+    eventService.on('task:updated').subscribe(() => updateCharts()),
+    eventService.on('task:deleted').subscribe(() => updateCharts()),
+    eventService.on('mood:updated').subscribe(() => updateCharts()),
+    eventService.on('data:synced').subscribe(() => updateCharts())
+  ];
+
+  // Mettre à jour les graphiques initialement
+  await updateCharts();
 };
 
 // Initialisation des graphiques
@@ -347,6 +408,58 @@ onMounted(async () => {
     });
   }
 
+  if (timeframeChart.value) {
+    charts.value.timeframe = new Chart(timeframeChart.value, {
+      type: 'bar',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Nombre d\'objectifs',
+          data: [],
+          backgroundColor: '#7367F0'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1
+            }
+          }
+        }
+      }
+    });
+  }
+
+  if (completionRateChart.value) {
+    charts.value.completionRate = new Chart(completionRateChart.value, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Taux de complétion (%)',
+          data: [],
+          borderColor: '#28C76F',
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            min: 0,
+            max: 100,
+            ticks: {
+              stepSize: 20
+            }
+          }
+        }
+      }
+    });
+  }
+
   // S'abonner aux événements
   subscriptions = [
     eventService.on('goal:created').subscribe(() => updateCharts()),
@@ -370,6 +483,20 @@ onUnmounted(() => {
 
 // Mettre à jour les graphiques quand la période change
 watch(selectedPeriod, updateCharts);
+
+// Helper function pour formater les timeframes
+function formatTimeframe(timeframe: string): string {
+  const formats: Record<string, string> = {
+    'DAILY': 'Jour',
+    'WEEKLY': 'Semaine',
+    'MONTHLY': 'Mois',
+    'QUARTERLY': 'Trimestre',
+    'YEARLY': 'Année',
+    'FIVE_YEAR': '5 Ans',
+    'TEN_YEAR': '10 Ans'
+  };
+  return formats[timeframe] || timeframe;
+}
 </script> 
 
 <style scoped>
@@ -438,5 +565,25 @@ h4 {
   margin: 0 0 15px;
   color: #6e6b7b;
   font-size: 1em;
+}
+
+.goalflowz-metrics-card {
+  background: #f8f8f8;
+  border-radius: 6px;
+  padding: 20px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 2.5em;
+  font-weight: bold;
+  color: #7367F0;
+  margin: 10px 0;
+}
+
+.metric-description {
+  color: #6e6b7b;
+  font-size: 0.9em;
 }
 </style> 

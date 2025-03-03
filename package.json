@@ -5,7 +5,8 @@
     "main": "main.js",
     "scripts": {
         "dev": "vite build --mode development --watch",
-        "build": "vite build"
+        "build": "vite build",
+        "typegen": "xstate typegen \"src/**/*.ts?(x)\""
     },
     "keywords": [],
     "author": "",
@@ -17,6 +18,8 @@
         "@types/node": "^16.18.125",
         "@types/uuid": "^10.0.0",
         "@vitejs/plugin-vue": "^4.6.2",
+        "@xstate/cli": "^0.5.17",
+        "@xstate/vue": "^4.0.2",
         "obsidian": "^1.7.2",
         "rimraf": "^5.0.10",
         "rollup-plugin-node-polyfills": "^0.2.1",
@@ -40,6 +43,7 @@
         "stream-browserify": "^3.0.0",
         "vis-timeline": "^7.7.3",
         "vue": "^3.5.13",
+        "xstate": "^5.19.2",
         "zod": "^3.24.1",
         "zod-to-json-schema": "^3.24.1"
     }

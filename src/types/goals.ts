@@ -18,21 +18,48 @@ export interface GoalRecurring {
 export interface Goal {
     id: string;
     title: string;
-    description?: string;
-    category?: string;  // Pour grouper les objectifs par catégorie
-    startDate: string;  // Date de création/début
-    dueDate?: string;
-    completedDate?: string;
+    description: string;
+    timeframe: GoalTimeframe;
     status: GoalStatus;
-    tasks: string[];  // Liste des IDs des tâches
-    priority: GoalPriority;
-    parentGoalId?: string;  // Si c'est un sous-objectif, référence à son parent
-    subGoalIds: string[];   // Liste des IDs des sous-objectifs
-    progress: number;  // Pourcentage de progression
-    tags: string[];  // Pour le filtrage et la catégorisation
-    recurring?: GoalRecurring;
-    linkedNotes?: string[];  // Chemins vers les notes liées
-    metrics: GoalMetrics;
+    progress: number;
+    parentGoalId?: string;
+    childGoals?: string[];
+    startDate: Date;
+    endDate: Date;
+    metrics?: GoalMetric[];
+}
+
+export enum GoalTimeframe {
+    DAILY = 'daily',
+    WEEKLY = 'weekly',
+    MONTHLY = 'monthly',
+    QUARTERLY = 'quarterly',
+    YEARLY = 'yearly',
+    FIVE_YEAR = 'five_year',
+    TEN_YEAR = 'ten_year'
+}
+
+export enum GoalStatus {
+    NOT_STARTED = 'not_started',
+    IN_PROGRESS = 'in_progress',
+    COMPLETED = 'completed',
+    ON_HOLD = 'on_hold'
+}
+
+export interface GoalMetric {
+    id: string;
+    name: string;
+    value: number;
+    target: number;
+    unit: string;
+}
+
+export interface GoalChain {
+    id: string;
+    mainGoalId: string;
+    subGoals: Goal[];
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface GoalViewProps {
