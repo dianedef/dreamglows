@@ -10,10 +10,10 @@
                         {{ activeTab === 'planning' ? '📋 Planning' : '📅 Aujourd\'hui' }}
                     </button>
                     <button 
-                        :class="{ active: ['goals', 'stats'].includes(activeTab) }"
-                        @click="setActiveTab(['goals', 'stats'].includes(activeTab) ? (activeTab === 'goals' ? 'stats' : 'goals') : 'goals')"
+                        :class="{ active: ['goals', 'stats', 'profile'].includes(activeTab) }"
+                        @click="setActiveTab(['goals', 'stats', 'profile'].includes(activeTab) ? (activeTab === 'goals' ? 'stats' : activeTab === 'stats' ? 'profile' : 'goals') : 'goals')"
                     >
-                        {{ activeTab === 'stats' ? '📊 Statistiques' : '🎯 Objectifs' }}
+                        {{ activeTab === 'profile' ? '👤 Profil' : activeTab === 'stats' ? '📊 Statistiques' : '🎯 Objectifs' }}
                     </button>
                 </div>
             </div>
@@ -42,6 +42,7 @@ import GoalsView from './GoalsView.vue';
 import StatsView from './StatsView.vue';
 import DayView from './DayView.vue';
 import PlanningView from './PlanningView.vue';
+import ProfileView from './ProfileView.vue';
 import TimeNavigation from '../components/TimeNavigation.vue';
 import { useSettingsStore } from '../stores/settingsStore';
 
@@ -61,17 +62,17 @@ provide('currentDate', currentDate);
 
 const setActiveTab = (tab: string) => {
     try {
-        if (!['day', 'goals', 'planning', 'stats'].includes(tab)) {
+        if (!['day', 'goals', 'planning', 'stats', 'profile'].includes(tab)) {
             console.error('Tab invalide:', tab);
             return;
         }
-        
+
         console.log('Changement d\'onglet:', {
             ancien: activeTab.value,
             nouveau: tab,
             settings: settingsStore.settings
         });
-        
+
         activeTab.value = tab;
         settingsStore.updateSettings({ lastActiveTab: tab });
     } catch (error) {
@@ -82,17 +83,17 @@ const setActiveTab = (tab: string) => {
 const handleViewChange = ((event: CustomEvent) => {
     try {
         const newTab = event.detail;
-        if (!['day', 'goals', 'planning', 'stats'].includes(newTab)) {
+        if (!['day', 'goals', 'planning', 'stats', 'profile'].includes(newTab)) {
             console.error('Tab invalide dans l\'événement:', newTab);
             return;
         }
-        
+
         console.log('Changement de vue:', {
             ancien: activeTab.value,
             nouveau: newTab,
             settings: settingsStore.settings
         });
-        
+
         activeTab.value = newTab;
     } catch (error) {
         console.error('Erreur lors du changement de vue:', error);
@@ -126,6 +127,8 @@ const currentComponent = computed(() => {
             return PlanningView;
         case 'stats':
             return StatsView;
+        case 'profile':
+            return ProfileView;
         default:
             return DayView;
     }

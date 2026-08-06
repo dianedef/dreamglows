@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import type { Task } from '@/types/tasks';
+import { useProgressionStore } from './progressionStore';
 import { v4 as uuidv4 } from 'uuid';
 
 interface TasksState {
@@ -47,6 +48,10 @@ export const useTasksStore = defineStore('tasks', {
                 };
                 
                 this.tasks = [...this.tasks, newTask];
+                if (newTask.status === 'done') {
+                    const progressionStore = useProgressionStore();
+                    progressionStore.rewardTaskCompletion(newTask.id);
+                }
                 this.setError(null);
                 console.log('TasksStore: Task added, now', this.tasks.length, 'tasks');
                 return newTask;
@@ -62,6 +67,7 @@ export const useTasksStore = defineStore('tasks', {
             try {
                 const index = this.tasks.findIndex(task => task.id === taskData.id);
                 if (index !== -1) {
+                    const previousTask = this.tasks[index];
                     const updatedTask = {
                         ...taskData,
                         updatedAt: new Date().toISOString()
@@ -71,6 +77,10 @@ export const useTasksStore = defineStore('tasks', {
                         updatedTask,
                         ...this.tasks.slice(index + 1)
                     ];
+                    if (previousTask.status !== 'done' && updatedTask.status === 'done') {
+                        const progressionStore = useProgressionStore();
+                        progressionStore.rewardTaskCompletion(updatedTask.id);
+                    }
                     this.setError(null);
                     console.log('TasksStore: Task updated');
                     return updatedTask;

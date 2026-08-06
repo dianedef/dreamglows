@@ -10,6 +10,7 @@ import dayViewStyles from './day-view.css';
 import timeNavStyles from './time-nav.css';
 import categoryModalStyles from './goals/category-modal-content.css';
 import statsViewStyles from './stats/stats-view.css';
+import profileViewStyles from './profile-view.css';
 import './main-view.css';
 
 export function registerStyles(viewType: string) {
@@ -26,6 +27,7 @@ export function registerStyles(viewType: string) {
         ${timeNavStyles}
         ${categoryModalStyles}
         ${statsViewStyles}
+        ${profileViewStyles}
 
         /* Styles spécifiques à la vue */
         ${weekViewStyles}

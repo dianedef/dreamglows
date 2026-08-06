@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
-import { Goal, GoalChain, GoalTimeframe, GoalStatus } from '../types/goals';
+import { Goal, GoalChain, GoalTimeframe } from '../types/goals';
 import { GoalChainService } from '../services/GoalChainService';
+import { useProgressionStore } from './progressionStore';
 
 interface GoalsState {
     goals: Goal[];
@@ -59,10 +60,33 @@ export const useGoalsStore = defineStore('goals', {
             return newGoal;
         },
 
-        updateGoal(id: string, updates: Partial<Goal>) {
-            const index = this.goals.findIndex(goal => goal.id === id);
+        setGoals(goals: Goal[]) {
+            this.goals = [...goals];
+        },
+
+        createGoal(goal: Goal) {
+            this.goals.push({ ...goal });
+        },
+
+        updateGoal(idOrGoal: string | Goal, updates?: Partial<Goal>) {
+            const goalId = typeof idOrGoal === 'string' ? idOrGoal : idOrGoal.id;
+            const patch: Partial<Goal> = typeof idOrGoal === 'string'
+                ? updates || {}
+                : (idOrGoal as Partial<Goal>);
+            const index = this.goals.findIndex(goal => goal.id === goalId);
             if (index !== -1) {
-                this.goals[index] = { ...this.goals[index], ...updates };
+                const previousGoal = this.goals[index];
+                const wasDone = previousGoal.status === 'done';
+                const isDone = patch.status === 'done';
+                const updatedGoal: Goal = {
+                    ...previousGoal,
+                    ...patch
+                };
+                this.goals[index] = updatedGoal;
+                if (!wasDone && isDone) {
+                    const progressionStore = useProgressionStore();
+                    progressionStore.rewardGoalCompletion(previousGoal.id);
+                }
             }
         },
 
@@ -95,6 +119,36 @@ export const useGoalsStore = defineStore('goals', {
             });
 
             return subGoals;
+        },
+
+        addTaskToGoal(goalId: string, taskId: string) {
+            const goal = this.getGoalById(goalId);
+            if (!goal) {
+                return;
+            }
+            const currentTasks = Array.isArray((goal as any).tasks) ? [...(goal as any).tasks] : [];
+            if (!currentTasks.includes(taskId)) {
+                currentTasks.push(taskId);
+                const index = this.goals.findIndex(item => item.id === goalId);
+                if (index !== -1) {
+                    this.goals[index] = { ...goal, tasks: currentTasks as string[] } as unknown as Goal;
+                }
+            }
+        },
+
+        removeTaskFromGoal(goalId: string, taskId: string) {
+            const goal = this.getGoalById(goalId);
+            if (!goal) {
+                return;
+            }
+            const currentTasks = Array.isArray((goal as any).tasks) ? [...(goal as any).tasks] : [];
+            const filteredTasks = currentTasks.filter((id) => id !== taskId);
+            if (filteredTasks.length !== currentTasks.length) {
+                const index = this.goals.findIndex(item => item.id === goalId);
+                if (index !== -1) {
+                    this.goals[index] = { ...goal, tasks: filteredTasks as string[] } as unknown as Goal;
+                }
+            }
         },
 
         updateProgress(goalId: string, progress: number) {

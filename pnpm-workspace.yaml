@@ -3,3 +3,6 @@ packages:
   - 'chrome_extension'
   - 'windows_app'
   - 'android_app'
+allowBuilds:
+  esbuild: set this to true or false
+  vue-demi: set this to true or false

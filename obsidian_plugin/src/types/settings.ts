@@ -1,5 +1,13 @@
 import { getDefaultTemplate } from '../constants/templates';
 
+export interface DefaultTask {
+    label: string;
+    isCompleted: boolean;
+    linkToOptimizer: boolean;
+    linkToGenerator: boolean;
+    dueDate?: string;
+}
+
 export interface Ritual {
     label: string;
     isCompleted: boolean;
@@ -17,7 +25,42 @@ export type NoteFormat =
     | 'name-only'       // 1er Janvier ou 1st January
     | 'short-only';     // 01-01
 
+export interface GameProgression {
+    level: number;
+    xp: number;
+    totalXp: number;
+    gold: number;
+    streak: number;
+    bestStreak: number;
+    lastActivityDate: string;
+    rewardedByDate: Record<string, string[]>;
+    rewardHistory: RewardEvent[];
+}
+
+export interface RewardEvent {
+    date: string;
+    source: 'task' | 'goal' | 'habit' | 'milestone';
+    sourceId: string;
+    title: string;
+    xp: number;
+    gold: number;
+    message: string;
+}
+
+export const DEFAULT_GAME_PROGRESSION: GameProgression = {
+    level: 1,
+    xp: 0,
+    totalXp: 0,
+    gold: 0,
+    streak: 0,
+    bestStreak: 0,
+    lastActivityDate: '',
+    rewardedByDate: {},
+    rewardHistory: []
+};
+
 export interface GoalFlowzSettings {
+    defaultTasks: DefaultTask[];
     rituals: Ritual[];
     projectFolders: string[];
     frequencyColors: {
@@ -43,13 +86,16 @@ export interface GoalFlowzSettings {
     monthLanguage: 'fr' | 'en';
     notesFormat: NoteFormat;
     customNotesFormat?: string;
+    noteTemplate?: string;
     lastMainWidth: number;
     timelineStartHour: string;
     timelineEndHour: string;
     timeFormat: '12h' | '24h';
+    gameProgression: GameProgression;
 }
 
 export const DEFAULT_SETTINGS: GoalFlowzSettings = {
+    defaultTasks: [],
     rituals: [
         { label: "Méditation matinale", isCompleted: false, linkToGenerator: false },
         { label: "Revue des objectifs", isCompleted: false, linkToOptimizer: true },
@@ -72,5 +118,6 @@ export const DEFAULT_SETTINGS: GoalFlowzSettings = {
     lastMainWidth: 50,
     timelineStartHour: "09:00",
     timelineEndHour: "18:00",
-    timeFormat: "24h"
+    timeFormat: "24h",
+    gameProgression: DEFAULT_GAME_PROGRESSION
 }; 

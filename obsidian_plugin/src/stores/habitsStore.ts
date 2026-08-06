@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import type { Habit, DailyHabitLog, DayStats, MoodLevel, LoveLevel, EnergyLevel, HabitsState } from '@/types/habits';
 import { DateTime } from 'luxon';
 import { ref } from 'vue';
+import { useProgressionStore } from './progressionStore';
 
 // Types pour les niveaux d'humeur et d'énergie
 export type MoodLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
@@ -130,6 +131,7 @@ export const useHabitsStore = defineStore('habits', {
             try {
                 // Trouver ou créer le log
                 let log = this.logs.find(l => l.habitId === habitId && l.date === date);
+                const wasCompleted = !!log?.completed;
                 if (!log) {
                     log = {
                         habitId,
@@ -144,6 +146,10 @@ export const useHabitsStore = defineStore('habits', {
                 log.completed = !log.completed;
                 if (value !== undefined) {
                     log.value = value;
+                }
+                if (!wasCompleted && log.completed) {
+                    const progressionStore = useProgressionStore();
+                    progressionStore.rewardHabitCompletion(habitId, date);
                 }
 
                 // Mettre à jour les stats du jour

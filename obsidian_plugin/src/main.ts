@@ -6,6 +6,7 @@ import { MetadataService } from './services/MetadataService';
 import { useSettingsStore } from './stores/settingsStore';
 import { useGoalsStore } from './stores/goalsStore';
 import { useTasksStore } from './stores/tasksStore';
+import { useProgressionStore } from './stores/progressionStore';
 import { GoalFlowzSettingsTab } from './services/SettingsTabService';
 import { NotesGeneratorService } from './services/NotesGeneratorService';
 import { TimeManagementService } from './services/TimeManagementService';
@@ -50,6 +51,7 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
     private settingsStore!: ReturnType<typeof useSettingsStore>;
     private goalsStore!: ReturnType<typeof useGoalsStore>;
     private tasksStore!: ReturnType<typeof useTasksStore>;
+    private progressionStore!: ReturnType<typeof useProgressionStore>;
 
     // Vue
     private view: GoalFlowzView | null = null;
@@ -210,6 +212,7 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
             this.settingsStore = useSettingsStore(this._pinia);
             this.goalsStore = useGoalsStore(this._pinia);
             this.tasksStore = useTasksStore(this._pinia);
+            this.progressionStore = useProgressionStore(this._pinia);
         
         // Charger les données initiales
             const data = await this.loadPluginData();
@@ -219,6 +222,7 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
             this.settingsStore.$patch({ settings: this.settings });
             await this.goalsStore.setGoals(data.goals);
             await this.tasksStore.setTasks(data.tasks);
+            this.progressionStore.hydrate(this.settings.gameProgression);
             
             // Configurer les watchers
             this.setupStoreWatchers();
@@ -331,7 +335,11 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
 
     async savePluginData(goals: Goal[], tasks: Task[]) {
         try {
-            await this.saveData({ goals, tasks });
+            await this.saveData({
+                ...this.settings,
+                goals,
+                tasks
+            });
         } catch (error) {
             console.error('Erreur lors de la sauvegarde des données:', error);
             new Notice('Erreur lors de la sauvegarde des données');
@@ -370,7 +378,7 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
 
         if (loadedData) {
             // Valider lastActiveTab
-            if (loadedData.lastActiveTab && ['day', 'goals', 'planning', 'stats'].includes(loadedData.lastActiveTab)) {
+            if (loadedData.lastActiveTab && ['day', 'goals', 'planning', 'stats', 'profile'].includes(loadedData.lastActiveTab)) {
                 settings.lastActiveTab = loadedData.lastActiveTab;
             }
 
@@ -420,6 +428,22 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
                     linkToOptimizer: !!task.linkToOptimizer,
                     linkToGenerator: !!task.linkToGenerator
                 }));
+            }
+
+            // Charger la progression gamifiée
+            if (loadedData.gameProgression) {
+                settings.gameProgression = {
+                    ...settings.gameProgression,
+                    ...loadedData.gameProgression,
+                    rewardedByDate: {
+                        ...(settings.gameProgression.rewardedByDate || {}),
+                        ...(loadedData.gameProgression.rewardedByDate || {})
+                    },
+                    rewardHistory: [
+                        ...(settings.gameProgression.rewardHistory || []),
+                        ...(loadedData.gameProgression.rewardHistory || [])
+                    ]
+                };
             }
 
             // Valider les dossiers de projets

@@ -37,6 +37,35 @@
           </div>
         </div>
       </div>
+
+      <div class="goalflowz-summary-card progression-card">
+        <h3>Progression</h3>
+        <div class="goalflowz-card-content">
+          <i class="fas fa-star"></i>
+          <div class="goalflowz-card-text">
+            <div class="goalflowz-card-title">Niveau {{ progression.level }} (+{{ progression.gold }} 🪙)</div>
+            <div class="goalflowz-card-subtitle">
+              {{ progression.xp }} / {{ progression.xpToNext }} XP
+              (meilleur streak {{ progression.bestStreak }})
+            </div>
+            <div class="goalflowz-progress-bar-wrap">
+              <div class="goalflowz-progress-bar" :style="{ width: `${progression.levelProgressPercent}%` }"></div>
+            </div>
+            <div class="goalflowz-card-subtitle">
+              Série actuelle : {{ progression.streak }} jour(s)
+            </div>
+            <div class="goalflowz-reward-list" v-if="recentRewards.length">
+              <div class="goalflowz-card-subtitle">Derniers gains</div>
+              <ul class="goalflowz-reward-list-inner">
+                <li v-for="reward in recentRewards" :key="`${reward.source}-${reward.sourceId}-${reward.date}`">
+                  <span>{{ reward.message }}</span>
+                  <span class="goalflowz-reward-date">{{ formatRewardDate(reward.date) }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Trackers d'habitudes -->
@@ -185,6 +214,7 @@ import { DateTime } from 'luxon';
 import { useHabitsStore } from '@/stores/habitsStore';
 import { useGoalsStore } from '@/stores/goalsStore';
 import { useTasksStore } from '@/stores/tasksStore';
+import { useProgressionStore } from '@/stores/progressionStore';
 import { getMoodEmoji, getLoveEmoji, getEnergyEmoji, type MoodLevel, type LoveLevel, type EnergyLevel } from '@/stores/habitsStore';
 import type { Habit } from '@/types/habits';
 import type { Task, TaskStatus } from '@/types/tasks';
@@ -248,6 +278,7 @@ const props = defineProps<{
 const habitsStore = useHabitsStore();
 const goalsStore = useGoalsStore();
 const tasksStore = useTasksStore();
+const progressionStore = useProgressionStore();
 
 const dayNotes = ref('');
 const currentNote = ref<DayNote | null>(null);
@@ -287,6 +318,18 @@ const dayStats = computed(() => {
     return { completionRate: 0, mood: 0, energyLevel: 0, notes: '' };
   }
 });
+
+const progression = computed(() => ({
+  level: progressionStore.level,
+  xp: progressionStore.xp,
+  xpToNext: progressionStore.xpToNext,
+  gold: progressionStore.gold,
+  streak: progressionStore.streak,
+  bestStreak: progressionStore.bestStreak,
+  levelProgressPercent: progressionStore.levelProgressPercent
+}));
+
+const recentRewards = computed(() => progressionStore.recentRewardHistory);
 
 const nextGoal = computed(() => {
   const goals = goalsStore.goals
@@ -655,6 +698,18 @@ const isFutureDate = (date: string | DateTime) => {
   } catch (error) {
     console.warn('Erreur de vérification de date future:', error);
     return false;
+  }
+};
+
+const formatRewardDate = (date: string) => {
+  try {
+    return DateTime.fromISO(date).setLocale('fr').toLocaleString({
+      day: 'numeric',
+      month: 'short'
+    });
+  } catch (error) {
+    console.warn('Erreur de formatage date gain:', error);
+    return date;
   }
 };
 </script>
