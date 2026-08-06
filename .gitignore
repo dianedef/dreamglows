@@ -1,3 +1,15 @@
+# Runtime outputs
 node_modules
-main.js
-style.css
+obsidian_plugin/data.json
+obsidian_plugin/style.css
+
+# Local tooling caches
+.flox
+shipglows_data
+
+# Workspaces and build artifacts
+**/dist
+**/.vite
+**/coverage
+
+# Lock files are kept at workspace root intentionally

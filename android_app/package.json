@@ -1,0 +1,9 @@
+{
+  "name": "goalflowz-android-app",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Android app surface for GoalFlowz",
+  "scripts": {
+    "todo": "echo \"Scaffold Android app implementation here\""
+  }
+}

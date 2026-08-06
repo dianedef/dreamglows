@@ -5,6 +5,15 @@ import commonjs from '@rollup/plugin-commonjs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
 export default defineConfig({
+  server: {
+    port: parseInt(process.env.PORT) || 3000,
+    host: true,
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+      port: parseInt(process.env.PORT) || 3000
+    }
+  },
     plugins: [
         vue(),
         nodeResolve({

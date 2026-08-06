@@ -1,0 +1,50 @@
+{
+    "name": "obsidian-goalflowz",
+    "version": "1.0.0",
+    "description": "Plugin Obsidian pour la gestion et le suivi d'objectifs",
+    "main": "main.js",
+    "scripts": {
+        "dev": "vite build --mode development --watch",
+        "build": "vite build",
+        "typegen": "xstate typegen \"src/**/*.ts?(x)\""
+    },
+    "keywords": [],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^25.0.8",
+        "@rollup/plugin-node-resolve": "^15.3.1",
+        "@types/luxon": "^3.4.2",
+        "@types/node": "^16.18.125",
+        "@types/uuid": "^10.0.0",
+        "@vitejs/plugin-vue": "^4.6.2",
+        "@xstate/cli": "^0.5.17",
+        "@xstate/vue": "^4.0.2",
+        "obsidian": "^1.7.2",
+        "rimraf": "^5.0.10",
+        "rollup-plugin-node-polyfills": "^0.2.1",
+        "typescript": "^4.9.5",
+        "vite": "^4.5.9",
+        "vue": "^3.5.13"
+    },
+    "dependencies": {
+        "@langchain/core": "^0.1.63",
+        "@langchain/openai": "^0.0.14",
+        "buffer": "^6.0.3",
+        "chart.js": "^4.4.7",
+        "crypto-browserify": "^3.12.1",
+        "date-fns": "^3.6.0",
+        "events": "^3.3.0",
+        "luxon": "^3.5.0",
+        "p-queue": "^6.6.2",
+        "pinia": "^2.3.1",
+        "process": "^0.11.10",
+        "rxjs": "^7.8.1",
+        "stream-browserify": "^3.0.0",
+        "vis-timeline": "^7.7.3",
+        "vue": "^3.5.13",
+        "xstate": "^5.19.2",
+        "zod": "^3.24.1",
+        "zod-to-json-schema": "^3.24.1"
+    }
+}
