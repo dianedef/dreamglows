@@ -1,7 +1,6 @@
-import { useInterpret, useSelector } from '@xstate/vue';
+import { computed, onUnmounted, watch } from 'vue';
+import { useMachine, useSelector } from '@xstate/vue';
 import { createTimerMachine } from '../machines/timerMachine';
-import { computed, onUnmounted } from 'vue';
-import type { TimerMachineContext, TimerMachineEvents } from '../machines/timerMachine.typegen';
 
 interface TimerProps {
   duration: number;
@@ -10,52 +9,56 @@ interface TimerProps {
 
 export function useTimerMachine(props: TimerProps) {
   const timerMachine = createTimerMachine(props.duration);
-  const timerService = useInterpret(timerMachine, {
-    actions: {
-      startTimer: (context: TimerMachineContext) => {
-        const interval = setInterval(() => {
-          if (context.timeLeft <= 1) {
-            timerService.send({ type: 'COMPLETE' });
-            const shouldReset = props.onComplete?.() ?? false;
-            if (shouldReset) {
-              timerService.send({ type: 'TOGGLE' });
-            }
-          } else {
-            timerService.send({ type: 'TICK' });
-          }
-        }, 1000);
+  const { send, actorRef, snapshot } = useMachine(timerMachine);
+  let intervalId: ReturnType<typeof setInterval> | null = null;
 
-        // Store interval ID in the service's meta
-        timerService.meta = { interval };
-      },
-      stopTimer: () => {
-        if (timerService.meta?.interval) {
-          clearInterval(timerService.meta.interval);
+  const timeLeft = useSelector(actorRef, (state) => state.context.timeLeft);
+  const isRunning = useSelector(actorRef, (state) => state.matches('running'));
+  const isResetting = useSelector(actorRef, (state) => state.context.isResetting);
+
+  const clearIntervalIfNeeded = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  };
+
+  const startInterval = () => {
+    clearIntervalIfNeeded();
+    intervalId = setInterval(() => {
+      send({ type: 'TICK' });
+      if (snapshot.value.context.timeLeft <= 1) {
+        send({ type: 'COMPLETE' });
+        const shouldReset = props.onComplete?.() ?? false;
+        if (shouldReset) {
+          send({ type: 'TOGGLE' });
         }
-      },
+      }
+    }, 1000);
+  };
+
+  watch(
+    isRunning,
+    (running) => {
+      if (running) {
+        startInterval();
+      } else {
+        clearIntervalIfNeeded();
+      }
     },
-  });
+    { immediate: true }
+  );
 
-  // Selectors
-  const timeLeft = useSelector(timerService, (state) => state.context.timeLeft);
-  const isRunning = useSelector(timerService, (state) => state.matches('running'));
-  const isResetting = useSelector(timerService, (state) => state.context.isResetting);
+  const toggleTimer = () => send({ type: 'TOGGLE' });
+  const reset = () => send({ type: 'RESET' });
 
-  // Actions
-  const toggleTimer = () => timerService.send({ type: 'TOGGLE' });
-  const reset = () => timerService.send({ type: 'RESET' });
-
-  // Computed
   const timerClasses = computed(() => ({
     'text-3xl font-mono w-full text-center sm:w-24 transition-all duration-300': true,
     'scale-110 text-primary': isResetting.value,
   }));
 
-  // Cleanup
   onUnmounted(() => {
-    if (timerService.meta?.interval) {
-      clearInterval(timerService.meta.interval);
-    }
+    clearIntervalIfNeeded();
   });
 
   return {
@@ -66,4 +69,4 @@ export function useTimerMachine(props: TimerProps) {
     toggleTimer,
     reset,
   };
-} 
+}

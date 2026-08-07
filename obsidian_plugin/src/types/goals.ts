@@ -1,7 +1,6 @@
 import type { Task } from './tasks';
 
 export type GoalPriority = 'low' | 'medium' | 'high';
-export type GoalStatus = 'todo' | 'in_progress' | 'done' | 'cancelled';
 export type GoalFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 export interface GoalMetrics {
@@ -40,10 +39,10 @@ export enum GoalTimeframe {
 }
 
 export enum GoalStatus {
-    NOT_STARTED = 'not_started',
+    NOT_STARTED = 'todo',
     IN_PROGRESS = 'in_progress',
-    COMPLETED = 'completed',
-    ON_HOLD = 'on_hold'
+    COMPLETED = 'done',
+    ON_HOLD = 'cancelled'
 }
 
 export interface GoalMetric {

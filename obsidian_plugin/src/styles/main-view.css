@@ -1,53 +1,351 @@
-.goalflowz-container {
+.goalflowz-page {
+    position: relative;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    background: transparent;
+    gap: 0.9rem;
+    min-height: 100%;
+    color: var(--text-normal);
+    padding: 0.7rem;
+    background:
+        radial-gradient(circle at 14% 18%, color-mix(in oklab, var(--interactive-accent) 20%, transparent), transparent 34%),
+        radial-gradient(circle at 86% 12%, color-mix(in oklab, var(--text-accent) 14%, transparent), transparent 28%),
+        linear-gradient(145deg, color-mix(in oklab, var(--background-primary) 92%, transparent), var(--background-primary));
+}
+
+.goalflowz-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.05rem;
+    border-radius: 16px;
+    border: 1px solid color-mix(in oklab, var(--text-faint) 30%, transparent);
+    background: color-mix(in oklab, var(--background-primary-alt) 82%, transparent);
+    box-shadow: 0 20px 34px -30px color-mix(in oklab, var(--shadow-color) 95%, transparent);
+    position: relative;
+    overflow: hidden;
+}
+
+.goalflowz-hero::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border: 1px solid color-mix(in oklab, var(--text-faint) 14%, transparent);
+    border-radius: 14px;
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.goalflowz-hero-copy {
+    position: relative;
+    z-index: 1;
+}
+
+.goalflowz-kicker {
+    margin: 0;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: color-mix(in oklab, var(--text-accent) 84%, var(--text-faint));
+}
+
+.goalflowz-title {
+    margin: 0.2rem 0;
+    font-size: 1.45rem;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+}
+
+.goalflowz-subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    max-width: 58ch;
+}
+
+.goalflowz-time-badge {
+    position: relative;
+    z-index: 1;
+    padding: 0.62rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--text-faint) 26%, transparent);
+    background: color-mix(in oklab, var(--background-primary) 86%, transparent);
+    font-size: 0.82rem;
+    color: var(--text-normal);
+    white-space: nowrap;
 }
 
 .goalflowz-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem;
-    position: relative;
+    gap: 1rem;
     min-height: 48px;
-    background: transparent;
-    border: none;
+    padding: 0.5rem 0.75rem;
+    position: relative;
 }
 
 .goalflowz-view-switch {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-}
-
-.goalflowz-view-switch-buttons {
-    display: flex;
-    gap: 1rem;
-}
-
-.goalflowz-time-nav {
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
+    gap: 0.5rem;
+    padding: 0.18rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--text-faint) 24%, transparent);
+    background: color-mix(in oklab, var(--background-primary-alt) 90%, transparent);
 }
 
 .goalflowz-header button {
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    border: none;
-    background: transparent;
+    border: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.56rem 0.92rem;
+    border-radius: 999px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    color: var(--text-normal);
+    transition: all 0.22s ease;
+    color: var(--text-muted);
+    background: transparent;
+    font-weight: 600;
+    min-height: 34px;
 }
 
 .goalflowz-header button:hover {
-    background: var(--background-modifier-hover);
+    transform: translateY(-1px);
+    background: color-mix(in oklab, var(--text-on-accent) 14%, var(--background-modifier-hover));
+    color: var(--text-normal);
 }
 
 .goalflowz-header button.active {
-    background: var(--interactive-accent);
+    background: linear-gradient(120deg, color-mix(in oklab, var(--interactive-accent) 86%, white), color-mix(in oklab, var(--interactive-accent-hover) 82%, white));
     color: var(--text-on-accent);
-} 
+    box-shadow: 0 12px 26px -16px color-mix(in oklab, var(--interactive-accent) 90%, transparent);
+}
+
+.goalflowz-glass-panel,
+.goalflowz-command-card {
+    border-radius: 13px;
+    border: 1px solid color-mix(in oklab, var(--text-faint) 24%, transparent);
+    background: color-mix(in oklab, var(--background-primary-alt) 80%, transparent);
+    backdrop-filter: blur(4px);
+}
+
+.goalflowz-glass-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.64rem 0.8rem;
+}
+
+.goalflowz-panel-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.goalflowz-pill {
+    padding: 0.2rem 0.58rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--text-faint) 22%, transparent);
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--text-normal);
+    background: color-mix(in oklab, var(--background-primary) 88%, transparent);
+}
+
+.goalflowz-command-center {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 0.75rem;
+}
+
+.goalflowz-command-card {
+    padding: 0.78rem 0.95rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.goalflowz-command-card .goalflowz-card-kicker,
+.goalflowz-card-kicker {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: color-mix(in oklab, var(--text-accent) 82%, var(--text-muted));
+}
+
+.goalflowz-card-title {
+    margin: 0.25rem 0;
+    font-size: 1.08rem;
+}
+
+.goalflowz-card-text {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.goalflowz-command-actions {
+    margin-top: 0.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.goalflowz-command-btn {
+    border: 1px solid color-mix(in oklab, var(--text-faint) 24%, transparent);
+    border-radius: 999px;
+    color: var(--text-muted);
+    background: color-mix(in oklab, var(--background-primary) 84%, transparent);
+    padding: 0.48rem 0.85rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.goalflowz-command-btn:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in oklab, var(--interactive-accent) 56%, transparent);
+    color: var(--text-normal);
+}
+
+.goalflowz-command-btn.is-active {
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+    background: linear-gradient(120deg, color-mix(in oklab, var(--interactive-accent) 80%, white), color-mix(in oklab, var(--interactive-accent-hover) 72%, white));
+    box-shadow: 0 10px 20px -14px color-mix(in oklab, var(--interactive-accent) 95%, transparent);
+}
+
+.goalflowz-command-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.goalflowz-kpi-card {
+    padding: 0.82rem 0.95rem;
+    min-height: 120px;
+}
+
+.goalflowz-kpi-value {
+    margin: 0.55rem 0 0.2rem;
+    font-size: 1.72rem;
+    line-height: 1.05;
+    font-weight: 700;
+    color: var(--text-normal);
+}
+
+.goalflowz-kpi-progress {
+    margin-top: 0.5rem;
+}
+
+.goalflowz-progress-track {
+    display: block;
+    width: 100%;
+    height: 0.38rem;
+    border-radius: 999px;
+    overflow: hidden;
+    background: color-mix(in oklab, var(--text-faint) 32%, transparent);
+}
+
+.goalflowz-progress-fill {
+    display: block;
+    height: 100%;
+    min-width: 0.1rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg, color-mix(in oklab, var(--interactive-accent) 82%, white), color-mix(in oklab, var(--interactive-accent-hover) 88%, white));
+    transition: width 0.25s ease;
+}
+
+.goalflowz-timeline-card {
+    grid-column: 1 / -1;
+    padding: 0.82rem 0.95rem;
+}
+
+.goalflowz-timeline-list {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.48rem;
+}
+
+.goalflowz-timeline-item {
+    display: grid;
+    grid-template-columns: auto 10px auto;
+    gap: 0.55rem;
+    align-items: center;
+    font-size: 0.82rem;
+}
+
+.goalflowz-timeline-time {
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 46px;
+}
+
+.goalflowz-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    align-self: center;
+}
+
+.goalflowz-dot-ok {
+    background: #2fbf71;
+}
+
+.goalflowz-dot-info {
+    background: #2f82ff;
+}
+
+.goalflowz-dot-warn {
+    background: #ffbe0a;
+}
+
+.goalflowz-timeline-text {
+    color: var(--text-muted);
+}
+
+@media (max-width: 940px) {
+    .goalflowz-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .goalflowz-time-badge {
+        width: 100%;
+    }
+
+    .goalflowz-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .goalflowz-view-switch {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .goalflowz-time-nav {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .goalflowz-command-center {
+        grid-template-columns: 1fr;
+    }
+
+    .goalflowz-command-grid {
+        grid-template-columns: 1fr;
+    }
+}

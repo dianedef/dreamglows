@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { GoalFlowzSettings } from '../types/settings';
+import type { DefaultTask, GoalFlowzSettings } from '../types/settings';
 import { DEFAULT_SETTINGS } from '../types/settings';
 
 interface SettingsState {

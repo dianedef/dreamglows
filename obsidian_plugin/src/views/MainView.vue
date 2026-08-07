@@ -1,22 +1,36 @@
 <template>
-    <div class="goalflowz-container">
+    <div class="goalflowz-page">
+        <header class="goalflowz-hero">
+            <div class="goalflowz-hero-copy">
+                <p class="goalflowz-kicker">GoalFlowz</p>
+                <h1 class="goalflowz-title">Tableau de bord</h1>
+                <p class="goalflowz-subtitle">Pilote ta progression quotidienne, tes objectifs et ton rythme de travail.</p>
+            </div>
+            <div class="goalflowz-time-badge">
+                <span>{{ currentDate.toFormat('EEEE, d MMMM yyyy') }}</span>
+            </div>
+        </header>
+
         <div class="goalflowz-header">
             <div class="goalflowz-view-switch">
-                <div class="goalflowz-view-switch-buttons">
-                    <button 
-                        :class="{ active: ['day', 'planning'].includes(activeTab) }"
-                        @click="setActiveTab(['day', 'planning'].includes(activeTab) ? (activeTab === 'day' ? 'planning' : 'day') : 'day')"
-                    >
-                        {{ activeTab === 'planning' ? '📋 Planning' : '📅 Aujourd\'hui' }}
-                    </button>
-                    <button 
-                        :class="{ active: ['goals', 'stats', 'profile'].includes(activeTab) }"
-                        @click="setActiveTab(['goals', 'stats', 'profile'].includes(activeTab) ? (activeTab === 'goals' ? 'stats' : activeTab === 'stats' ? 'profile' : 'goals') : 'goals')"
-                    >
-                        {{ activeTab === 'profile' ? '👤 Profil' : activeTab === 'stats' ? '📊 Statistiques' : '🎯 Objectifs' }}
-                    </button>
-                </div>
+                <button 
+                    :class="{ active: ['day', 'planning'].includes(activeTab) }"
+                    class="goalflowz-switch"
+                    @click="setActiveTab(['day', 'planning'].includes(activeTab) ? (activeTab === 'day' ? 'planning' : 'day') : 'day')"
+                >
+                    <span>🗓</span>
+                    <span>{{ activeTab === 'planning' ? 'Planning' : 'Aujourd\'hui' }}</span>
+                </button>
+                <button 
+                    :class="{ active: ['goals', 'stats', 'profile'].includes(activeTab) }"
+                    class="goalflowz-switch"
+                    @click="setActiveTab(['goals', 'stats', 'profile'].includes(activeTab) ? (activeTab === 'goals' ? 'stats' : activeTab === 'stats' ? 'profile' : 'goals') : 'goals')"
+                >
+                    <span>🎯</span>
+                    <span>{{ activeTab === 'profile' ? 'Profil' : activeTab === 'stats' ? 'Statistiques' : 'Objectifs' }}</span>
+                </button>
             </div>
+
             <TimeNavigation 
                 v-if="['day', 'planning'].includes(activeTab)"
                 :view="activeTab as 'day' | 'planning'"
@@ -24,6 +38,63 @@
                 class="goalflowz-time-nav"
             />
         </div>
+
+        <section class="goalflowz-glass-panel">
+            <div class="goalflowz-panel-title">
+                <span>{{ activeTab === 'day' ? 'Mode journalier' : activeTab === 'planning' ? 'Mode planning' : activeTab === 'goals' ? 'Vue objectifs' : activeTab === 'stats' ? 'Vue progression' : 'Vue profil' }}</span>
+                <span class="goalflowz-pill">{{ activeTabLabel }}</span>
+            </div>
+        </section>
+
+        <section class="goalflowz-command-center">
+            <article class="goalflowz-command-card">
+                <p class="goalflowz-card-kicker">Statut opérationnel</p>
+                <h2 class="goalflowz-card-title">Centre de contrôle</h2>
+                <p class="goalflowz-card-text">Sélection active : <strong>{{ activeTab }}</strong> · vue courante : <strong>{{ activeTabLabel }}</strong></p>
+            </article>
+
+            <article class="goalflowz-command-card">
+                <p class="goalflowz-card-kicker">Pilotage</p>
+                <p class="goalflowz-card-text">Raccourcis</p>
+                <div class="goalflowz-command-actions">
+                    <button class="goalflowz-command-btn" :class="{ 'is-active': ['day', 'planning'].includes(activeTab) }" @click="setActiveTab('day')">Aujourd'hui</button>
+                    <button class="goalflowz-command-btn" :class="{ 'is-active': ['goals', 'stats', 'profile'].includes(activeTab) }" @click="setActiveTab('goals')">Objectifs</button>
+                    <button class="goalflowz-command-btn" :class="{ 'is-active': activeTab === 'planning' }" @click="setActiveTab('planning')">Planning</button>
+                </div>
+            </article>
+        </section>
+
+        <section class="goalflowz-command-grid">
+            <article
+                v-for="metric in commandMetrics"
+                :key="metric.label"
+                class="goalflowz-command-card goalflowz-kpi-card"
+            >
+                <p class="goalflowz-card-kicker">{{ metric.label }}</p>
+                <p class="goalflowz-kpi-value">{{ metric.value }}</p>
+                <p class="goalflowz-card-text">{{ metric.subtitle }}</p>
+                <div v-if="metric.progress !== undefined" class="goalflowz-kpi-progress">
+                    <span class="goalflowz-progress-track">
+                        <span
+                            class="goalflowz-progress-fill"
+                            :style="{ width: `${Math.min(100, Math.max(0, (metric.progress / (metric.max || 1)) * 100))}%` }"
+                        ></span>
+                    </span>
+                </div>
+            </article>
+
+            <article class="goalflowz-command-card goalflowz-timeline-card">
+                <p class="goalflowz-card-kicker">Flux opérationnel</p>
+                <p class="goalflowz-card-title">Timeline rapide</p>
+                <ul class="goalflowz-timeline-list">
+                    <li v-for="item in liveTimeline" :key="item.time" class="goalflowz-timeline-item">
+                        <span class="goalflowz-timeline-time">{{ item.time }}</span>
+                        <span :class="['goalflowz-dot', `goalflowz-dot-${item.state}`]"></span>
+                        <span class="goalflowz-timeline-text">{{ item.text }}</span>
+                    </li>
+                </ul>
+            </article>
+        </section>
 
         <component 
             :is="currentComponent" 
@@ -45,6 +116,8 @@ import PlanningView from './PlanningView.vue';
 import ProfileView from './ProfileView.vue';
 import TimeNavigation from '../components/TimeNavigation.vue';
 import { useSettingsStore } from '../stores/settingsStore';
+import { useGoalsStore } from '../stores/goalsStore';
+import { useTasksStore } from '../stores/tasksStore';
 
 const props = defineProps<{
     contentFiles: TFile[],
@@ -54,6 +127,8 @@ const props = defineProps<{
 provide('app', props.app);
 
 const settingsStore = useSettingsStore();
+const goalsStore = useGoalsStore();
+const tasksStore = useTasksStore();
 const activeTab = ref(settingsStore.settings.lastActiveTab);
 
 // Ajout de l'état global de la date
@@ -132,5 +207,161 @@ const currentComponent = computed(() => {
         default:
             return DayView;
     }
+});
+
+const activeTabLabel = computed(() => {
+    if (['day', 'planning'].includes(activeTab.value)) {
+        return activeTab.value === 'planning' ? 'Planning interactif' : 'Journal du jour';
+    }
+    if (['goals', 'stats', 'profile'].includes(activeTab.value)) {
+        return activeTab.value === 'goals' ? 'Objectifs actifs' : activeTab.value === 'stats' ? 'Rapports visuels' : 'Données personnelles';
+    }
+    return 'Accueil';
+});
+
+type TimelineState = {
+    time: string;
+    text: string;
+    state: 'ok' | 'info' | 'warn';
+};
+
+type MetricState = {
+    label: string;
+    value: string;
+    subtitle: string;
+    progress?: number;
+    max?: number;
+};
+
+const commandMetrics = computed(() => {
+    const isPlanning = activeTab.value === 'planning';
+    const goals = goalsStore.goals || [];
+    const tasks = tasksStore.tasks || [];
+
+    const doneGoals = goals.filter((goal) => goal.status === 'done' || (goal as any).status === 'completed').length;
+    const doneTasks = tasks.filter((task) => task.status === 'done').length;
+    const urgentTasks = tasks.filter((task) => task.priority === 'high' && task.status !== 'done').length;
+    const highPriorityTasks = tasks.filter((task) => task.priority === 'high').length;
+
+    const completionRate = goals.length > 0
+        ? Math.round((doneGoals / goals.length) * 100)
+        : 0;
+
+    const today = currentDate.value.toFormat('yyyy-LL-dd');
+    const todayTasks = tasks.filter((task) => {
+        const taskDate = DateTime.fromISO(task.startDate, { setZone: true });
+        if (!taskDate.isValid) {
+            return false;
+        }
+        return taskDate.toFormat('yyyy-LL-dd') === today && task.status !== 'done';
+    });
+
+    const cadenceGoal = Math.round(
+        goals.length > 0 ? (doneGoals / goals.length) * 100 : 0
+    );
+    const priorityGoal = Math.max(
+        0,
+        Math.round((highPriorityTasks > 0 ? (1 - urgentTasks / highPriorityTasks) * 100 : 0))
+    );
+    const avgGoalProgress = goals.length > 0
+        ? goals.reduce((sum, goal) => sum + (typeof goal.progress === 'number' ? goal.progress : 0), 0) / goals.length
+        : 0;
+    const chargeValue = todayTasks.length + doneTasks + inProgressTasks;
+
+    const metrics: MetricState[] = [
+        {
+            label: 'Cadence',
+            value: `${todayTasks.length}/${tasks.length}`,
+            subtitle: isPlanning ? 'Tâches aujourd’hui sur total planifié' : 'Convergence quotidienne',
+            progress: cadenceGoal,
+            max: 100
+        },
+        {
+            label: 'Priorité',
+            value: `${urgentTasks} urgente${urgentTasks > 1 ? 's' : ''} en attente`,
+            subtitle: highPriorityTasks > 0 ? 'Répartition des tâches critiques' : 'Aucune tâche critique',
+            progress: priorityGoal,
+            max: 100
+        },
+        {
+            label: 'Performance',
+            value: `${completionRate}%`,
+            subtitle: `${doneGoals} objectif${doneGoals > 1 ? 's' : ''} terminé${doneGoals > 1 ? 's' : ''} / ${goals.length}`,
+            progress: avgGoalProgress,
+            max: 100
+        },
+        {
+            label: 'Charge',
+            value: `${chargeValue} tâche${chargeValue > 1 ? 's' : ''}`,
+            subtitle: `${doneTasks} réalisées · ${inProgressTasks} en cours · ${todayTasks.length} en attente`
+        }
+    ];
+
+    if (isPlanning) {
+        metrics.push({
+            label: 'Soutenabilité',
+            value: `${doneTasks} / ${tasks.length}`,
+            subtitle: 'Progrès global de cette journée',
+            progress: tasks.length > 0 ? (doneTasks / tasks.length) * 100 : 0,
+            max: 100
+        } as MetricState);
+        metrics.splice(0, 1);
+    }
+
+    return metrics;
+});
+
+const liveTimeline = computed(() => {
+    const now = DateTime.now();
+    const events = [] as TimelineState[];
+    const currentTab = activeTab.value;
+
+    const addEvent = (time: string | Date, text: string, state: TimelineState['state']) => {
+        const dt = typeof time === 'string' ? DateTime.fromISO(time, { setZone: true }) : DateTime.fromJSDate(time);
+        if (!dt.isValid) {
+            return;
+        }
+        events.push({ time: dt.toFormat('HH:mm'), text, state });
+    };
+
+    const inOrderDate = DateTime.now().toFormat('yyyy-LL-dd');
+    const todayTasks = tasksStore.tasks
+        .filter((task) => task.startDate.startsWith(inOrderDate) || task.createdAt.startsWith(inOrderDate))
+        .slice(0, 8);
+
+    todayTasks.forEach((task) => {
+        if (task.status === 'done') {
+            addEvent(task.updatedAt || task.createdAt, `Tâche terminée : ${task.title}`, 'ok');
+            return;
+        }
+        if (task.status === 'in-progress') {
+            addEvent(task.updatedAt || task.createdAt, `Tâche en cours : ${task.title}`, 'warn');
+            return;
+        }
+        addEvent(task.createdAt, `Tâche créée : ${task.title}`, 'info');
+    });
+
+    goalsStore.goals
+        .slice(0, 4)
+        .forEach((goal) => {
+            if (goal.status === 'done' || (goal as any).status === 'completed') {
+                addEvent((goal as any).updatedAt || goal.startDate.toISOString(), `Objectif terminé : ${goal.title}`, 'ok');
+            }
+        });
+
+    events.sort((a, b) => {
+        const aTime = DateTime.fromFormat(a.time, 'HH:mm');
+        const bTime = DateTime.fromFormat(b.time, 'HH:mm');
+        return bTime.toMillis() - aTime.toMillis();
+    });
+
+    if (events.length === 0) {
+        return [
+            { time: now.minus({ minutes: 30 }).toFormat('HH:mm'), text: `Mode actif : ${currentTab}`, state: currentTab === 'stats' ? 'warn' : 'ok' },
+            { time: now.toFormat('HH:mm'), text: 'Pilotage en cours', state: 'info' }
+        ];
+    }
+
+    return events.slice(0, 8);
 });
 </script>
