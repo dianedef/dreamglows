@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "incremental": true,
+    "target": "ES6",
+    "jsx": "preserve",
+    "lib": ["ES6", "DOM", "WebWorker"],
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@/*": ["./src/*"],
+      "~/*": ["./src/*"],
+      "src/*": ["./src/*"],
+      "@assets/*": ["./src/assets/*"]
+    },
+    "resolveJsonModule": true,
+    "types": [
+      "unplugin-icons/types/vue",
+      "webextension-polyfill",
+      "chrome-types"
+    ],
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "package.json",
+    "vite.config.ts",
+    // "manifest.config.ts",
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+, "src/components/vue-grid-layout/utils.js", "src/components/vue-grid-layout/responsiveUtils.js", "src/components/vue-grid-layout/maint.js", "src/components/vue-grid-layout/index.js", "src/components/vue-grid-layout/draggableUtils.js", "src/components/vue-grid-layout/DOM.js", "TreeNode.vue", "TreeComponent.vue", "CustomTreeComponent.vue"  ]
+  // "references": [
+  //   {
+  //     "path": "./tsconfig.node.json"
+  //   }
+  // ]
+}

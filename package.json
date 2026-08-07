@@ -11,6 +11,8 @@
   "scripts": {
     "dev": "pnpm -r --if-present dev",
     "build": "pnpm -r --if-present build",
+    "dev:chrome-extension": "pnpm --filter dreamglows-extension dev",
+    "build:chrome-extension": "pnpm --filter dreamglows-extension build",
     "dev:obsidian-plugin": "pnpm --filter obsidian-goalflowz dev",
     "build:obsidian-plugin": "pnpm --filter obsidian-goalflowz build"
   }
