@@ -1,6 +1,6 @@
 import { App, Notice, TFile } from 'obsidian';
 import { DateTime, Interval } from 'luxon';
-import type { GoalFlowzSettings } from '../types';
+import type { DreamGlowsSettings } from '../types/settings';
 
 export interface WeekNotes {
     weekNumber: number;
@@ -12,7 +12,7 @@ export interface WeekNotes {
 export class TimeManagementService {
     constructor(
         private app: App,
-        private settings: GoalFlowzSettings
+        private settings: DreamGlowsSettings
     ) {}
 
     async updateNotesForNewYear(year: number): Promise<void> {

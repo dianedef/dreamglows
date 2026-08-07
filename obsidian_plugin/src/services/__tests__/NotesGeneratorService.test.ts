@@ -5,6 +5,7 @@ import { ValidationService } from '../ValidationService';
 import { StorageService } from '../StorageService';
 import { DateTime } from 'luxon';
 import { DateError } from '../../types/errors';
+import type { DreamGlowsSettings } from '../../types/settings';
 
 // Mock des dépendances
 const mockApp = {
@@ -37,7 +38,7 @@ describe('NotesGeneratorService', () => {
 
         // Initialisation des services
         dateService = new DateService('fr');
-        validationService = new ValidationService(dateService, mockSettings as GoalFlowzSettings);
+        validationService = new ValidationService(dateService, mockSettings as DreamGlowsSettings);
         storageService = vi.fn() as unknown as StorageService;
 
         // Création du service à tester

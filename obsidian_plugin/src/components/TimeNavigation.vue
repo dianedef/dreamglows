@@ -1,13 +1,13 @@
 <template>
-    <div class="goalflowz-time-navigation">
-        <div class="goalflowz-nav-controls">
-            <button @click="navigate('previous')" class="goalflowz-nav-btn" ref="prevButton">
+    <div class="dreamglows-time-navigation">
+        <div class="dreamglows-nav-controls">
+            <button @click="navigate('previous')" class="dreamglows-nav-btn" ref="prevButton">
             </button>
             <h2>{{ currentPeriodLabel }}</h2>
-            <button @click="navigate('next')" class="goalflowz-nav-btn" ref="nextButton">
+            <button @click="navigate('next')" class="dreamglows-nav-btn" ref="nextButton">
             </button>
         </div>
-        <button @click="goToToday" class="goalflowz-today-btn" v-if="!isCurrentPeriod">
+        <button @click="goToToday" class="dreamglows-today-btn" v-if="!isCurrentPeriod">
             Aujourd'hui
         </button>
     </div>

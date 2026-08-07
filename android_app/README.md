@@ -1,6 +1,6 @@
 # Android app
 
-Objectif: livrer l'expérience GoalFlowz en application mobile Android.
+Objectif: livrer l'expérience DreamGlows en application mobile Android.
 
 ## Status
 

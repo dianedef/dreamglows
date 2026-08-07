@@ -1,8 +1,8 @@
 {
-  "name": "goalflowz-windows-app",
+  "name": "dreamglows-windows-app",
   "private": true,
   "version": "0.0.0",
-  "description": "Windows app surface for GoalFlowz",
+  "description": "Windows app surface for DreamGlows",
   "scripts": {
     "todo": "echo \"Scaffold Windows app implementation here\""
   }

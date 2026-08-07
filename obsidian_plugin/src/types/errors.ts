@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
-export class GoalFlowzError extends Error {
+export class DreamGlowsError extends Error {
     constructor(message: string, public readonly cause?: Error) {
         super(message);
         this.name = this.constructor.name;
     }
 }
 
-export class ValidationError extends GoalFlowzError {
+export class ValidationError extends DreamGlowsError {
     constructor(message: string, public readonly details: string) {
         super(`${message}: ${details}`);
     }
@@ -20,13 +20,13 @@ export class ValidationError extends GoalFlowzError {
     }
 }
 
-export class StorageError extends GoalFlowzError {
+export class StorageError extends DreamGlowsError {
     constructor(message: string, cause?: Error) {
         super(message, cause);
     }
 }
 
-export class ParsingError extends GoalFlowzError {
+export class ParsingError extends DreamGlowsError {
     constructor(message: string, public readonly content?: string) {
         super(message);
     }
@@ -39,19 +39,19 @@ export class DateError extends Error {
     }
 }
 
-export class ConsistencyError extends GoalFlowzError {
+export class ConsistencyError extends DreamGlowsError {
     constructor(message: string, public readonly entityId: string) {
         super(`${message} (ID: ${entityId})`);
     }
 }
 
-export class EventError extends GoalFlowzError {
+export class EventError extends DreamGlowsError {
     constructor(message: string, public readonly eventType: string) {
         super(`${message} (Type: ${eventType})`);
     }
 }
 
-export class MetricsError extends GoalFlowzError {
+export class MetricsError extends DreamGlowsError {
     constructor(message: string, public readonly metricName: string) {
         super(`${message} (Métrique: ${metricName})`);
     }
@@ -81,8 +81,8 @@ export enum NotesErrorCode {
 }
 
 // Fonction utilitaire pour gérer les erreurs
-export function handleError(error: unknown): GoalFlowzError {
-    if (error instanceof GoalFlowzError) {
+export function handleError(error: unknown): DreamGlowsError {
+    if (error instanceof DreamGlowsError) {
         return error;
     }
 
@@ -91,14 +91,14 @@ export function handleError(error: unknown): GoalFlowzError {
     }
 
     if (error instanceof Error) {
-        return new GoalFlowzError(error.message, error);
+        return new DreamGlowsError(error.message, error);
     }
 
-    return new GoalFlowzError('Une erreur inconnue est survenue');
+    return new DreamGlowsError('Une erreur inconnue est survenue');
 }
 
 // Types pour la gestion des erreurs
-export type ErrorHandler = (error: GoalFlowzError) => void;
+export type ErrorHandler = (error: DreamGlowsError) => void;
 
 export interface ErrorContext {
     source: string;
@@ -107,9 +107,9 @@ export interface ErrorContext {
 }
 
 // Fonction pour enrichir les erreurs avec du contexte
-export function enrichError(error: GoalFlowzError, context: ErrorContext): GoalFlowzError {
+export function enrichError(error: DreamGlowsError, context: ErrorContext): DreamGlowsError {
     const enrichedMessage = `[${context.source}][${context.action}] ${error.message}`;
-    const enrichedError = new error.constructor(enrichedMessage) as GoalFlowzError;
+    const enrichedError = new error.constructor(enrichedMessage) as DreamGlowsError;
     
     if ('details' in error) {
         (enrichedError as ValidationError).details = (error as ValidationError).details;

@@ -10,17 +10,17 @@ export class GoalsView extends ItemView {
     }
 
     getViewType(): string {
-        return 'goalflowz-goals';
+        return 'dreamglows-goals';
     }
 
     getDisplayText(): string {
-        return 'GoalFlowz';
+        return 'DreamGlows';
     }
 
     async onOpen() {
         const container = this.containerEl.children[1];
         container.empty();
-        const vueContainer = container.createDiv({ cls: 'goalflowz-vue-container' });
+        const vueContainer = container.createDiv({ cls: 'dreamglows-vue-container' });
         this.vueApp.mount(vueContainer);
     }
 

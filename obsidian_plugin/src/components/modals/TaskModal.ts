@@ -19,7 +19,7 @@ export class TaskModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
         
-        const container = contentEl.createDiv('goalflowz-modal-content');
+        const container = contentEl.createDiv('dreamglows-modal-content');
         console.log('TaskModal: Container created');
 
         this.vueApp = createApp(TaskModalContent, {

@@ -1,45 +1,45 @@
 <template>
-  <div class="goalflowz-goals-view">
-    <div class="goalflowz-goals-header">
+  <div class="dreamglows-goals-view">
+    <div class="dreamglows-goals-header">
       <div>
         <h2>Objectifs</h2>
-        <p class="goalflowz-goals-subtitle">Planification, pilotage visuel et actions associées</p>
+        <p class="dreamglows-goals-subtitle">Planification, pilotage visuel et actions associées</p>
       </div>
-      <div class="goalflowz-goals-controls">
-        <button @click="openNewGoalModal" class="goalflowz-add-goal-btn">
+      <div class="dreamglows-goals-controls">
+        <button @click="openNewGoalModal" class="dreamglows-add-goal-btn">
           <i class="fas fa-plus"></i> Nouvel objectif
         </button>
       </div>
     </div>
 
-    <section class="goalflowz-goals-overview">
+    <section class="dreamglows-goals-overview">
       <article
         v-for="metric in goalMetrics"
         :key="metric.label"
-        class="goalflowz-goals-metric"
+        class="dreamglows-goals-metric"
       >
-        <span class="goalflowz-goals-metric-label">{{ metric.label }}</span>
-        <strong class="goalflowz-goals-metric-value">{{ metric.value }}</strong>
-        <span class="goalflowz-goals-metric-subtitle">{{ metric.subtitle }}</span>
+        <span class="dreamglows-goals-metric-label">{{ metric.label }}</span>
+        <strong class="dreamglows-goals-metric-value">{{ metric.value }}</strong>
+        <span class="dreamglows-goals-metric-subtitle">{{ metric.subtitle }}</span>
       </article>
     </section>
 
-    <div class="goalflowz-goals-layout">
+    <div class="dreamglows-goals-layout">
       <div
         ref="timelineContainer"
-        class="goalflowz-timeline-container"
+        class="dreamglows-timeline-container"
         :style="{ width: `${mainWidth}%` }"
         role="region"
         aria-label="Timeline des objectifs et tâches"
       ></div>
       <div
-        class="goalflowz-resize-handle"
+        class="dreamglows-resize-handle"
         @mousedown="startResize"
         role="separator"
         aria-orientation="vertical"
       ></div>
       <div
-        class="goalflowz-task-container"
+        class="dreamglows-task-container"
         :style="{ width: `${100 - mainWidth}%` }"
       >
         <TaskList :app="props.app" />
@@ -201,13 +201,13 @@ const createTimelineItems = (goals: Goal[], tasks: Task[]) => {
       id: `goal-${goal.id}`,
       group: category,
       content: `
-        <div class="goalflowz-timeline-item-title">
+        <div class="dreamglows-timeline-item-title">
           ${goal.title}
-          <span class="goalflowz-timeline-item-progress">${Math.round(progress)}%</span>
+          <span class="dreamglows-timeline-item-progress">${Math.round(progress)}%</span>
         </div>
         ${tags.length ? `
-          <div class="goalflowz-timeline-item-tags">
-            ${tags.map((tag) => `<span class="goalflowz-tag">#${tag}</span>`).join(' ')}
+          <div class="dreamglows-timeline-item-tags">
+            ${tags.map((tag) => `<span class="dreamglows-tag">#${tag}</span>`).join(' ')}
           </div>
         ` : ''}
       `,
@@ -237,11 +237,11 @@ const createTimelineItems = (goals: Goal[], tasks: Task[]) => {
     id: `task-${task.id}`,
     group: 'Tâches',
     content: `
-      <div class="goalflowz-timeline-task">
-        <div class="goalflowz-timeline-task-title">${task.title}</div>
+      <div class="dreamglows-timeline-task">
+        <div class="dreamglows-timeline-task-title">${task.title}</div>
         ${Array.isArray(task.tags) && task.tags.length ? `
-          <div class="goalflowz-timeline-item-tags">
-            ${task.tags.map((tag) => `<span class="goalflowz-tag">#${tag}</span>`).join(' ')}
+          <div class="dreamglows-timeline-item-tags">
+            ${task.tags.map((tag) => `<span class="dreamglows-tag">#${tag}</span>`).join(' ')}
           </div>
         ` : ''}
       </div>
@@ -342,7 +342,7 @@ const timelineOptions = () => {
       return item.content;
     },
     groupTemplate(group: any) {
-      return `<div class="goalflowz-timeline-group">${group?.content || 'Sans nom'}</div>`;
+      return `<div class="dreamglows-timeline-group">${group?.content || 'Sans nom'}</div>`;
     },
     margin: {
       item: {
@@ -499,7 +499,7 @@ const startResize = (event: MouseEvent) => {
 
 const handleResize = (event: MouseEvent) => {
   if (!isResizing.value) return;
-  const containerWidth = document.querySelector('.goalflowz-goals-layout')?.clientWidth || 0;
+  const containerWidth = document.querySelector('.dreamglows-goals-layout')?.clientWidth || 0;
   if (!containerWidth) return;
 
   const dx = event.clientX - startX.value;
@@ -525,35 +525,35 @@ const openNewGoalModal = () => {
 </script>
 
 <style scoped>
-.goalflowz-goals-view {
+.dreamglows-goals-view {
   color: var(--text-normal);
 }
 
-.goalflowz-goals-header {
+.dreamglows-goals-header {
   margin-bottom: 0.85rem;
 }
 
-.goalflowz-goals-subtitle {
+.dreamglows-goals-subtitle {
   margin: 0.35rem 0 0.2rem;
   color: var(--text-muted);
   font-size: 0.88rem;
 }
 
-.goalflowz-goals-overview {
+.dreamglows-goals-overview {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.7rem;
   margin-bottom: 0.85rem;
 }
 
-.goalflowz-goals-metric {
+.dreamglows-goals-metric {
   border: 1px solid color-mix(in oklab, var(--text-faint) 22%, transparent);
   border-radius: 12px;
   padding: 0.75rem 0.8rem;
   background: color-mix(in oklab, var(--background-primary-alt) 82%, transparent);
 }
 
-.goalflowz-goals-metric-label {
+.dreamglows-goals-metric-label {
   display: block;
   color: var(--text-muted);
   font-size: 0.72rem;
@@ -561,25 +561,25 @@ const openNewGoalModal = () => {
   letter-spacing: 0.06em;
 }
 
-.goalflowz-goals-metric-value {
+.dreamglows-goals-metric-value {
   display: block;
   margin: 0.4rem 0 0.2rem;
   font-size: 1.44rem;
   line-height: 1.1;
 }
 
-.goalflowz-goals-metric-subtitle {
+.dreamglows-goals-metric-subtitle {
   color: var(--text-muted);
   font-size: 0.86rem;
 }
 
-.goalflowz-goals-layout {
+.dreamglows-goals-layout {
   display: flex;
   min-height: 540px;
   gap: 0.6rem;
 }
 
-.goalflowz-timeline-container {
+.dreamglows-timeline-container {
   min-height: 540px;
   border: 1px solid color-mix(in oklab, var(--text-faint) 25%, transparent);
   border-radius: 14px;
@@ -587,7 +587,7 @@ const openNewGoalModal = () => {
   background: color-mix(in oklab, var(--background-primary-alt) 80%, transparent);
 }
 
-.goalflowz-task-container {
+.dreamglows-task-container {
   min-height: 540px;
   border: 1px solid color-mix(in oklab, var(--text-faint) 25%, transparent);
   border-radius: 14px;
@@ -595,7 +595,7 @@ const openNewGoalModal = () => {
   background: color-mix(in oklab, var(--background-primary-alt) 80%, transparent);
 }
 
-.goalflowz-resize-handle {
+.dreamglows-resize-handle {
   width: 0.5rem;
   border-radius: 999px;
   cursor: ew-resize;
@@ -603,27 +603,27 @@ const openNewGoalModal = () => {
   transition: background-color 0.2s ease;
 }
 
-.goalflowz-resize-handle:hover {
+.dreamglows-resize-handle:hover {
   background: color-mix(in oklab, var(--interactive-accent) 34%, transparent);
 }
 
 @media (max-width: 980px) {
-  .goalflowz-goals-overview {
+  .dreamglows-goals-overview {
     grid-template-columns: 1fr;
   }
 
-  .goalflowz-goals-layout {
+  .dreamglows-goals-layout {
     flex-direction: column;
     min-height: auto;
   }
 
-  .goalflowz-timeline-container,
-  .goalflowz-task-container {
+  .dreamglows-timeline-container,
+  .dreamglows-task-container {
     width: 100% !important;
     min-height: 420px;
   }
 
-  .goalflowz-resize-handle {
+  .dreamglows-resize-handle {
     display: none;
   }
 }

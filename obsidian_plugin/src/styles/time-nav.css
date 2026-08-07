@@ -1,17 +1,17 @@
-.goalflowz-time-navigation {
+.dreamglows-time-navigation {
     display: flex;
     align-items: center;
     gap: 1rem;
     white-space: nowrap;
 }
 
-.goalflowz-nav-controls {
+.dreamglows-nav-controls {
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-.goalflowz-nav-btn {
+.dreamglows-nav-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -26,12 +26,12 @@
     color: var(--text-muted);
 }
 
-.goalflowz-nav-btn:hover {
+.dreamglows-nav-btn:hover {
     background-color: var(--background-modifier-hover);
     color: var(--text-normal);
 }
 
-.goalflowz-time-navigation h2 {
+.dreamglows-time-navigation h2 {
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
@@ -40,7 +40,7 @@
     color: var(--text-normal);
 }
 
-.goalflowz-today-btn {
+.dreamglows-today-btn {
     padding: 0.25rem 0.75rem;
     border-radius: 4px;
     background-color: var(--interactive-accent);
@@ -51,11 +51,11 @@
     font-size: 0.9rem;
 }
 
-.goalflowz-today-btn:hover {
+.dreamglows-today-btn:hover {
     background-color: var(--interactive-accent-hover);
 }
 
-.goalflowz-header {
+.dreamglows-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -63,7 +63,7 @@
     border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.goalflowz-view-switch {
+.dreamglows-view-switch {
     display: flex;
     gap: 0.5rem;
 }

@@ -1,4 +1,4 @@
-# Spécification Orbit-concept (v1 - intégration GoalFlowz)
+# Spécification Orbit-concept (v1 - intégration DreamGlows)
 
 ## 1) Objectif
 
@@ -56,7 +56,7 @@ Reproduire le loop produit d’Orbit-style (focus quotidien + progression gamifi
   - quand une habitude est cochée `true` pour une date.
 
 ### 3.3 Persistance
-- `gameProgression` inclus dans les données persistées via `GoalFlowz.savePluginData`.
+- `gameProgression` inclus dans les données persistées via `DreamGlows.savePluginData`.
 - `validateSettings` doit hydrater `gameProgression` de manière robuste depuis `data.json`.
 - Toute modification de progression met à jour les settings persistés.
 

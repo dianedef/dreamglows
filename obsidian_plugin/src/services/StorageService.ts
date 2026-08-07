@@ -17,7 +17,7 @@ export interface DailyMood {
 
 export class StorageService {
     private app: App;
-    private dataFile: string = '.obsidian/plugins/obs-GoalFlowz/data.json';
+    private dataFile: string = '.obsidian/plugins/obs-dreamglows/data.json';
     private dateService: DateService;
     private validationService: ValidationService;
     private formatterService: FormatterService;

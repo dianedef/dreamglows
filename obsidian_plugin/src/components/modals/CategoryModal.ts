@@ -18,7 +18,7 @@ export class CategoryModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
         
-        const container = contentEl.createDiv('goalflowz-modal-content');
+        const container = contentEl.createDiv('dreamglows-modal-content');
         console.log('CategoryModal: Container created');
 
         this.vueApp = createApp(CategoryModalContent, {

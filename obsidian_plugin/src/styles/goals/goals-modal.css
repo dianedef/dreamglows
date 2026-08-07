@@ -1,57 +1,57 @@
-.goalflowz-modal-container {
+.dreamglows-modal-container {
     display: flex;
     flex-direction: column;
     height: 100%;
 }
 
-.goalflowz-modal-content {
+.dreamglows-modal-content {
     flex-grow: 1;
     overflow-y: auto;
     padding: 1rem;
 }
 
-.goalflowz-setting-item {
+.dreamglows-setting-item {
     border-top: 0;
     padding: 1rem 0;
 }
 
-.goalflowz-setting-item:not(:last-child) {
+.dreamglows-setting-item:not(:last-child) {
     border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.goalflowz-setting-item-info {
+.dreamglows-setting-item-info {
     flex: 1;
 }
 
-.goalflowz-setting-item-name {
+.dreamglows-setting-item-name {
     font-weight: 600;
     margin-bottom: 0.25rem;
 }
 
-.goalflowz-setting-item-description {
+.dreamglows-setting-item-description {
     color: var(--text-muted);
     font-size: 0.8em;
     margin-top: 0.25rem;
 }
 
-.goalflowz-setting-item-control {
+.dreamglows-setting-item-control {
     flex: 2;
 }
 
-.goalflowz-setting-item-control-grid {
+.dreamglows-setting-item-control-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
 }
 
-.goalflowz-tag-container {
+.dreamglows-tag-container {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 0.5rem;
 }
 
-.goalflowz-tag {
+.dreamglows-tag {
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
@@ -62,7 +62,7 @@
     font-size: 0.9em;
 }
 
-.goalflowz-modal-button-container {
+.dreamglows-modal-button-container {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;

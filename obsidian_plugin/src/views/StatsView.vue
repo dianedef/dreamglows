@@ -1,9 +1,9 @@
 # Vue 3 Template
 <template>
-  <div class="goalflowz-statistics-view">
-    <div class="goalflowz-statistics-header">
+  <div class="dreamglows-statistics-view">
+    <div class="dreamglows-statistics-header">
     <h2>Statistiques</h2>
-      <div class="goalflowz-period-selector">
+      <div class="dreamglows-period-selector">
         <button 
           v-for="period in periods" 
           :key="period.days"
@@ -15,71 +15,71 @@
       </div>
     </div>
 
-    <div class="goalflowz-statistics-grid">
+    <div class="dreamglows-statistics-grid">
       <!-- Santé -->
-      <div class="goalflowz-statistics-section">
+      <div class="dreamglows-statistics-section">
         <h3>🏥 Santé & Bien-être</h3>
         
         <!-- Humeur -->
-        <div class="goalflowz-chart-container">
+        <div class="dreamglows-chart-container">
           <h4>😊 Humeur</h4>
           <canvas ref="moodChart"></canvas>
         </div>
 
         <!-- Énergie -->
-        <div class="goalflowz-chart-container">
+        <div class="dreamglows-chart-container">
           <h4>⚡ Niveau d'énergie</h4>
           <canvas ref="energyChart"></canvas>
         </div>
 
         <!-- Habitudes -->
-        <div class="goalflowz-chart-container">
+        <div class="dreamglows-chart-container">
           <h4>🎯 Habitudes</h4>
           <canvas ref="habitsChart"></canvas>
         </div>
       </div>
 
       <!-- Productivité -->
-      <div class="goalflowz-statistics-section">
+      <div class="dreamglows-statistics-section">
         <h3>📈 Productivité</h3>
         
         <!-- Objectifs -->
-        <div class="goalflowz-chart-container">
+        <div class="dreamglows-chart-container">
           <h4>🎯 Objectifs</h4>
           <canvas ref="goalsChart"></canvas>
         </div>
 
         <!-- Tâches -->
-        <div class="goalflowz-chart-container">
+        <div class="dreamglows-chart-container">
           <h4>✓ Tâches</h4>
           <canvas ref="tasksChart"></canvas>
         </div>
 
         <!-- Catégories -->
-        <div class="goalflowz-chart-container">
+        <div class="dreamglows-chart-container">
           <h4>📊 Répartition par catégorie</h4>
           <canvas ref="categoriesChart"></canvas>
         </div>
       </div>
 
       <!-- Nouvelle section pour le Goal-Chaining -->
-      <div class="goalflowz-statistics-section">
+      <div class="dreamglows-statistics-section">
         <h3>🎯 Planification Stratégique</h3>
         
         <!-- Distribution par période -->
-        <div class="goalflowz-chart-container">
+        <div class="dreamglows-chart-container">
           <h4>📊 Distribution par période</h4>
           <canvas ref="timeframeChart"></canvas>
         </div>
 
         <!-- Taux de complétion -->
-        <div class="goalflowz-chart-container">
+        <div class="dreamglows-chart-container">
           <h4>✅ Taux de complétion par période</h4>
           <canvas ref="completionRateChart"></canvas>
         </div>
 
         <!-- Profondeur de décomposition -->
-        <div class="goalflowz-metrics-card">
+        <div class="dreamglows-metrics-card">
           <h4>🌳 Profondeur moyenne de décomposition</h4>
           <div class="metric-value">{{ averageDepth.toFixed(1) }}</div>
           <div class="metric-description">niveaux de sous-objectifs en moyenne</div>
@@ -500,23 +500,23 @@ function formatTimeframe(timeframe: string): string {
 </script> 
 
 <style scoped>
-.goalflowz-statistics-view {
+.dreamglows-statistics-view {
   padding: 20px;
 }
 
-.goalflowz-statistics-header {
+.dreamglows-statistics-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
 }
 
-.goalflowz-period-selector {
+.dreamglows-period-selector {
   display: flex;
   gap: 10px;
 }
 
-.goalflowz-period-selector button {
+.dreamglows-period-selector button {
   padding: 8px 16px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -525,26 +525,26 @@ function formatTimeframe(timeframe: string): string {
   transition: all 0.3s ease;
 }
 
-.goalflowz-period-selector button.active {
+.dreamglows-period-selector button.active {
   background: #7367F0;
   color: white;
   border-color: #7367F0;
 }
 
-.goalflowz-statistics-grid {
+.dreamglows-statistics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 30px;
 }
 
-.goalflowz-statistics-section {
+.dreamglows-statistics-section {
   background: white;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.goalflowz-chart-container {
+.dreamglows-chart-container {
   margin-top: 20px;
   padding: 15px;
   background: #f8f8f8;
@@ -567,7 +567,7 @@ h4 {
   font-size: 1em;
 }
 
-.goalflowz-metrics-card {
+.dreamglows-metrics-card {
   background: #f8f8f8;
   border-radius: 6px;
   padding: 20px;

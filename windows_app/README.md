@@ -1,6 +1,6 @@
 # Windows app
 
-Objectif: livrer l'expérience GoalFlowz en application Windows.
+Objectif: livrer l'expérience DreamGlows en application Windows.
 
 ## Status
 

@@ -1,19 +1,19 @@
 <template>
-    <div class="goalflowz-planning-view">
-        <div class="goalflowz-toolbar">
-            <div class="goalflowz-toolbar-left">
-                <NotesGenerator :notesGenerator="props.app.plugins.plugins.goalflowz?.notesGenerator" />
+    <div class="dreamglows-planning-view">
+        <div class="dreamglows-toolbar">
+            <div class="dreamglows-toolbar-left">
+                <NotesGenerator :notesGenerator="getDreamGlowsPlugin(props.app)?.notesGenerator" />
             </div>
-            <div class="goalflowz-toolbar-right">
+            <div class="dreamglows-toolbar-right">
                 <button 
-                    class="goalflowz-button"
+                    class="dreamglows-button"
                     :class="{ active: viewType === 'list' }"
                     @click="viewType = 'list'"
                 >
                     📋 Liste
                 </button>
                 <button 
-                    class="goalflowz-button"
+                    class="dreamglows-button"
                     :class="{ active: viewType === 'week' }"
                     @click="viewType = 'week'"
                 >
@@ -21,21 +21,21 @@
                 </button>
             </div>
         </div>
-        <div class="goalflowz-planning-controls">
+        <div class="dreamglows-planning-controls">
             <button @click="previousWeek">◀</button>
             <span>{{ weekLabel }}</span>
             <button @click="nextWeek">▶</button>
         </div>
-        <div class="goalflowz-planning-filters">
-            <div class="goalflowz-search-row">
+        <div class="dreamglows-planning-filters">
+            <div class="dreamglows-search-row">
                 <input 
                     type="text" 
                     v-model="searchQuery" 
                     placeholder="Rechercher une note..."
                 >
             </div>
-            <div class="goalflowz-filters-row">
-                <div class="goalflowz-filter-group">
+            <div class="dreamglows-filters-row">
+                <div class="dreamglows-filter-group">
                     <label>Statut</label>
                     <select v-model="statusFilter">
                         <option value="">Tous les statuts</option>
@@ -44,9 +44,9 @@
                         <option value="done">Terminé</option>
                     </select>
                 </div>
-                <div class="goalflowz-filter-group">
+                <div class="dreamglows-filter-group">
                     <label>Trier par</label>
-                    <div class="goalflowz-sort-controls">
+                    <div class="dreamglows-sort-controls">
                         <select v-model="sortBy">
                             <option value="title">Titre</option>
                             <option value="created">Date de création</option>
@@ -55,7 +55,7 @@
                             <option value="progress">Progression</option>
                         </select>
                         <button 
-                            class="goalflowz-sort-direction" 
+                            class="dreamglows-sort-direction" 
                             @click.stop="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'"
                             :title="sortDirection === 'asc' ? 'Ordre croissant' : 'Ordre décroissant'"
                         >
@@ -63,7 +63,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="goalflowz-filter-group">
+                <div class="dreamglows-filter-group">
                     <label>Dossier</label>
                     <select v-model="folderFilter">
                         <option value="">Tous les dossiers</option>
@@ -75,7 +75,7 @@
                         </option>
                     </select>
                 </div>
-                <div class="goalflowz-filter-group">
+                <div class="dreamglows-filter-group">
                     <label>Vue</label>
                     <select v-model="viewType">
                         <option value="list">Liste</option>
@@ -143,6 +143,8 @@ import type { WeekNotes } from '../services/TimeManagementService';
 import type { Note, Task, TaskPriority, TaskStatus } from '../types';
 import { registerStyles, unregisterStyles } from '../styles/RegisterStyles';
 
+type DreamGlowsFrontmatter = Record<string, any>;
+
 const props = defineProps<{
     contentFiles: TFile[],
     app: any
@@ -162,6 +164,16 @@ const currentDate = ref(DateTime.now());
 const currentWeek = ref<WeekViewData | null>(null);
 const weekViewData = ref<WeekNotes | null>(null);
 const weekViewRef = ref<InstanceType<typeof WeekViewNotes> | null>(null);
+const getDreamGlowsPlugin = (app: any) => app?.plugins?.plugins?.dreamglows;
+
+const getDreamGlowsFrontmatter = (frontmatter: DreamGlowsFrontmatter): Record<string, any> => {
+    return frontmatter.dreamglows ?? {};
+};
+
+const setDreamGlowsFrontmatter = (frontmatter: DreamGlowsFrontmatter, value: Record<string, any>): Record<string, any> => {
+    frontmatter.dreamglows = value;
+    return frontmatter;
+};
 
 // Ajout du computed pour les tâches par défaut
 const defaultTasks = computed(() => settingsStore.getDefaultTasks);
@@ -259,17 +271,12 @@ const updateNoteStatus = async (note: Note, newStatus: 'todo' | 'in-progress' | 
         const cache = props.app.metadataCache.getFileCache(file);
         let frontmatter = cache?.frontmatter || {};
         
-        if (!frontmatter.goalflowz) {
-            frontmatter.goalflowz = {
-                tasks: note.tasks,
-                status: newStatus
-            };
-        } else {
-            frontmatter.goalflowz.status = newStatus;
-        }
+        const goalGlowsData = getDreamGlowsFrontmatter(frontmatter as DreamGlowsFrontmatter);
+        const updatedGoalData = { ...goalGlowsData, tasks: goalGlowsData.tasks || note.tasks, status: newStatus };
+        const normalizedFrontmatter = setDreamGlowsFrontmatter(frontmatter as DreamGlowsFrontmatter, updatedGoalData);
 
         await props.app.fileManager.processFrontMatter(file, (fm: any) => {
-            fm.goalflowz = frontmatter.goalflowz;
+            setDreamGlowsFrontmatter(fm, normalizedFrontmatter);
         });
 
         note.status = newStatus;
@@ -292,25 +299,26 @@ const toggleTask = async (note: Note, task: { id: string; done: boolean } | Task
 
     const updatedTask = { ...fullTask, done: !task.done };
     try {
-        const file = props.app.vault.getAbstractFileByPath(note.path);
-        const cache = props.app.metadataCache.getFileCache(file);
-        let frontmatter = cache?.frontmatter || {};
-        
-        if (!frontmatter.goalflowz) {
-            frontmatter.goalflowz = {
-                tasks: [updatedTask],
-                status: note.status
-            };
-        } else {
-            const taskIndex = frontmatter.goalflowz.tasks?.findIndex((t: Task) => t.id === task.id);
-            if (taskIndex >= 0) {
-                frontmatter.goalflowz.tasks[taskIndex] = updatedTask;
-            }
-        }
+    const file = props.app.vault.getAbstractFileByPath(note.path);
+    const cache = props.app.metadataCache.getFileCache(file);
+    let frontmatter = cache?.frontmatter || {};
+    
+    const goalData = getDreamGlowsFrontmatter(frontmatter as DreamGlowsFrontmatter);
+    const updatedGoalData = {
+        ...goalData,
+        status: goalData.status || note.status,
+        tasks: Array.isArray(goalData.tasks)
+            ? [...goalData.tasks]
+            : [updatedTask]
+    };
+    const taskIndex = updatedGoalData.tasks.findIndex((t: Task) => t.id === task.id);
+    if (taskIndex >= 0) {
+        updatedGoalData.tasks[taskIndex] = updatedTask;
+    }
 
-        await props.app.fileManager.processFrontMatter(file, (fm: any) => {
-            fm.goalflowz = frontmatter.goalflowz;
-        });
+    await props.app.fileManager.processFrontMatter(file, (fm: any) => {
+        setDreamGlowsFrontmatter(fm, updatedGoalData);
+    });
 
         // Mettre à jour la tâche dans la note
         const taskIndex = note.tasks.findIndex(t => t.id === task.id);
@@ -328,17 +336,15 @@ const updateStatus = async (note: Note, newStatus: 'todo' | 'in-progress' | 'don
         const cache = props.app.metadataCache.getFileCache(file);
         let frontmatter = cache?.frontmatter || {};
         
-        if (!frontmatter.goalflowz) {
-            frontmatter.goalflowz = {
-                tasks: note.tasks,
-                status: newStatus
-            };
-        } else {
-            frontmatter.goalflowz.status = newStatus;
-        }
+        const goalData = getDreamGlowsFrontmatter(frontmatter as DreamGlowsFrontmatter);
+        const updatedGoalData = {
+            ...goalData,
+            tasks: goalData.tasks || note.tasks,
+            status: newStatus
+        };
 
         await props.app.fileManager.processFrontMatter(file, (fm: any) => {
-            fm.goalflowz = frontmatter.goalflowz;
+            setDreamGlowsFrontmatter(fm, updatedGoalData);
         });
 
         note.status = newStatus;
@@ -363,18 +369,18 @@ const loadNotes = async () => {
 
             const cache = props.app.metadataCache.getFileCache(file);
             const frontmatter = cache?.frontmatter || {};
-            const goalflowz = frontmatter.goalflowz || {};
+            const dreamglows = getDreamGlowsFrontmatter(frontmatter as DreamGlowsFrontmatter);
             const content = await props.app.vault.read(file);
 
             console.log(`Chargement du fichier ${file.path}:`, { 
                 frontmatter, 
-                goalflowz,
+                dreamglows,
                 contentLength: content.length 
             });
 
             let tasks: Task[] = [];
-            if (goalflowz.tasks && Array.isArray(goalflowz.tasks)) {
-                tasks = goalflowz.tasks;
+            if (dreamglows.tasks && Array.isArray(dreamglows.tasks)) {
+                tasks = dreamglows.tasks;
             } else {
                 // Utiliser les tâches par défaut du store
                 tasks = defaultTasks.value.map(defaultTask => ({
@@ -395,17 +401,17 @@ const loadNotes = async () => {
                 
                 // Sauvegarder les tâches par défaut dans le frontmatter
                 await props.app.fileManager.processFrontMatter(file, (fm: any) => {
-                    fm.goalflowz = {
+                    setDreamGlowsFrontmatter(fm, {
                         tasks: tasks,
                         status: 'todo'
-                    };
+                    });
                 });
             }
 
             loadedNotes.push({
                 path: file.path,
                 title: file.basename,
-                status: goalflowz.status || 'todo',
+                status: dreamglows.status || 'todo',
                 created: file.stat.ctime ? new Date(file.stat.ctime).toISOString() : new Date().toISOString(),
                 lastUpdated: file.stat.mtime ? new Date(file.stat.mtime).toISOString() : new Date().toISOString(),
                 wordCount: content.split(/\s+/).length,
@@ -451,23 +457,19 @@ const addNewTask = async (note: Note, label: string) => {
         const file = props.app.vault.getAbstractFileByPath(note.path);
         const cache = props.app.metadataCache.getFileCache(file);
         let frontmatter = cache?.frontmatter || {};
-        
-        if (!frontmatter.goalflowz) {
-            frontmatter.goalflowz = {
-                tasks: [newTask],
-                status: note.status
-            };
-        } else {
-            frontmatter.goalflowz.tasks = Array.isArray(frontmatter.goalflowz.tasks) 
-                ? [...frontmatter.goalflowz.tasks, newTask]
-                : [newTask];
-        }
+
+        const goalData = getDreamGlowsFrontmatter(frontmatter as DreamGlowsFrontmatter);
+        const updatedGoalData = {
+            ...goalData,
+            status: goalData.status || note.status,
+            tasks: Array.isArray(goalData.tasks) ? [...goalData.tasks, newTask] : [newTask]
+        };
 
         await props.app.fileManager.processFrontMatter(file, (fm: any) => {
-            fm.goalflowz = frontmatter.goalflowz;
+            setDreamGlowsFrontmatter(fm, updatedGoalData);
         });
 
-        note.tasks = frontmatter.goalflowz.tasks;
+        note.tasks = updatedGoalData.tasks;
         newTaskLabels.value[note.path] = '';
     } catch (error) {
         console.error(`Erreur lors de l'ajout de la tâche dans ${note.path}:`, error);
@@ -479,15 +481,21 @@ const deleteTask = async (note: Note, task: Task) => {
         const file = props.app.vault.getAbstractFileByPath(note.path);
         const cache = props.app.metadataCache.getFileCache(file);
         let frontmatter = cache?.frontmatter || {};
-        
-        if (frontmatter.goalflowz?.tasks) {
-            frontmatter.goalflowz.tasks = frontmatter.goalflowz.tasks.filter((t: Task) => t.id !== task.id);
+        const goalData = getDreamGlowsFrontmatter(frontmatter as DreamGlowsFrontmatter);
+        const updatedTasks = Array.isArray(goalData.tasks)
+            ? goalData.tasks.filter((t: Task) => t.id !== task.id)
+            : [];
+        const updatedGoalData = {
+            ...goalData,
+            tasks: updatedTasks
+        };
+
+        if (Array.isArray(updatedTasks)) {
+            note.tasks = updatedTasks;
             
             await props.app.fileManager.processFrontMatter(file, (fm: any) => {
-                fm.goalflowz = frontmatter.goalflowz;
+                setDreamGlowsFrontmatter(fm, updatedGoalData);
             });
-            
-            note.tasks = frontmatter.goalflowz.tasks;
         }
     } catch (error) {
         console.error(`Erreur lors de la suppression de la tâche dans ${note.path}:`, error);
@@ -516,19 +524,19 @@ const addToGenerator = (note: Note) => {
 const loadCurrentWeek = async () => {
     try {
         console.log('Chargement de la semaine courante:', currentDate.value.toISO());
-        const weekData = await props.app.plugins.plugins.goalflowz.timeManager.getWeekNotes(currentDate.value);
+        const weekData = await getDreamGlowsPlugin(props.app)?.timeManager?.getWeekNotes(currentDate.value);
         console.log('Données de la semaine reçues:', weekData);
 
         // Transformer les TFile en Notes
         const weekNotes = await Promise.all(weekData.notes.map(async (file: TFile) => {
             const cache = props.app.metadataCache.getFileCache(file);
             const frontmatter = cache?.frontmatter || {};
-            const goalflowz = frontmatter.goalflowz || {};
+            const dreamglows = getDreamGlowsFrontmatter(frontmatter as DreamGlowsFrontmatter);
             const content = await props.app.vault.read(file);
 
             let tasks: Task[] = [];
-            if (goalflowz.tasks && Array.isArray(goalflowz.tasks)) {
-                tasks = goalflowz.tasks;
+            if (dreamglows.tasks && Array.isArray(dreamglows.tasks)) {
+                tasks = dreamglows.tasks;
             } else {
                 tasks = defaultTasks.value.map(defaultTask => ({
                     id: Math.random().toString(36).substr(2, 9),
@@ -548,7 +556,7 @@ const loadCurrentWeek = async () => {
             return {
                 path: file.path,
                 title: file.basename,
-                status: goalflowz.status || 'todo',
+                status: dreamglows.status || 'todo',
                 created: file.stat.ctime ? new Date(file.stat.ctime).toISOString() : new Date().toISOString(),
                 lastUpdated: file.stat.mtime ? new Date(file.stat.mtime).toISOString() : new Date().toISOString(),
                 wordCount: content.split(/\s+/).length,
@@ -591,7 +599,7 @@ const nextWeek = async () => {
 };
 
 // S'assurer que le timeManager est disponible
-watch(() => props.app.plugins.plugins.goalflowz?.timeManager, async (newVal) => {
+watch(() => getDreamGlowsPlugin(props.app)?.timeManager, async (newVal) => {
     console.log('TimeManager disponible:', !!newVal);
     if (newVal && viewType.value === 'week') {
         await loadCurrentWeek();
@@ -625,7 +633,7 @@ const weekNotes = computed(() => {
 
 const generateNotes = async () => {
     try {
-        await props.app.plugins.plugins.goalflowz.generateNotes();
+        await getDreamGlowsPlugin(props.app)?.generateNotes();
         await loadNotes(); // Recharger les notes après la génération
     } catch (error) {
         console.error('Erreur lors de la génération des notes:', error);
@@ -651,7 +659,7 @@ interface WeekViewData {
 </script>
 
 <style>
-.goalflowz-toolbar {
+.dreamglows-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -660,13 +668,13 @@ interface WeekViewData {
     border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.goalflowz-toolbar-left,
-.goalflowz-toolbar-right {
+.dreamglows-toolbar-left,
+.dreamglows-toolbar-right {
     display: flex;
     gap: 0.5rem;
 }
 
-.goalflowz-button {
+.dreamglows-button {
     padding: 0.5rem 1rem;
     border: 1px solid var(--background-modifier-border);
     border-radius: 4px;
@@ -676,15 +684,14 @@ interface WeekViewData {
     transition: all 0.2s ease;
 }
 
-.goalflowz-button:hover {
+.dreamglows-button:hover {
     background: var(--background-primary-alt);
     border-color: var(--text-accent);
 }
 
-.goalflowz-button.active {
+.dreamglows-button.active {
     background: var(--text-accent);
     color: var(--text-on-accent);
     border-color: var(--text-accent);
 }
 </style>
-

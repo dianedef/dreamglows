@@ -7,13 +7,13 @@ import {
     MetricsSchema, EventSchema, DayStatsSchema,
     CategoryStatsSchema, PeriodStatsSchema
 } from '../types/models';
-import { GoalFlowzSettings } from '../types/settings';
+import type { DreamGlowsSettings } from '../types/settings';
 import { getDefaultTemplate } from '../constants/templates';
 
 export class ValidationService {
     constructor(
         private dateService: DateService,
-        private settings: GoalFlowzSettings
+        private settings: DreamGlowsSettings
     ) {}
 
     /**

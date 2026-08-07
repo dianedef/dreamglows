@@ -18,7 +18,7 @@ const vueApp = ref(null);
 async function onOpen() {
   const container = containerEl.value.children[1];
   container.empty();
-  container.createEl("div", { cls: "goalflowz-container" });
+  container.createEl("div", { cls: "dreamglows-container" });
 
   // Enregistrer les styles
   registerStyles('all');

@@ -22,7 +22,7 @@ export class GoalModal extends Modal {
         contentEl.empty();
         
         // Créer le conteneur pour le contenu Vue
-        const container = contentEl.createDiv('goalflowz-modal-content');
+        const container = contentEl.createDiv('dreamglows-modal-content');
         console.log('GoalModal: Container created');
 
         // Créer l'application Vue

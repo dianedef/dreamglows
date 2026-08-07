@@ -1,4 +1,4 @@
-.goalflowz-task-list {
+.dreamglows-task-list {
   width: 100%;
   height: 100%;
   border-left: 1px solid var(--background-modifier-border);
@@ -9,13 +9,13 @@
   min-width: 250px;
 }
 
-.goalflowz-task-list-header {
+.dreamglows-task-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.goalflowz-task-stats {
+.dreamglows-task-stats {
   display: flex;
   justify-content: space-between;
   padding: 0.5rem;
@@ -24,28 +24,28 @@
   border: 1px solid var(--background-modifier-border);
 }
 
-.goalflowz-stat-item {
+.dreamglows-stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
 }
 
-.goalflowz-stat-label {
+.dreamglows-stat-label {
   font-size: 0.8em;
   color: var(--text-muted);
 }
 
-.goalflowz-stat-value {
+.dreamglows-stat-value {
   font-weight: bold;
   color: var(--text-normal);
 }
 
-.goalflowz-task-search {
+.dreamglows-task-search {
   display: flex;
 }
 
-.goalflowz-search-input {
+.dreamglows-search-input {
   flex: 1;
   padding: 0.5rem;
   border-radius: 4px;
@@ -54,7 +54,7 @@
   color: var(--text-normal);
 }
 
-.goalflowz-add-task-btn {
+.dreamglows-add-task-btn {
   padding: 0.5rem 1rem;
   border-radius: 4px;
   background-color: var(--interactive-accent);
@@ -63,12 +63,12 @@
   cursor: pointer;
 }
 
-.goalflowz-task-filters {
+.dreamglows-task-filters {
   display: flex;
   gap: 0.5rem;
 }
 
-.goalflowz-filter {
+.dreamglows-filter {
   flex: 1;
   padding: 0.25rem;
   border-radius: 4px;
@@ -77,7 +77,7 @@
   color: var(--text-normal);
 }
 
-.goalflowz-tasks-container {
+.dreamglows-tasks-container {
   flex: 1;
   overflow-y: auto;
   display: flex;
@@ -91,12 +91,12 @@
   transition: background-color 0.2s ease;
 }
 
-.goalflowz-tasks-container:hover {
+.dreamglows-tasks-container:hover {
   background: var(--background-primary-alt);
   border-color: var(--interactive-accent);
 }
 
-.goalflowz-tasks-container:empty::after {
+.dreamglows-tasks-container:empty::after {
   content: "Double-cliquez pour ajouter une tâche";
   display: block;
   text-align: center;
@@ -105,7 +105,7 @@
   font-style: italic;
 }
 
-.goalflowz-task-item {
+.dreamglows-task-item {
   padding: 0.75rem;
   border-radius: 4px;
   background-color: var(--background-primary-alt);
@@ -114,26 +114,26 @@
   transition: all 0.2s ease;
 }
 
-.goalflowz-task-item:hover {
+.dreamglows-task-item:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-s);
   border-color: var(--interactive-accent);
 }
 
-.goalflowz-task-header {
+.dreamglows-task-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.5rem;
 }
 
-.goalflowz-task-controls {
+.dreamglows-task-controls {
   display: flex;
   gap: 0.5rem;
 }
 
-.goalflowz-task-status-btn,
-.goalflowz-task-edit-btn {
+.dreamglows-task-status-btn,
+.dreamglows-task-edit-btn {
   background: transparent;
   border: none;
   cursor: pointer;
@@ -150,8 +150,8 @@
   font-size: 1.1em;
 }
 
-.goalflowz-task-status-btn:hover,
-.goalflowz-task-edit-btn:hover {
+.dreamglows-task-status-btn:hover,
+.dreamglows-task-edit-btn:hover {
   opacity: 1;
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
@@ -159,16 +159,16 @@
   box-shadow: var(--shadow-s);
 }
 
-.goalflowz-task-edit-btn {
+.dreamglows-task-edit-btn {
   color: var(--text-accent);
   font-weight: bold;
 }
 
-.goalflowz-task-edit-btn i {
+.dreamglows-task-edit-btn i {
   font-size: 0.9em;
 }
 
-.goalflowz-task-priority-btn {
+.dreamglows-task-priority-btn {
   background: transparent;
   border: none;
   cursor: pointer;
@@ -180,7 +180,7 @@
   color: var(--text-muted);
 }
 
-.goalflowz-task-priority-btn:hover {
+.dreamglows-task-priority-btn:hover {
   opacity: 1;
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
@@ -188,36 +188,36 @@
   box-shadow: var(--shadow-s);
 }
 
-.goalflowz-priority-high .goalflowz-task-priority-btn {
+.dreamglows-priority-high .dreamglows-task-priority-btn {
   color: var(--text-error);
 }
 
-.goalflowz-priority-medium .goalflowz-task-priority-btn {
+.dreamglows-priority-medium .dreamglows-task-priority-btn {
   color: var(--text-warning);
 }
 
-.goalflowz-priority-low .goalflowz-task-priority-btn {
+.dreamglows-priority-low .dreamglows-task-priority-btn {
   color: var(--text-success);
 }
 
-.goalflowz-task-title {
+.dreamglows-task-title {
   font-weight: 500;
   margin-bottom: 0.5rem;
 }
 
-.goalflowz-task-date {
+.dreamglows-task-date {
   font-size: 0.9em;
   color: var(--text-muted);
   margin-bottom: 0.5rem;
 }
 
-.goalflowz-task-tags {
+.dreamglows-task-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
 }
 
-.goalflowz-tag {
+.dreamglows-tag {
   font-size: 0.8em;
   padding: 0.1rem 0.5rem;
   border-radius: 10px;
@@ -226,23 +226,23 @@
 }
 
 /* Priority styles */
-.goalflowz-priority-high {
+.dreamglows-priority-high {
   border-left: 3px solid var(--color-red);
 }
 
-.goalflowz-priority-medium {
+.dreamglows-priority-medium {
   border-left: 3px solid var(--color-orange);
 }
 
-.goalflowz-priority-low {
+.dreamglows-priority-low {
   border-left: 3px solid var(--color-green);
 }
 
 /* Status styles */
-.goalflowz-status-done {
+.dreamglows-status-done {
   opacity: 0.7;
 }
 
-.goalflowz-status-in-progress {
+.dreamglows-status-in-progress {
   background-color: var(--background-primary);
 }

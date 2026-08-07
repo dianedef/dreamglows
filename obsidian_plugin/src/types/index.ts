@@ -12,11 +12,3 @@ export interface Note {
     wordCount: number;
     tasks: Task[];
 }
-
-export interface GoalFlowzSettings {
-    notesPath: string;
-    folderStructure: 'flat' | 'monthly';
-    notesFormat: '1' | '2' | 'custom';
-    customNotesFormat?: string;
-    noteTemplate: string;
-} 

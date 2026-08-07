@@ -1,11 +1,11 @@
 <template>
-  <form @submit.prevent="save" class="goalflowz-task-modal">
-    <div class="goalflowz-modal-field">
+  <form @submit.prevent="save" class="dreamglows-task-modal">
+    <div class="dreamglows-modal-field">
       <label>Titre</label>
       <input v-model="taskData.title" type="text" placeholder="Titre de la tâche" required />
     </div>
 
-    <div class="goalflowz-modal-field">
+    <div class="dreamglows-modal-field">
       <label>Description</label>
       <textarea 
         v-model="taskData.description" 
@@ -14,17 +14,17 @@
       ></textarea>
     </div>
 
-    <div class="goalflowz-modal-field">
+    <div class="dreamglows-modal-field">
       <label>Date de début</label>
       <input v-model="taskData.startDate" type="date" />
     </div>
 
-    <div class="goalflowz-modal-field">
+    <div class="dreamglows-modal-field">
       <label>Date de fin (optionnelle)</label>
       <input v-model="taskData.dueDate" type="date" />
     </div>
 
-    <div class="goalflowz-modal-field">
+    <div class="dreamglows-modal-field">
       <label>Notes</label>
       <textarea 
         v-model="taskData.notes" 
@@ -33,7 +33,7 @@
       ></textarea>
     </div>
 
-    <div class="goalflowz-modal-field">
+    <div class="dreamglows-modal-field">
       <label>Objectif lié (optionnel)</label>
       <select v-model="taskData.goalId">
         <option value="">Aucun objectif</option>
@@ -45,7 +45,7 @@
       </select>
     </div>
 
-    <div class="goalflowz-modal-field">
+    <div class="dreamglows-modal-field">
       <label>Priorité</label>
       <select v-model="taskData.priority">
         <option value="high">Haute</option>
@@ -54,7 +54,7 @@
       </select>
     </div>
 
-    <div class="goalflowz-modal-field">
+    <div class="dreamglows-modal-field">
       <label>Statut</label>
       <select v-model="taskData.status">
         <option value="todo">À faire</option>
@@ -63,27 +63,27 @@
       </select>
     </div>
 
-    <div class="goalflowz-modal-field">
+    <div class="dreamglows-modal-field">
       <label>Tags</label>
-      <div class="goalflowz-tags-input">
+      <div class="dreamglows-tags-input">
         <input v-model="newTag" 
                @keydown.enter.prevent="addTag"
                type="text" 
                placeholder="Ajouter un tag" />
-        <div class="goalflowz-tags-container">
+        <div class="dreamglows-tags-container">
           <span v-for="tag in taskData.tags" 
                 :key="tag" 
-                class="goalflowz-tag">
+                class="dreamglows-tag">
             #{{ tag }}
-            <button type="button" @click="removeTag(tag)" class="goalflowz-tag-remove">×</button>
+            <button type="button" @click="removeTag(tag)" class="dreamglows-tag-remove">×</button>
           </span>
         </div>
       </div>
     </div>
 
-    <div class="goalflowz-modal-actions">
-      <button type="submit" class="goalflowz-modal-save">Enregistrer</button>
-      <button v-if="isEditing" type="button" @click="deleteTask" class="goalflowz-modal-delete">Supprimer</button>
+    <div class="dreamglows-modal-actions">
+      <button type="submit" class="dreamglows-modal-save">Enregistrer</button>
+      <button v-if="isEditing" type="button" @click="deleteTask" class="dreamglows-modal-delete">Supprimer</button>
     </div>
   </form>
 </template>

@@ -1,5 +1,5 @@
 import { App, Notice } from 'obsidian';
-import type { GoalFlowzSettings } from '../types/settings';
+import type { DreamGlowsSettings } from '../types/settings';
 import { DateService } from './DateService';
 import { ValidationService } from './ValidationService';
 import { StorageService } from './StorageService';
@@ -8,12 +8,11 @@ import { DateTime } from 'luxon';
 import { ProgressTracker } from '../types/progress';
 import { ValidationError } from '../types/errors';
 import { getDefaultTemplate } from '../constants/templates';
-import { GoalFlowzSettingsTab } from './SettingsTabService';
 
 export class NotesGeneratorService {
     constructor(
         private app: App,
-        private settings: GoalFlowzSettings,
+        private settings: DreamGlowsSettings,
         private dateService: DateService,
         private validationService: ValidationService,
         private storageService: StorageService

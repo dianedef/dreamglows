@@ -15,7 +15,7 @@ import './main-view.css';
 
 export function registerStyles(viewType: string) {
     const styleEl = document.createElement('style');
-    styleEl.id = 'goalflowz-styles';
+    styleEl.id = 'dreamglows-styles';
     styleEl.textContent = `
         /* Styles de base */    
         ${planningStyles}
@@ -39,6 +39,6 @@ export function registerStyles(viewType: string) {
 }
 
 export function unregisterStyles() {
-    const styleEl = document.getElementById('goalflowz-styles');
+    const styleEl = document.getElementById('dreamglows-styles');
     if (styleEl) styleEl.remove();
 } 

@@ -1,4 +1,4 @@
-.goalflowz-modal-container {
+.dreamglows-modal-container {
     position: absolute;
     top: 0;
     left: 0;
@@ -11,7 +11,7 @@
     z-index: 1000;
 }
 
-.goalflowz-modal {
+.dreamglows-modal {
     background: var(--background-primary);
     border-radius: var(--radius-l);
     box-shadow: var(--shadow-l);
@@ -23,7 +23,7 @@
     overflow: hidden;
 }
 
-.goalflowz-modal-header {
+.dreamglows-modal-header {
     padding: 16px;
     border-bottom: 1px solid var(--background-modifier-border);
     display: flex;
@@ -31,12 +31,12 @@
     align-items: center;
 }
 
-.goalflowz-modal-header h3 {
+.dreamglows-modal-header h3 {
     margin: 0;
     font-size: 1.2em;
 }
 
-.goalflowz-modal-close {
+.dreamglows-modal-close {
     background: none;
     border: none;
     color: var(--text-muted);
@@ -46,30 +46,30 @@
     transition: all 0.2s ease;
 }
 
-.goalflowz-modal-close:hover {
+.dreamglows-modal-close:hover {
     background: var(--background-modifier-hover);
     color: var(--text-normal);
 }
 
-.goalflowz-modal-content {
+.dreamglows-modal-content {
     padding: var(--size-4-4);
     overflow-y: auto;
 }
 
-.goalflowz-form-group {
+.dreamglows-form-group {
     margin-bottom: var(--size-4-4);
 }
 
-.goalflowz-form-group label {
+.dreamglows-form-group label {
     display: block;
     margin-bottom: var(--size-2-2);
     color: var(--text-muted);
     font-size: var(--font-ui-small);
 }
 
-.goalflowz-form-group input,
-.goalflowz-form-group select,
-.goalflowz-form-group textarea {
+.dreamglows-form-group input,
+.dreamglows-form-group select,
+.dreamglows-form-group textarea {
     width: 100%;
     padding: var(--size-2-3);
     border: 1px solid var(--background-modifier-border);
@@ -78,38 +78,38 @@
     color: var(--text-normal);
 }
 
-.goalflowz-form-group input:focus,
-.goalflowz-form-group select:focus,
-.goalflowz-form-group textarea:focus {
+.dreamglows-form-group input:focus,
+.dreamglows-form-group select:focus,
+.dreamglows-form-group textarea:focus {
     border-color: var(--interactive-accent);
     outline: none;
     box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
-.goalflowz-form-row {
+.dreamglows-form-row {
     display: flex;
     gap: var(--size-4-4);
     margin-bottom: var(--size-4-4);
 }
 
-.goalflowz-form-row .goalflowz-form-group {
+.dreamglows-form-row .dreamglows-form-group {
     flex: 1;
     margin-bottom: 0;
 }
 
-.goalflowz-tags-input {
+.dreamglows-tags-input {
     display: flex;
     flex-direction: column;
     gap: var(--size-2-3);
 }
 
-.goalflowz-tags-list {
+.dreamglows-tags-list {
     display: flex;
     flex-wrap: wrap;
     gap: var(--size-2-2);
 }
 
-.goalflowz-tag {
+.dreamglows-tag {
     background: var(--background-modifier-hover);
     padding: var(--size-2-2) var(--size-2-3);
     border-radius: var(--radius-s);
@@ -119,7 +119,7 @@
     font-size: var(--font-ui-smaller);
 }
 
-.goalflowz-tag button {
+.dreamglows-tag button {
     background: none;
     border: none;
     color: var(--text-muted);
@@ -128,12 +128,12 @@
     border-radius: var(--radius-xs);
 }
 
-.goalflowz-tag button:hover {
+.dreamglows-tag button:hover {
     color: var(--text-error);
     background: var(--background-modifier-error);
 }
 
-.goalflowz-modal-footer {
+.dreamglows-modal-footer {
     padding: var(--size-4-4);
     border-top: 1px solid var(--background-modifier-border);
     display: flex;
@@ -141,8 +141,8 @@
     gap: var(--size-2-3);
 }
 
-.goalflowz-btn-primary,
-.goalflowz-btn-secondary {
+.dreamglows-btn-primary,
+.dreamglows-btn-secondary {
     padding: 8px 16px;
     border-radius: 4px;
     border: none;
@@ -151,21 +151,21 @@
     transition: all 0.2s ease;
 }
 
-.goalflowz-btn-primary {
+.dreamglows-btn-primary {
     background: var(--interactive-accent);
     color: var(--text-on-accent);
 }
 
-.goalflowz-btn-primary:hover {
+.dreamglows-btn-primary:hover {
     background: var(--interactive-accent-hover);
 }
 
-.goalflowz-btn-secondary {
+.dreamglows-btn-secondary {
     background: var(--background-modifier-border);
     color: var(--text-muted);
 }
 
-.goalflowz-btn-secondary:hover {
+.dreamglows-btn-secondary:hover {
     background: var(--background-modifier-hover);
     color: var(--text-normal);
 } 

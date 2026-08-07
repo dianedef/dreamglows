@@ -59,7 +59,7 @@ export const DEFAULT_GAME_PROGRESSION: GameProgression = {
     rewardHistory: []
 };
 
-export interface GoalFlowzSettings {
+export interface DreamGlowsSettings {
     defaultTasks: DefaultTask[];
     rituals: Ritual[];
     projectFolders: string[];
@@ -94,7 +94,7 @@ export interface GoalFlowzSettings {
     gameProgression: GameProgression;
 }
 
-export const DEFAULT_SETTINGS: GoalFlowzSettings = {
+export const DEFAULT_SETTINGS: DreamGlowsSettings = {
     defaultTasks: [],
     rituals: [
         { label: "Méditation matinale", isCompleted: false, linkToGenerator: false },
@@ -121,3 +121,5 @@ export const DEFAULT_SETTINGS: GoalFlowzSettings = {
     timeFormat: "24h",
     gameProgression: DEFAULT_GAME_PROGRESSION
 }; 
+
+export type DreamGlowsSettings = DreamGlowsSettings;

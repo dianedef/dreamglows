@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
-import type { DefaultTask, GoalFlowzSettings } from '../types/settings';
+import type { DefaultTask, DreamGlowsSettings } from '../types/settings';
 import { DEFAULT_SETTINGS } from '../types/settings';
 
 interface SettingsState {
-    settings: GoalFlowzSettings;
+        settings: DreamGlowsSettings;
 }
 
 export const useSettingsStore = defineStore('settings', {
@@ -22,7 +22,7 @@ export const useSettingsStore = defineStore('settings', {
     },
 
     actions: {
-        updateSettings(newSettings: Partial<GoalFlowzSettings>) {
+        updateSettings(newSettings: Partial<DreamGlowsSettings>) {
             try {
                 console.log('Mise à jour des paramètres:', {
                     ancien: this.settings,

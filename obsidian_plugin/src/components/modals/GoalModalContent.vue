@@ -1,13 +1,13 @@
 <template>
   <form @submit.prevent="handleSubmit">
-    <div class="goalflowz-modal-container">
-      <div class="goalflowz-modal-content">
-        <div class="goalflowz-setting-item">
-          <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Titre</div>
-            <div class="goalflowz-setting-item-description">Le titre de votre objectif</div>
+    <div class="dreamglows-modal-container">
+      <div class="dreamglows-modal-content">
+        <div class="dreamglows-setting-item">
+          <div class="dreamglows-setting-item-info">
+            <div class="dreamglows-setting-item-name">Titre</div>
+            <div class="dreamglows-setting-item-description">Le titre de votre objectif</div>
           </div>
-          <div class="goalflowz-setting-item-control">
+          <div class="dreamglows-setting-item-control">
             <input 
               type="text" 
               class="text-input-reset"
@@ -18,12 +18,12 @@
           </div>
         </div>
 
-        <div class="goalflowz-setting-item">
-          <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Description</div>
-            <div class="goalflowz-setting-item-description">Une description détaillée de votre objectif</div>
+        <div class="dreamglows-setting-item">
+          <div class="dreamglows-setting-item-info">
+            <div class="dreamglows-setting-item-name">Description</div>
+            <div class="dreamglows-setting-item-description">Une description détaillée de votre objectif</div>
           </div>
-          <div class="goalflowz-setting-item-control">
+          <div class="dreamglows-setting-item-control">
             <textarea 
               class="text-input-reset"
               v-model="formData.description" 
@@ -33,15 +33,15 @@
           </div>
         </div>
 
-        <div class="goalflowz-setting-item">
-          <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Dates</div>
-            <div class="goalflowz-setting-item-description">Définissez la période de votre objectif</div>
+        <div class="dreamglows-setting-item">
+          <div class="dreamglows-setting-item-info">
+            <div class="dreamglows-setting-item-name">Dates</div>
+            <div class="dreamglows-setting-item-description">Définissez la période de votre objectif</div>
           </div>
-          <div class="goalflowz-setting-item-control">
-            <div class="goalflowz-setting-item-control-grid">
+          <div class="dreamglows-setting-item-control">
+            <div class="dreamglows-setting-item-control-grid">
               <div>
-                <div class="goalflowz-setting-item-name">Début</div>
+                <div class="dreamglows-setting-item-name">Début</div>
                 <input 
                   type="date" 
                   class="text-input-reset"
@@ -50,7 +50,7 @@
                 >
               </div>
               <div>
-                <div class="goalflowz-setting-item-name">Échéance</div>
+                <div class="dreamglows-setting-item-name">Échéance</div>
                 <input 
                   type="date" 
                   class="text-input-reset"
@@ -61,13 +61,13 @@
           </div>
         </div>
 
-        <div class="goalflowz-setting-item">
-          <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Priorité et Statut</div>
-            <div class="goalflowz-setting-item-description">Définissez l'importance et l'état de votre objectif</div>
+        <div class="dreamglows-setting-item">
+          <div class="dreamglows-setting-item-info">
+            <div class="dreamglows-setting-item-name">Priorité et Statut</div>
+            <div class="dreamglows-setting-item-description">Définissez l'importance et l'état de votre objectif</div>
           </div>
-          <div class="goalflowz-setting-item-control">
-            <div class="goalflowz-setting-item-control-grid">
+          <div class="dreamglows-setting-item-control">
+            <div class="dreamglows-setting-item-control-grid">
               <div>
                 <select v-model="formData.priority" required class="dropdown">
                   <option value="high">Haute</option>
@@ -86,13 +86,13 @@
           </div>
         </div>
 
-        <div class="goalflowz-setting-item">
-          <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Catégorie</div>
-            <div class="goalflowz-setting-item-description">Groupez vos objectifs par catégorie</div>
+        <div class="dreamglows-setting-item">
+          <div class="dreamglows-setting-item-info">
+            <div class="dreamglows-setting-item-name">Catégorie</div>
+            <div class="dreamglows-setting-item-description">Groupez vos objectifs par catégorie</div>
           </div>
-          <div class="goalflowz-setting-item-control">
-            <div class="goalflowz-category-input">
+          <div class="dreamglows-setting-item-control">
+            <div class="dreamglows-category-input">
               <select 
                 v-model="formData.category" 
                 class="dropdown"
@@ -117,13 +117,13 @@
           </div>
         </div>
 
-        <div class="goalflowz-setting-item">
-          <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Tags</div>
-            <div class="goalflowz-setting-item-description">Ajoutez des tags pour mieux organiser vos objectifs</div>
+        <div class="dreamglows-setting-item">
+          <div class="dreamglows-setting-item-info">
+            <div class="dreamglows-setting-item-name">Tags</div>
+            <div class="dreamglows-setting-item-description">Ajoutez des tags pour mieux organiser vos objectifs</div>
           </div>
-          <div class="goalflowz-setting-item-control">
-            <div class="goalflowz-tag-input">
+          <div class="dreamglows-setting-item-control">
+            <div class="dreamglows-tag-input">
               <div class="search-input-container">
                 <input 
                   type="text" 
@@ -137,11 +137,11 @@
                   <option v-for="tag in existingTags" :key="tag" :value="tag" />
                 </datalist>
               </div>
-              <div class="goalflowz-tag-container">
+              <div class="dreamglows-tag-container">
                 <div 
                   v-for="tag in formData.tags" 
                   :key="tag" 
-                  class="goalflowz-tag"
+                  class="dreamglows-tag"
                 >
                   {{ tag }}
                   <span @click="removeTag(tag)" class="clickable-icon">×</span>
@@ -151,15 +151,15 @@
           </div>
         </div>
 
-        <div class="goalflowz-setting-item">
-          <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Métriques</div>
-            <div class="goalflowz-setting-item-description">Définissez des métriques pour suivre votre progression</div>
+        <div class="dreamglows-setting-item">
+          <div class="dreamglows-setting-item-info">
+            <div class="dreamglows-setting-item-name">Métriques</div>
+            <div class="dreamglows-setting-item-description">Définissez des métriques pour suivre votre progression</div>
           </div>
-          <div class="goalflowz-setting-item-control">
-            <div class="goalflowz-setting-item-control-grid">
+          <div class="dreamglows-setting-item-control">
+            <div class="dreamglows-setting-item-control-grid">
               <div>
-                <div class="goalflowz-setting-item-name">Objectif</div>
+                <div class="dreamglows-setting-item-name">Objectif</div>
                 <input 
                   type="number" 
                   class="text-input-reset"
@@ -168,7 +168,7 @@
                 >
               </div>
               <div>
-                <div class="goalflowz-setting-item-name">Unité</div>
+                <div class="dreamglows-setting-item-name">Unité</div>
                 <input 
                   type="text" 
                   class="text-input-reset"
@@ -180,13 +180,13 @@
           </div>
         </div>
 
-        <div class="goalflowz-setting-item">
-          <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Récurrence</div>
-            <div class="goalflowz-setting-item-description">Définissez si cet objectif est récurrent</div>
+        <div class="dreamglows-setting-item">
+          <div class="dreamglows-setting-item-info">
+            <div class="dreamglows-setting-item-name">Récurrence</div>
+            <div class="dreamglows-setting-item-description">Définissez si cet objectif est récurrent</div>
           </div>
-          <div class="goalflowz-setting-item-control">
-            <div class="goalflowz-setting-item-control-grid">
+          <div class="dreamglows-setting-item-control">
+            <div class="dreamglows-setting-item-control-grid">
               <div>
                 <select v-model="formData.recurring.frequency" class="dropdown">
                   <option value="">Non récurrent</option>
@@ -197,7 +197,7 @@
                 </select>
               </div>
               <div v-if="formData.recurring.frequency">
-                <div class="goalflowz-setting-item-name">Date de fin</div>
+                <div class="dreamglows-setting-item-name">Date de fin</div>
                 <input 
                   type="date" 
                   class="text-input-reset"
@@ -209,7 +209,7 @@
         </div>
       </div>
 
-      <div class="goalflowz-modal-button-container">
+      <div class="dreamglows-modal-button-container">
         <button class="mod-warning" type="button" @click="cancel">
           Annuler
         </button>
@@ -353,68 +353,68 @@ const cancel = () => {
 </script>
 
 <style scoped>
-.goalflowz-modal-container {
+.dreamglows-modal-container {
   padding: 1rem;
 }
 
-.goalflowz-modal-content {
+.dreamglows-modal-content {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.goalflowz-setting-item {
+.dreamglows-setting-item {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.goalflowz-setting-item-info {
+.dreamglows-setting-item-info {
   display: flex;
   flex-direction: column;
 }
 
-.goalflowz-setting-item-name {
+.dreamglows-setting-item-name {
   font-weight: bold;
   margin-bottom: 0.25rem;
 }
 
-.goalflowz-setting-item-description {
+.dreamglows-setting-item-description {
   color: var(--text-muted);
   font-size: 0.8rem;
 }
 
-.goalflowz-setting-item-control {
+.dreamglows-setting-item-control {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.goalflowz-setting-item-control-grid {
+.dreamglows-setting-item-control-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-.goalflowz-category-input {
+.dreamglows-category-input {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.goalflowz-tag-input {
+.dreamglows-tag-input {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.goalflowz-tag-container {
+.dreamglows-tag-container {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.goalflowz-tag {
+.dreamglows-tag {
   background-color: var(--background-modifier-hover);
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
@@ -432,7 +432,7 @@ const cancel = () => {
   opacity: 1;
 }
 
-.goalflowz-modal-button-container {
+.dreamglows-modal-button-container {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;

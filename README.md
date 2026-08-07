@@ -1,11 +1,38 @@
-# GoalFlowz
+# DreamGlows
 
-Structure actuelle du repo (mono-repo) :
+DreamGlows est une plateforme de pilotage personnel centrée sur une idée simple :
 
-- `obsidian_plugin/` : plugin Obsidian (code d’origine déplacé ici).
-- `chrome_extension/` : surface navigateur Chrome (placeholder à implémenter).
-- `windows_app/` : surface Windows (placeholder à implémenter).
-- `android_app/` : surface Android (placeholder à implémenter).
+- atteindre ses rêves via une chaîne **Objectifs → Milestones → Tâches**,
+- suivre les progrès sur un tableau clair,
+- garder une exécution quotidienne disciplinée.
+
+Le même langage produit s’applique à toutes les surfaces du projet.
+
+## Portée produit (mono-repo)
+
+- `obsidian_plugin/` : surface Obsidian (plugin opérationnel).
+- `chrome_extension/` : surface navigateur Chrome (alignement actif).
+- `windows_app/` : surface Windows (alignement actif).
+- `android_app/` : surface Android (alignement actif).
+
+## Ce que propose DreamGlows, globalement
+
+### 1) Vision opérationnelle
+
+- Donner une structure à des ambitions longues (rêves, objectifs stratégiques).
+- Les découper en milestones réalisables et mesurables.
+- Lier les tâches à chaque étape.
+- Visualiser l’avancement (jour / semaine / global).
+
+### 2) Utilisation cohérente par surface
+
+- Obsidian : pilotage quotidien dans l’environnement de notes.
+- Chrome/Windows/Android : expérience alignée vers la même boucle objectif-milestone-tâches-progression.
+
+### 3) État actuel
+
+- Obsidian est la première surface active.
+- Les autres surfaces montent progressivement pour préserver une promesse produit homogène.
 
 ## Commandes principales
 
@@ -16,23 +43,18 @@ Depuis la racine :
 - `pnpm build` : lance les scripts `build` disponibles dans les packages.
 - `pnpm dev:obsidian-plugin` / `pnpm build:obsidian-plugin` : uniquement le plugin Obsidian.
 
-## Notes
-
-Le plugin Obsidian garde sa propre configuration dans `obsidian_plugin/` (`package.json`, `vite.config.ts`, `manifest.json`, etc.).
-
 ## Installation BRAT (Obsidian)
 
 Le dépôt est prêt pour BRAT :
 
 - `manifest.json` est conforme au format Obsidian.
 - `main.js` et `versions.json` sont dans `obsidian_plugin/`.
-- `obsidian_plugin/data.json` n'est plus versionné (données de runtime uniquement).
+- `obsidian_plugin/data.json` n’est pas versionné (données de runtime uniquement).
 
 Pour tester en BRAT :
 
 1. Installer le plugin **BRAT** dans Obsidian.
 2. Ouvrir `Settings → BRAT → Add beta plugin`.
-3. Ajouter le repo GitHub : `https://github.com/dianedef/dreamglows`
-4. Utiliser le manifest direct si demandé :  
-   `https://raw.githubusercontent.com/dianedef/dreamglows/main/obsidian_plugin/manifest.json`
-5. Cocher le plugin `goalflowz` puis activer.
+3. Ajouter le repo GitHub : `https://github.com/dianedef/dreamglows`.
+4. Utiliser le manifest direct si demandé : `https://raw.githubusercontent.com/dianedef/dreamglows/main/obsidian_plugin/manifest.json`.
+5. Cocher le plugin `dreamglows` puis activer.

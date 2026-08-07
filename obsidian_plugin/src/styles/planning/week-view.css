@@ -1,5 +1,5 @@
 /* Styles pour la grille des notes */
-.goalflowz-notes-grid {
+.dreamglows-notes-grid {
    display: grid;
    grid-template-columns: repeat(3, 1fr);
    gap: 16px;
@@ -7,7 +7,7 @@
 }
 
 /* Styles pour la vue kanban */
-.goalflowz-notes-week {
+.dreamglows-notes-week {
    display: flex;
    flex-direction: column;
    gap: 1rem;
@@ -55,7 +55,7 @@
 }
 
 /* Styles pour les notes dans la vue kanban */
-.goalflowz-week-note-item {
+.dreamglows-week-note-item {
    background: var(--background-primary);
    border: 1px solid var(--background-modifier-border);
    border-radius: 4px;
@@ -64,13 +64,13 @@
    transition: all 0.2s ease;
 }
 
-.goalflowz-week-note-item:hover {
+.dreamglows-week-note-item:hover {
    transform: scale(1.02);
    border-color: var(--text-accent);
    background: var(--background-modifier-hover);
 }
 
-.goalflowz-week-note-header {
+.dreamglows-week-note-header {
    display: flex;
    justify-content: space-between;
    align-items: flex-start;
@@ -99,8 +99,8 @@
 }
 
 /* Styles pour la vue compacte */
-.goalflowz-notes-week.compact-view .week-header,
-.goalflowz-notes-week.compact-view .week-content {
+.dreamglows-notes-week.compact-view .week-header,
+.dreamglows-notes-week.compact-view .week-content {
     grid-template-columns: repeat(3, 1fr);
 }
 

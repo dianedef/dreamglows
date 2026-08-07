@@ -1,27 +1,27 @@
 <template>
-    <div class="goalflowz-notes-list">
-        <div v-if="notes.length === 0" class="goalflowz-no-content">
+    <div class="dreamglows-notes-list">
+        <div v-if="notes.length === 0" class="dreamglows-no-content">
             <p>Aucune note ne correspond aux critères de recherche</p>
             <small>Essayez de modifier vos filtres</small>
         </div>
         <div v-else v-for="note in notes" 
             :key="note.path" 
-            class="goalflowz-note-item"
+            class="dreamglows-note-item"
             :class="{ 'expanded': expandedNotes.includes(note.path) }"
             @click="toggleNote(note.path, $event)">
-            <div class="goalflowz-note-header">
-                <h3 class="goalflowz-note-title" @click.stop="openFile(note.path, $event)" style="cursor: pointer;">
+            <div class="dreamglows-note-header">
+                <h3 class="dreamglows-note-title" @click.stop="openFile(note.path, $event)" style="cursor: pointer;">
                     {{ note.title }}
                 </h3>
-                <div class="goalflowz-header-right">
-                    <div class="goalflowz-progress-bar-container">
+                <div class="dreamglows-header-right">
+                    <div class="dreamglows-progress-bar-container">
                         <div 
-                            class="goalflowz-progress-bar" 
+                            class="dreamglows-progress-bar" 
                             :style="{ width: getProgressPercentage(note.tasks) + '%' }"
                         ></div>
-                        <span class="goalflowz-progress-text">{{ getProgressPercentage(note.tasks) }}%</span>
+                        <span class="dreamglows-progress-text">{{ getProgressPercentage(note.tasks) }}%</span>
                     </div>
-                    <div class="goalflowz-note-status">
+                    <div class="dreamglows-note-status">
                         <select :value="note.status" @change="updateStatus(note, $event)">
                             <option value="todo">À faire</option>
                             <option value="in-progress">En cours</option>
@@ -30,33 +30,33 @@
                     </div>
                 </div>
             </div>
-            <div class="goalflowz-note-meta">
+            <div class="dreamglows-note-meta">
                 <span>Créé le: {{ formatDate(note.created) }}</span>
                 <span>Dernière modification: {{ formatDate(note.lastUpdated) }}</span>
                 <span>Mots: {{ note.wordCount }}</span>
             </div>
-            <div v-if="expandedNotes.includes(note.path)" class="goalflowz-note-content">
-                <div class="goalflowz-note-tasks">
-                    <div class="goalflowz-tasks-header">
+            <div v-if="expandedNotes.includes(note.path)" class="dreamglows-note-content">
+                <div class="dreamglows-note-tasks">
+                    <div class="dreamglows-tasks-header">
                         <h4>Tâches ({{ getProgressPercentage(note.tasks) }}%)</h4>
                     </div>
                     
-                    <div class="goalflowz-tasks-list">
+                    <div class="dreamglows-tasks-list">
                         <div v-for="task in note.tasks" 
                              :key="task.id" 
-                             class="goalflowz-task-item">
-                            <div class="goalflowz-task-controls">
+                             class="dreamglows-task-item">
+                            <div class="dreamglows-task-controls">
                                 <input type="checkbox" 
                                        :checked="task.done"
                                        @change="toggleTask(note, task)">
                                 <button @click="deleteTask(note, task)" 
-                                        class="goalflowz-delete-task">×</button>
+                                        class="dreamglows-delete-task">×</button>
                             </div>
-                            <span class="goalflowz-task-label">{{ task.label }}</span>
+                            <span class="dreamglows-task-label">{{ task.label }}</span>
                         </div>
                     </div>
 
-                    <div class="goalflowz-new-task">
+                    <div class="dreamglows-new-task">
                         <input type="text" 
                                v-model="newTaskLabels[note.path]" 
                                placeholder="Nouvelle tâche..."

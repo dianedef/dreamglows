@@ -1,5 +1,5 @@
 <template>
-  <div class="goalflowz-tracking-view">
+  <div class="dreamglows-tracking-view">
     <!-- Contenu temporaire -->
     <h2>Suivi</h2>
   </div>

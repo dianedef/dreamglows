@@ -8,27 +8,27 @@ import { registerStyles } from '@/styles/RegisterStyles';
 import type { Goal } from '@/types/goals';
 import type { Task } from '@/types/tasks';
 
-export interface IGoalFlowz extends Plugin {
+export interface IDreamGlows extends Plugin {
     savePluginData(goals: Goal[], tasks: Task[]): Promise<void>;
     generateNotes(): Promise<void>;
     readonly pinia: ReturnType<typeof createPinia>;
 }
 
-export class GoalFlowzView extends ItemView {
+export class DreamGlowsView extends ItemView {
     private vueApp: any;
-    private plugin: IGoalFlowz;
+    private plugin: IDreamGlows;
 
-    constructor(leaf: WorkspaceLeaf, plugin: IGoalFlowz) {
+    constructor(leaf: WorkspaceLeaf, plugin: IDreamGlows) {
         super(leaf);
         this.plugin = plugin;
     }
 
     getViewType(): string {
-        return 'goalflowz-view';
+        return 'dreamglows-view';
     }
 
     getDisplayText(): string {
-        return 'GoalFlowz';
+        return 'DreamGlows';
     }
 
     getIcon(): string {
@@ -38,7 +38,7 @@ export class GoalFlowzView extends ItemView {
     async onOpen() {
         const container = this.containerEl.children[1];
         container.empty();
-        container.createEl("div", { cls: "goalflowz-container" });
+        container.createEl("div", { cls: "dreamglows-container" });
 
         // Enregistrer les styles
         registerStyles('all');

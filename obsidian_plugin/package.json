@@ -1,7 +1,7 @@
 {
-    "name": "obsidian-goalflowz",
+    "name": "obsidian-dreamglows",
     "version": "1.0.0",
-    "description": "Plugin Obsidian pour la gestion et le suivi d'objectifs",
+    "description": "Plugin Obsidian pour DreamGlows",
     "main": "main.js",
     "scripts": {
         "dev": "vite build --mode development --watch",

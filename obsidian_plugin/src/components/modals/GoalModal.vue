@@ -1,16 +1,16 @@
 <template>
-  <div v-if="isOpen" class="goalflowz-modal-overlay">
-    <div class="goalflowz-modal">
-      <div class="goalflowz-modal-header">
+  <div v-if="isOpen" class="dreamglows-modal-overlay">
+    <div class="dreamglows-modal">
+      <div class="dreamglows-modal-header">
         <h3>{{ isEditing ? 'Modifier l\'objectif' : 'Nouvel objectif' }}</h3>
-        <button @click="close" class="goalflowz-modal-close">
+        <button @click="close" class="dreamglows-modal-close">
           <i class="fas fa-times"></i>
         </button>
       </div>
 
-      <div class="goalflowz-modal-content">
+      <div class="dreamglows-modal-content">
         <form @submit.prevent="handleSubmit">
-          <div class="goalflowz-form-group">
+          <div class="dreamglows-form-group">
             <label for="title">Titre</label>
             <input 
               type="text" 
@@ -21,7 +21,7 @@
             >
           </div>
 
-          <div class="goalflowz-form-group">
+          <div class="dreamglows-form-group">
             <label for="description">Description</label>
             <textarea 
               id="description" 
@@ -31,8 +31,8 @@
             ></textarea>
           </div>
 
-          <div class="goalflowz-form-row">
-            <div class="goalflowz-form-group">
+          <div class="dreamglows-form-row">
+            <div class="dreamglows-form-group">
               <label for="startDate">Date de début</label>
               <input 
                 type="date" 
@@ -42,7 +42,7 @@
               >
             </div>
 
-            <div class="goalflowz-form-group">
+            <div class="dreamglows-form-group">
               <label for="dueDate">Date d'échéance</label>
               <input 
                 type="date" 
@@ -52,8 +52,8 @@
             </div>
           </div>
 
-          <div class="goalflowz-form-row">
-            <div class="goalflowz-form-group">
+          <div class="dreamglows-form-row">
+            <div class="dreamglows-form-group">
               <label for="priority">Priorité</label>
               <select id="priority" v-model="formData.priority" required>
                 <option value="high">Haute</option>
@@ -62,7 +62,7 @@
               </select>
             </div>
 
-            <div class="goalflowz-form-group">
+            <div class="dreamglows-form-group">
               <label for="status">Statut</label>
               <select id="status" v-model="formData.status" required>
                 <option value="todo">À faire</option>
@@ -72,7 +72,7 @@
             </div>
           </div>
 
-          <div class="goalflowz-form-group">
+          <div class="dreamglows-form-group">
             <label for="category">Catégorie</label>
             <input 
               type="text" 
@@ -82,20 +82,20 @@
             >
           </div>
 
-          <div class="goalflowz-form-group">
+          <div class="dreamglows-form-group">
             <label>Tags</label>
-            <div class="goalflowz-tags-input">
+            <div class="dreamglows-tags-input">
               <input 
                 type="text" 
                 v-model="tagInput"
                 @keydown.enter.prevent="addTag"
                 placeholder="Ajouter un tag (Entrée pour valider)"
               >
-              <div class="goalflowz-tags-list">
+              <div class="dreamglows-tags-list">
                 <span 
                   v-for="tag in formData.tags" 
                   :key="tag" 
-                  class="goalflowz-tag"
+                  class="dreamglows-tag"
                 >
                   {{ tag }}
                   <button @click="removeTag(tag)" type="button">×</button>
@@ -104,11 +104,11 @@
             </div>
           </div>
 
-          <div class="goalflowz-modal-footer">
-            <button type="button" @click="close" class="goalflowz-btn-secondary">
+          <div class="dreamglows-modal-footer">
+            <button type="button" @click="close" class="dreamglows-btn-secondary">
               Annuler
             </button>
-            <button type="submit" class="goalflowz-btn-primary">
+            <button type="submit" class="dreamglows-btn-primary">
               {{ isEditing ? 'Mettre à jour' : 'Créer' }}
             </button>
           </div>

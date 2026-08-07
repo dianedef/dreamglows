@@ -1,16 +1,16 @@
-.goalflowz-notes-list {
+.dreamglows-notes-list {
    display: flex;
    flex-direction: column;
    gap: 8px;
 }
 
-.goalflowz-no-content {
+.dreamglows-no-content {
    text-align: center;
    padding: 32px;
    color: var(--text-muted);
 }
 
-.goalflowz-note-item {
+.dreamglows-note-item {
    padding: 16px;
    background: var(--background-primary);
    border: 1px solid var(--background-modifier-border);
@@ -19,7 +19,7 @@
    cursor: pointer;
 }
 
-.goalflowz-note-item:hover {
+.dreamglows-note-item:hover {
    transform: translateX(4px);
    border-color: var(--text-accent);
 }

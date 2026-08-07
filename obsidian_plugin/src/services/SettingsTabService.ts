@@ -1,15 +1,15 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
-import type GoalFlowz from '../main';
+import type DreamGlows from '../main';
 import NotesGenerator from '../components/notes/NotesGenerator.vue';
 import { createApp } from 'vue';
 import type { NoteFormat } from '../types/settings';
 
-export class GoalFlowzSettingsTab extends PluginSettingTab {
-    plugin: GoalFlowz;
+export class DreamGlowsSettingsTab extends PluginSettingTab {
+    plugin: DreamGlows;
     private notesGeneratorApp: any = null;
     private notesGeneratorContainer: HTMLElement | null = null;
 
-    constructor(app: App, plugin: GoalFlowz) {
+    constructor(app: App, plugin: DreamGlows) {
         super(app, plugin);
         this.plugin = plugin;
     }
@@ -252,7 +252,7 @@ export class GoalFlowzSettingsTab extends PluginSettingTab {
                 }));
 
         // Liste des rituels existants
-        const ritualsContainer = containerEl.createDiv('goalflowz-rituals-container');
+        const ritualsContainer = containerEl.createDiv('dreamglows-rituals-container');
         this.plugin.settings.rituals.forEach((ritual, index) => {
             const ritualSetting = new Setting(ritualsContainer)
                 .setName('Rituel')

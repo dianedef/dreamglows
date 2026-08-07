@@ -1,13 +1,13 @@
 <template>
   <form @submit.prevent="handleSubmit">
-    <div class="goalflowz-modal-container">
-      <div class="goalflowz-modal-content">
-        <div class="goalflowz-setting-item">
-          <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Nom de la catégorie</div>
-            <div class="goalflowz-setting-item-description">Modifiez le nom de la catégorie</div>
+    <div class="dreamglows-modal-container">
+      <div class="dreamglows-modal-content">
+        <div class="dreamglows-setting-item">
+          <div class="dreamglows-setting-item-info">
+            <div class="dreamglows-setting-item-name">Nom de la catégorie</div>
+            <div class="dreamglows-setting-item-description">Modifiez le nom de la catégorie</div>
           </div>
-          <div class="goalflowz-setting-item-control">
+          <div class="dreamglows-setting-item-control">
             <input 
               type="text" 
               class="text-input-reset"
@@ -18,12 +18,12 @@
           </div>
         </div>
 
-        <div class="goalflowz-setting-item">
-          <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Description</div>
-            <div class="goalflowz-setting-item-description">Une description optionnelle pour la catégorie</div>
+        <div class="dreamglows-setting-item">
+          <div class="dreamglows-setting-item-info">
+            <div class="dreamglows-setting-item-name">Description</div>
+            <div class="dreamglows-setting-item-description">Une description optionnelle pour la catégorie</div>
           </div>
-          <div class="goalflowz-setting-item-control">
+          <div class="dreamglows-setting-item-control">
             <textarea 
               class="text-input-reset"
               v-model="description" 
@@ -33,12 +33,12 @@
           </div>
         </div>
 
-        <div class="goalflowz-setting-item">
-          <div class="goalflowz-setting-item-info">
-            <div class="goalflowz-setting-item-name">Couleur</div>
-            <div class="goalflowz-setting-item-description">Choisissez une couleur pour identifier la catégorie</div>
+        <div class="dreamglows-setting-item">
+          <div class="dreamglows-setting-item-info">
+            <div class="dreamglows-setting-item-name">Couleur</div>
+            <div class="dreamglows-setting-item-description">Choisissez une couleur pour identifier la catégorie</div>
           </div>
-          <div class="goalflowz-setting-item-control">
+          <div class="dreamglows-setting-item-control">
             <input 
               type="color" 
               v-model="color"
@@ -48,7 +48,7 @@
         </div>
       </div>
 
-      <div class="goalflowz-modal-button-container">
+      <div class="dreamglows-modal-button-container">
         <button class="mod-warning" type="button" @click="cancel">
           Annuler
         </button>

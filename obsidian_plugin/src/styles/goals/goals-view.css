@@ -1,4 +1,4 @@
-.goalflowz-goals-view {
+.dreamglows-goals-view {
   height: calc(100vh - 40px - 40px); /* 40px pour les marges Obsidian + 40px pour le padding total (20px * 2) */
   display: flex;
   flex-direction: column;
@@ -6,7 +6,7 @@
   box-sizing: border-box;
 }
 
-.goalflowz-content {
+.dreamglows-content {
   display: flex;
   position: relative;
   flex: 1;
@@ -14,7 +14,7 @@
   overflow: hidden;
 }
 
-.goalflowz-goals-header {
+.dreamglows-goals-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -22,7 +22,7 @@
   flex-shrink: 0;
 }
 
-.goalflowz-timeline-container {
+.dreamglows-timeline-container {
   height: 100%;
   overflow: hidden;
   flex-shrink: 0;
@@ -31,7 +31,7 @@
   flex-direction: column;
 }
 
-.goalflowz-task-container {
+.dreamglows-task-container {
   height: 100%;
   display: flex;
   flex: 1;
@@ -40,7 +40,7 @@
 }
 
 /* Styles pour le conteneur de la liste des tâches */
-.goalflowz-task-list {
+.dreamglows-task-list {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -49,15 +49,15 @@
   min-height: 0; /* Important pour que le scroll fonctionne correctement */
 }
 
-.goalflowz-task-list-header,
-.goalflowz-task-stats,
-.goalflowz-task-search,
-.goalflowz-task-filters {
+.dreamglows-task-list-header,
+.dreamglows-task-stats,
+.dreamglows-task-search,
+.dreamglows-task-filters {
   flex-shrink: 0;
   margin-bottom: 0.5rem; /* Réduit l'espacement */
 }
 
-.goalflowz-tasks-container {
+.dreamglows-tasks-container {
   flex: 1;
   overflow-y: auto;
   display: flex;
@@ -71,12 +71,12 @@
   min-height: 0; /* Important pour que le scroll fonctionne correctement */
 }
 
-.goalflowz-tasks-container:hover {
+.dreamglows-tasks-container:hover {
   background: var(--background-primary-alt);
   border-color: var(--interactive-accent);
 }
 
-.goalflowz-tasks-container:empty::after {
+.dreamglows-tasks-container:empty::after {
   content: "Double-cliquez pour ajouter une tâche";
   display: block;
   text-align: center;
@@ -85,7 +85,7 @@
   font-style: italic;
 }
 
-.goalflowz-resize-handle {
+.dreamglows-resize-handle {
   width: 6px;
   background: transparent;
   cursor: col-resize;
@@ -93,12 +93,12 @@
   position: relative;
 }
 
-.goalflowz-resize-handle:hover {
+.dreamglows-resize-handle:hover {
   background: var(--interactive-accent);
   opacity: 0.2;
 }
 
-.goalflowz-resize-handle::after {
+.dreamglows-resize-handle::after {
   content: '⋮';
   position: absolute;
   left: 50%;
@@ -111,12 +111,12 @@
   transition: opacity 0.2s ease;
 }
 
-.goalflowz-resize-handle:hover::after {
+.dreamglows-resize-handle:hover::after {
   opacity: 1;
   color: var(--text-on-accent);
 }
 
-.goalflowz-timeline-item {
+.dreamglows-timeline-item {
   padding: 8px;
   background: var(--background-primary);
   border-radius: 4px;
@@ -124,15 +124,15 @@
   min-width: 200px;
 }
 
-.goalflowz-timeline-item-header {
+.dreamglows-timeline-item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
 }
 
-.goalflowz-timeline-item-status,
-.goalflowz-timeline-item-priority {
+.dreamglows-timeline-item-status,
+.dreamglows-timeline-item-priority {
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.8em;
@@ -140,54 +140,54 @@
 }
 
 /* Styles pour les statuts */
-.goalflowz-timeline-item-status {
+.dreamglows-timeline-item-status {
   padding: 2px 8px;
   border-radius: 12px;
 }
 
-.goalflowz-status-todo {
+.dreamglows-status-todo {
   background: var(--background-modifier-error);
   color: var(--text-error);
 }
 
-.goalflowz-status-in-progress {
+.dreamglows-status-in-progress {
   background: var(--background-modifier-warning);
   color: var(--text-warning);
 }
 
-.goalflowz-status-done {
+.dreamglows-status-done {
   background: var(--background-modifier-success);
   color: var(--text-success);
 }
 
 /* Styles pour les priorités */
-.goalflowz-timeline-item-priority {
+.dreamglows-timeline-item-priority {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.goalflowz-priority-high {
+.dreamglows-priority-high {
   color: var(--text-error);
 }
 
-.goalflowz-priority-medium {
+.dreamglows-priority-medium {
   color: var(--text-warning);
 }
 
-.goalflowz-priority-low {
+.dreamglows-priority-low {
   color: var(--text-success);
 }
 
 /* Styles pour la barre de progression */
-.goalflowz-timeline-item-progress-container {
+.dreamglows-timeline-item-progress-container {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: 8px;
 }
 
-.goalflowz-timeline-item-progress {
+.dreamglows-timeline-item-progress {
   flex: 1;
   height: 6px;
   background: var(--background-modifier-border);
@@ -195,14 +195,14 @@
   overflow: hidden;
 }
 
-.goalflowz-progress-bar {
+.dreamglows-progress-bar {
   height: 100%;
   background: var(--text-accent);
   border-radius: 3px;
   transition: width 0.3s ease;
 }
 
-.goalflowz-progress-text {
+.dreamglows-progress-text {
   font-size: 0.8em;
   color: var(--text-muted);
   min-width: 40px;
@@ -210,14 +210,14 @@
 }
 
 /* Styles pour les tags */
-.goalflowz-timeline-item-tags {
+.dreamglows-timeline-item-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-top: 8px;
 }
 
-.goalflowz-tag {
+.dreamglows-tag {
   font-size: 0.8em;
   color: var(--text-accent);
   background: var(--background-modifier-hover);
@@ -226,12 +226,12 @@
 }
 
 /* Animation au survol */
-.goalflowz-timeline-item:hover {
+.dreamglows-timeline-item:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-m);
 }
 
-.goalflowz-timeline-item:hover .goalflowz-progress-bar {
+.dreamglows-timeline-item:hover .dreamglows-progress-bar {
   background: var(--interactive-accent);
 }
 
@@ -300,7 +300,7 @@
 }
 
 /* Styles pour les contrôles de zoom */
-.goalflowz-timeline-controls {
+.dreamglows-timeline-controls {
   position: absolute;
   bottom: 16px;
   right: 16px;
@@ -309,7 +309,7 @@
   z-index: 1;
 }
 
-.goalflowz-timeline-control {
+.dreamglows-timeline-control {
   padding: 8px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
@@ -319,7 +319,7 @@
   transition: all 0.2s ease;
 }
 
-.goalflowz-timeline-control:hover {
+.dreamglows-timeline-control:hover {
   background: var(--background-modifier-hover);
   transform: scale(1.1);
 }
@@ -351,7 +351,7 @@
 }
 
 /* Style du bouton d'ajout */
-.goalflowz-add-goal-btn {
+.dreamglows-add-goal-btn {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -364,34 +364,34 @@
   transition: all 0.2s ease;
 }
 
-.goalflowz-add-goal-btn:hover {
+.dreamglows-add-goal-btn:hover {
   background: var(--interactive-accent-hover);
   transform: translateY(-1px);
 }
 
-.goalflowz-add-goal-btn i {
+.dreamglows-add-goal-btn i {
   font-size: 0.9em;
 }
 
 /* Styles pour les tooltips */
-.goalflowz-timeline-tooltip {
+.dreamglows-timeline-tooltip {
   padding: 8px;
   max-width: 300px;
 }
 
-.goalflowz-timeline-tooltip h3 {
+.dreamglows-timeline-tooltip h3 {
   margin: 0 0 8px 0;
   font-size: 1em;
   color: var(--text-normal);
 }
 
-.goalflowz-timeline-tooltip p {
+.dreamglows-timeline-tooltip p {
   margin: 0 0 8px 0;
   font-size: 0.9em;
   color: var(--text-muted);
 }
 
-.goalflowz-tooltip-meta {
+.dreamglows-tooltip-meta {
   display: flex;
   gap: 8px;
   font-size: 0.8em;
@@ -399,63 +399,63 @@
   margin-bottom: 4px;
 }
 
-.goalflowz-tooltip-tags {
+.dreamglows-tooltip-tags {
   font-size: 0.8em;
   color: var(--text-accent);
 } 
 
-.goalflowz-timeline-item {
+.dreamglows-timeline-item {
   padding: 8px;
   border-radius: 4px;
   background: var(--background-primary);
 }
 
-.goalflowz-timeline-item-header {
+.dreamglows-timeline-item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 4px;
 }
 
-.goalflowz-timeline-item-status {
+.dreamglows-timeline-item-status {
   font-size: 0.9em;
   padding: 2px 6px;
   border-radius: 3px;
 }
 
-.goalflowz-status-todo .goalflowz-timeline-item {
+.dreamglows-status-todo .dreamglows-timeline-item {
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
 }
 
-.goalflowz-status-in-progress .goalflowz-timeline-item {
+.dreamglows-status-in-progress .dreamglows-timeline-item {
   background: var(--background-primary-alt);
   border: 1px solid var(--interactive-accent);
 }
 
-.goalflowz-status-done .goalflowz-timeline-item {
+.dreamglows-status-done .dreamglows-timeline-item {
   background: var(--background-success);
   border: 1px solid var(--text-success);
 }
 
-.goalflowz-priority-high .goalflowz-timeline-item {
+.dreamglows-priority-high .dreamglows-timeline-item {
   border-left: 4px solid var(--text-error);
 }
 
-.goalflowz-priority-medium .goalflowz-timeline-item {
+.dreamglows-priority-medium .dreamglows-timeline-item {
   border-left: 4px solid var(--text-warning);
 }
 
-.goalflowz-priority-low .goalflowz-timeline-item {
+.dreamglows-priority-low .dreamglows-timeline-item {
   border-left: 4px solid var(--text-success);
 }
 
-.goalflowz-timeline-item-title {
+.dreamglows-timeline-item-title {
   font-weight: 500;
   margin-bottom: 4px;
 }
 
-.goalflowz-progress-container {
+.dreamglows-progress-container {
   flex: 1;
   height: 6px;
   background: var(--background-modifier-border);
@@ -463,25 +463,25 @@
   overflow: hidden;
 }
 
-.goalflowz-progress-bar {
+.dreamglows-progress-bar {
   height: 100%;
   transition: width 0.3s ease;
 }
 
-.goalflowz-progress-text {
+.dreamglows-progress-text {
   margin-left: 8px;
   font-size: 0.9em;
   color: var(--text-muted);
 }
 
-.goalflowz-timeline-item-tags {
+.dreamglows-timeline-item-tags {
   margin-top: 4px;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
-.goalflowz-tag {
+.dreamglows-tag {
   font-size: 0.8em;
   padding: 2px 6px;
   background: var(--background-modifier-hover);

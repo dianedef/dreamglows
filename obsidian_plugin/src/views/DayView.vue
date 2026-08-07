@@ -1,65 +1,65 @@
 <template>
-  <div class="goalflowz-day-view">
+  <div class="dreamglows-day-view">
     <!-- Résumé du jour -->
-    <div class="goalflowz-day-summary">
-      <div class="goalflowz-summary-card next-goal" v-if="nextGoal">
+    <div class="dreamglows-day-summary">
+      <div class="dreamglows-summary-card next-goal" v-if="nextGoal">
         <h3>Prochain objectif</h3>
-        <div class="goalflowz-card-content">
+        <div class="dreamglows-card-content">
           <i class="fas fa-bullseye"></i>
-          <div class="goalflowz-card-text">
-            <div class="goalflowz-card-title">{{ nextGoal.title }}</div>
-            <div class="goalflowz-card-subtitle" v-if="nextGoal.dueDate">
+          <div class="dreamglows-card-text">
+            <div class="dreamglows-card-title">{{ nextGoal.title }}</div>
+            <div class="dreamglows-card-subtitle" v-if="nextGoal.dueDate">
               Échéance : {{ formatDate(nextGoal.dueDate) }}
             </div>
           </div>
         </div>
       </div>
 
-      <div class="goalflowz-summary-card last-goal" v-if="lastCompletedGoal">
+      <div class="dreamglows-summary-card last-goal" v-if="lastCompletedGoal">
         <h3>Dernier objectif atteint</h3>
-        <div class="goalflowz-card-content">
+        <div class="dreamglows-card-content">
           <i class="fas fa-trophy"></i>
-          <div class="goalflowz-card-text">
-            <div class="goalflowz-card-title">{{ lastCompletedGoal.title }}</div>
-            <div class="goalflowz-card-subtitle" v-if="lastCompletedGoal.completedDate">
+          <div class="dreamglows-card-text">
+            <div class="dreamglows-card-title">{{ lastCompletedGoal.title }}</div>
+            <div class="dreamglows-card-subtitle" v-if="lastCompletedGoal.completedDate">
               Complété le {{ formatDate(lastCompletedGoal.completedDate) }}
             </div>
           </div>
         </div>
       </div>
 
-      <div class="goalflowz-summary-card next-task" v-if="nextTask">
+      <div class="dreamglows-summary-card next-task" v-if="nextTask">
         <h3>Prochaine tâche</h3>
-        <div class="goalflowz-card-content">
+        <div class="dreamglows-card-content">
           <i class="fas fa-tasks"></i>
-          <div class="goalflowz-card-text">
-            <div class="goalflowz-card-title">{{ nextTask.title }}</div>
+          <div class="dreamglows-card-text">
+            <div class="dreamglows-card-title">{{ nextTask.title }}</div>
           </div>
         </div>
       </div>
 
-      <div class="goalflowz-summary-card progression-card">
+      <div class="dreamglows-summary-card progression-card">
         <h3>Progression</h3>
-        <div class="goalflowz-card-content">
+        <div class="dreamglows-card-content">
           <i class="fas fa-star"></i>
-          <div class="goalflowz-card-text">
-            <div class="goalflowz-card-title">Niveau {{ progression.level }} (+{{ progression.gold }} 🪙)</div>
-            <div class="goalflowz-card-subtitle">
+          <div class="dreamglows-card-text">
+            <div class="dreamglows-card-title">Niveau {{ progression.level }} (+{{ progression.gold }} 🪙)</div>
+            <div class="dreamglows-card-subtitle">
               {{ progression.xp }} / {{ progression.xpToNext }} XP
               (meilleur streak {{ progression.bestStreak }})
             </div>
-            <div class="goalflowz-progress-bar-wrap">
-              <div class="goalflowz-progress-bar" :style="{ width: `${progression.levelProgressPercent}%` }"></div>
+            <div class="dreamglows-progress-bar-wrap">
+              <div class="dreamglows-progress-bar" :style="{ width: `${progression.levelProgressPercent}%` }"></div>
             </div>
-            <div class="goalflowz-card-subtitle">
+            <div class="dreamglows-card-subtitle">
               Série actuelle : {{ progression.streak }} jour(s)
             </div>
-            <div class="goalflowz-reward-list" v-if="recentRewards.length">
-              <div class="goalflowz-card-subtitle">Derniers gains</div>
-              <ul class="goalflowz-reward-list-inner">
+            <div class="dreamglows-reward-list" v-if="recentRewards.length">
+              <div class="dreamglows-card-subtitle">Derniers gains</div>
+              <ul class="dreamglows-reward-list-inner">
                 <li v-for="reward in recentRewards" :key="`${reward.source}-${reward.sourceId}-${reward.date}`">
                   <span>{{ reward.message }}</span>
-                  <span class="goalflowz-reward-date">{{ formatRewardDate(reward.date) }}</span>
+                  <span class="dreamglows-reward-date">{{ formatRewardDate(reward.date) }}</span>
                 </li>
               </ul>
             </div>
@@ -69,8 +69,8 @@
     </div>
 
     <!-- Trackers d'habitudes -->
-    <div class="goalflowz-habits-section">
-      <div class="goalflowz-habits-background">
+    <div class="dreamglows-habits-section">
+      <div class="dreamglows-habits-background">
         <div 
           class="progress-background" 
           :style="{ width: `${dayStats.completionRate}%` }"
@@ -79,18 +79,18 @@
       </div>
 
       <!-- Calendrier des flammes -->
-      <div class="goalflowz-flames-calendar" :class="{ 'mobile': isMobile }">
-        <div class="goalflowz-flames-row">
+      <div class="dreamglows-flames-calendar" :class="{ 'mobile': isMobile }">
+        <div class="dreamglows-flames-row">
           <div 
             v-for="month in months" 
             :key="month.name"
-            class="goalflowz-month-flames"
+            class="dreamglows-month-flames"
             :data-month="month.name"
           >
             <div 
               v-for="day in month.days" 
               :key="day.date"
-              class="goalflowz-flame-day"
+              class="dreamglows-flame-day"
               :class="{
                 'completed': isDateCompleted(day.date),
                 'future': isFutureDate(day.date)
@@ -103,20 +103,20 @@
       </div>
 
       <!-- Grille des habitudes -->
-      <div class="goalflowz-habits-grid">
+      <div class="dreamglows-habits-grid">
         <div 
           v-for="habit in activeHabits" 
           :key="habit.id"
-          class="goalflowz-habit-card"
+          class="dreamglows-habit-card"
           :class="{ 'completed': isHabitCompleted(habit.id) }"
           @click="toggleHabit(habit.id)"
         >
-          <div class="goalflowz-habit-icon">{{ habit.icon }}</div>
-          <div class="goalflowz-habit-week">
+          <div class="dreamglows-habit-icon">{{ habit.icon }}</div>
+          <div class="dreamglows-habit-week">
             <div 
               v-for="(day, index) in currentWeekDays" 
               :key="index"
-              class="goalflowz-habit-day"
+              class="dreamglows-habit-day"
               :class="{
                 'completed': isHabitCompleted(habit.id, dateUtils.formatDate(day)),
                 'future': isFutureDate(day)
@@ -127,15 +127,15 @@
               {{ habit.icon }}
             </div>
           </div>
-          <div class="goalflowz-habit-info">
-            <div class="goalflowz-habit-name">{{ habit.name }}</div>
-            <div class="goalflowz-habit-streak" v-if="getHabitStreak(habit.id)">
+          <div class="dreamglows-habit-info">
+            <div class="dreamglows-habit-name">{{ habit.name }}</div>
+            <div class="dreamglows-habit-streak" v-if="getHabitStreak(habit.id)">
               🔥 {{ getHabitStreak(habit.id) }} jours
             </div>
           </div>
           <div 
             v-if="habit.target" 
-            class="goalflowz-habit-target"
+            class="dreamglows-habit-target"
             @click.stop="openValueInput(habit)"
           >
             {{ getHabitValue(habit.id) || 0 }}/{{ habit.target }} {{ habit.unit }}
@@ -144,14 +144,14 @@
       </div>
 
       <!-- Humeur, amour et énergie -->
-      <div class="goalflowz-mood-row">
-        <div class="goalflowz-mood-line">
-          <div class="goalflowz-mood-item">
-            <div class="goalflowz-mood-buttons">
+      <div class="dreamglows-mood-row">
+        <div class="dreamglows-mood-line">
+          <div class="dreamglows-mood-item">
+            <div class="dreamglows-mood-buttons">
               <button 
                 v-for="level in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] as MoodLevel[]" 
                 :key="'mood-'+level"
-                class="goalflowz-mood-btn"
+                class="dreamglows-mood-btn"
                 :class="{ active: dayStats.mood === level }"
                 @click="setDayMood(level)"
               >
@@ -160,13 +160,13 @@
             </div>
           </div>
         </div>
-        <div class="goalflowz-mood-line">
-          <div class="goalflowz-mood-item">
-            <div class="goalflowz-mood-buttons">
+        <div class="dreamglows-mood-line">
+          <div class="dreamglows-mood-item">
+            <div class="dreamglows-mood-buttons">
               <button 
                 v-for="level in [1, 2, 3, 4, 5, 6, 7] as LoveLevel[]" 
                 :key="'love-'+level"
-                class="goalflowz-mood-btn"
+                class="dreamglows-mood-btn"
                 :class="{ active: dayStats.love === level }"
                 @click="setDayLove(level)"
               >
@@ -174,12 +174,12 @@
               </button>
             </div>
           </div>
-          <div class="goalflowz-mood-item">
-            <div class="goalflowz-mood-buttons">
+          <div class="dreamglows-mood-item">
+            <div class="dreamglows-mood-buttons">
               <button 
                 v-for="level in [1, 2, 3, 4, 5] as EnergyLevel[]" 
                 :key="'energy-'+level"
-                class="goalflowz-energy-btn"
+                class="dreamglows-energy-btn"
                 :class="{ active: dayStats.energyLevel === level }"
                 @click="setDayEnergyLevel(level)"
               >
@@ -194,13 +194,13 @@
     <!-- Notes du jour -->
     <div 
       v-if="currentNote"
-      class="goalflowz-notes-section"
+      class="dreamglows-notes-section"
     >
       <div
-        class="goalflowz-note-viewer"
+        class="dreamglows-note-viewer"
         ref="noteContentRef"
       >
-        <div class="goalflowz-note-content">
+        <div class="dreamglows-note-content">
           <!-- Le contenu de la note sera injecté ici -->
         </div>
       </div>
@@ -220,7 +220,6 @@ import type { Habit } from '@/types/habits';
 import type { Task, TaskStatus } from '@/types/tasks';
 import type { Note } from '@/types/notes';
 import { WorkspaceLeaf, MarkdownView, TFile, Notice } from 'obsidian';
-import Goalflowz from '@/main';
 import { DateService } from '@/services/DateService';
 
 interface DayNote {
@@ -274,6 +273,8 @@ const props = defineProps<{
   contentFiles?: any[];
   currentDate: DateTime;
 }>();
+
+const getDreamGlowsPlugin = (app: any) => app?.plugins?.plugins?.dreamglows;
 
 const habitsStore = useHabitsStore();
 const goalsStore = useGoalsStore();
@@ -437,7 +438,13 @@ const toggleHabit = (habitId: string, date?: string) => {
 };
 
 const openValueInput = async (habit: Habit) => {
-  const value = await props.app.plugins.plugins.goalflowz.modalStore.prompt(
+  const dreamGlowsPlugin = getDreamGlowsPlugin(props.app);
+  if (!dreamGlowsPlugin?.modalStore?.prompt) {
+    console.error('Plugin DreamGlows non disponible pour ouvrir la modale');
+    return;
+  }
+
+  const value = await dreamGlowsPlugin.modalStore.prompt(
     `Combien de ${habit.unit} aujourd'hui ?`,
     getHabitValue(habit.id)?.toString() || '0'
   );
@@ -494,7 +501,12 @@ const updateNotes = () => {
 // Fonction de chargement de la note
 const loadDayNote = async (date: DateTime) => {
   try {
-    const notePath = await props.app.plugins.plugins.goalflowz.notesGenerator.getNotePath(date);
+    const dreamGlowsPlugin = getDreamGlowsPlugin(props.app);
+    if (!dreamGlowsPlugin?.notesGenerator?.getNotePath) {
+      throw new Error('Plugin DreamGlows non disponible');
+    }
+
+    const notePath = await dreamGlowsPlugin.notesGenerator.getNotePath(date);
     console.log('Chargement de la note:', notePath);
     
     const file = props.app.vault.getAbstractFileByPath(notePath);

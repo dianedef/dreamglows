@@ -1,5 +1,5 @@
 <template>
-    <div class="goalflowz-notes-week" :class="{ 'compact-view': isCompactView }">
+    <div class="dreamglows-notes-week" :class="{ 'compact-view': isCompactView }">
         <div class="week-content">
             <div v-for="day in displayedDays" 
                  :key="day.date" 
@@ -8,9 +8,9 @@
                 <div v-if="getDayNotes(day.date, day.isWeekend).length > 0" class="day-notes">
                     <div v-for="note in getDayNotes(day.date, day.isWeekend)" 
                          :key="note.path" 
-                         class="goalflowz-week-note-item"
+                         class="dreamglows-week-note-item"
                          @click="$emit('toggle-note', note.path)">
-                        <div class="goalflowz-week-note-header">
+                        <div class="dreamglows-week-note-header">
                             <div class="note-title">{{ note.title }}</div>
                             <div v-if="isExpanded(note.path)" class="note-details">
                                 <div class="note-tasks">
@@ -43,6 +43,8 @@ import type { Note } from '../../types';
 import type { Day, WeekViewProps, WeekViewEmits } from '../../types/weekView';
 import type { TFile } from 'obsidian';
 
+type DreamGlowsFrontmatter = Record<string, any>;
+
 interface Props {
     weekData: WeekNotes | null;
     expandedNotes: string[];
@@ -55,6 +57,10 @@ const props = defineProps<Props>();
 const emit = defineEmits<WeekViewEmits>();
 
 const isCompactView = ref(false);
+
+const getDreamGlowsFrontmatter = (frontmatter: DreamGlowsFrontmatter): Record<string, any> => {
+    return frontmatter.dreamglows ?? {};
+};
 
 const displayedDays = computed<Day[]>(() => {
     if (!props.weekData) return [];
@@ -116,16 +122,16 @@ const getDayNotes = (date: DateTime, isWeekend = false) => {
         try {
             const cache = props.app.metadataCache.getFileCache(file);
             const frontmatter = cache?.frontmatter || {};
-            const goalflowz = frontmatter.goalflowz || {};
+            const goalGlowsData = getDreamGlowsFrontmatter(frontmatter as DreamGlowsFrontmatter);
             
             return {
                 path: file.path,
                 title: file.basename,
-                status: goalflowz.status || 'todo',
+                status: goalGlowsData.status || 'todo',
                 created: new Date(file.stat.ctime).toISOString(),
                 lastUpdated: new Date(file.stat.mtime).toISOString(),
                 wordCount: 0,
-                tasks: goalflowz.tasks || []
+                tasks: goalGlowsData.tasks || []
             } as Note;
         } catch (error) {
             console.error('Erreur lors de la conversion du fichier en note:', error);

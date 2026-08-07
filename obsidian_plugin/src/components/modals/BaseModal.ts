@@ -9,12 +9,12 @@ export class BaseModal {
     constructor(app: App) {
         this.app = app;
         this.modalEl = document.createElement('div');
-        this.modalEl.addClass('goalflowz-modal');
+        this.modalEl.addClass('dreamglows-modal');
     }
 
     protected createContainer() {
         const modalContainer = document.createElement('div');
-        modalContainer.addClass('goalflowz-modal-container');
+        modalContainer.addClass('dreamglows-modal-container');
         this.modalEl.appendChild(modalContainer);
         document.body.appendChild(this.modalEl);
         return modalContainer;

@@ -1,21 +1,21 @@
 <template>
-    <div class="goalflowz-page">
-        <header class="goalflowz-hero">
-            <div class="goalflowz-hero-copy">
-                <p class="goalflowz-kicker">GoalFlowz</p>
-                <h1 class="goalflowz-title">Tableau de bord</h1>
-                <p class="goalflowz-subtitle">Pilote ta progression quotidienne, tes objectifs et ton rythme de travail.</p>
+    <div class="dreamglows-page">
+        <header class="dreamglows-hero">
+            <div class="dreamglows-hero-copy">
+                <p class="dreamglows-kicker">DreamGlows</p>
+                <h1 class="dreamglows-title">Tableau de bord</h1>
+                <p class="dreamglows-subtitle">Pilote ta progression quotidienne, tes objectifs et ton rythme de travail.</p>
             </div>
-            <div class="goalflowz-time-badge">
+            <div class="dreamglows-time-badge">
                 <span>{{ currentDate.toFormat('EEEE, d MMMM yyyy') }}</span>
             </div>
         </header>
 
-        <div class="goalflowz-header">
-            <div class="goalflowz-view-switch">
+        <div class="dreamglows-header">
+            <div class="dreamglows-view-switch">
                 <button 
                     :class="{ active: ['day', 'planning'].includes(activeTab) }"
-                    class="goalflowz-switch"
+                    class="dreamglows-switch"
                     @click="setActiveTab(['day', 'planning'].includes(activeTab) ? (activeTab === 'day' ? 'planning' : 'day') : 'day')"
                 >
                     <span>🗓</span>
@@ -23,7 +23,7 @@
                 </button>
                 <button 
                     :class="{ active: ['goals', 'stats', 'profile'].includes(activeTab) }"
-                    class="goalflowz-switch"
+                    class="dreamglows-switch"
                     @click="setActiveTab(['goals', 'stats', 'profile'].includes(activeTab) ? (activeTab === 'goals' ? 'stats' : activeTab === 'stats' ? 'profile' : 'goals') : 'goals')"
                 >
                     <span>🎯</span>
@@ -35,62 +35,62 @@
                 v-if="['day', 'planning'].includes(activeTab)"
                 :view="activeTab as 'day' | 'planning'"
                 v-model:date="currentDate"
-                class="goalflowz-time-nav"
+                class="dreamglows-time-nav"
             />
         </div>
 
-        <section class="goalflowz-glass-panel">
-            <div class="goalflowz-panel-title">
+        <section class="dreamglows-glass-panel">
+            <div class="dreamglows-panel-title">
                 <span>{{ activeTab === 'day' ? 'Mode journalier' : activeTab === 'planning' ? 'Mode planning' : activeTab === 'goals' ? 'Vue objectifs' : activeTab === 'stats' ? 'Vue progression' : 'Vue profil' }}</span>
-                <span class="goalflowz-pill">{{ activeTabLabel }}</span>
+                <span class="dreamglows-pill">{{ activeTabLabel }}</span>
             </div>
         </section>
 
-        <section class="goalflowz-command-center">
-            <article class="goalflowz-command-card">
-                <p class="goalflowz-card-kicker">Statut opérationnel</p>
-                <h2 class="goalflowz-card-title">Centre de contrôle</h2>
-                <p class="goalflowz-card-text">Sélection active : <strong>{{ activeTab }}</strong> · vue courante : <strong>{{ activeTabLabel }}</strong></p>
+        <section class="dreamglows-command-center">
+            <article class="dreamglows-command-card">
+                <p class="dreamglows-card-kicker">Statut opérationnel</p>
+                <h2 class="dreamglows-card-title">Centre de contrôle</h2>
+                <p class="dreamglows-card-text">Sélection active : <strong>{{ activeTab }}</strong> · vue courante : <strong>{{ activeTabLabel }}</strong></p>
             </article>
 
-            <article class="goalflowz-command-card">
-                <p class="goalflowz-card-kicker">Pilotage</p>
-                <p class="goalflowz-card-text">Raccourcis</p>
-                <div class="goalflowz-command-actions">
-                    <button class="goalflowz-command-btn" :class="{ 'is-active': ['day', 'planning'].includes(activeTab) }" @click="setActiveTab('day')">Aujourd'hui</button>
-                    <button class="goalflowz-command-btn" :class="{ 'is-active': ['goals', 'stats', 'profile'].includes(activeTab) }" @click="setActiveTab('goals')">Objectifs</button>
-                    <button class="goalflowz-command-btn" :class="{ 'is-active': activeTab === 'planning' }" @click="setActiveTab('planning')">Planning</button>
+            <article class="dreamglows-command-card">
+                <p class="dreamglows-card-kicker">Pilotage</p>
+                <p class="dreamglows-card-text">Raccourcis</p>
+                <div class="dreamglows-command-actions">
+                    <button class="dreamglows-command-btn" :class="{ 'is-active': ['day', 'planning'].includes(activeTab) }" @click="setActiveTab('day')">Aujourd'hui</button>
+                    <button class="dreamglows-command-btn" :class="{ 'is-active': ['goals', 'stats', 'profile'].includes(activeTab) }" @click="setActiveTab('goals')">Objectifs</button>
+                    <button class="dreamglows-command-btn" :class="{ 'is-active': activeTab === 'planning' }" @click="setActiveTab('planning')">Planning</button>
                 </div>
             </article>
         </section>
 
-        <section class="goalflowz-command-grid">
+        <section class="dreamglows-command-grid">
             <article
                 v-for="metric in commandMetrics"
                 :key="metric.label"
-                class="goalflowz-command-card goalflowz-kpi-card"
+                class="dreamglows-command-card dreamglows-kpi-card"
             >
-                <p class="goalflowz-card-kicker">{{ metric.label }}</p>
-                <p class="goalflowz-kpi-value">{{ metric.value }}</p>
-                <p class="goalflowz-card-text">{{ metric.subtitle }}</p>
-                <div v-if="metric.progress !== undefined" class="goalflowz-kpi-progress">
-                    <span class="goalflowz-progress-track">
+                <p class="dreamglows-card-kicker">{{ metric.label }}</p>
+                <p class="dreamglows-kpi-value">{{ metric.value }}</p>
+                <p class="dreamglows-card-text">{{ metric.subtitle }}</p>
+                <div v-if="metric.progress !== undefined" class="dreamglows-kpi-progress">
+                    <span class="dreamglows-progress-track">
                         <span
-                            class="goalflowz-progress-fill"
+                            class="dreamglows-progress-fill"
                             :style="{ width: `${Math.min(100, Math.max(0, (metric.progress / (metric.max || 1)) * 100))}%` }"
                         ></span>
                     </span>
                 </div>
             </article>
 
-            <article class="goalflowz-command-card goalflowz-timeline-card">
-                <p class="goalflowz-card-kicker">Flux opérationnel</p>
-                <p class="goalflowz-card-title">Timeline rapide</p>
-                <ul class="goalflowz-timeline-list">
-                    <li v-for="item in liveTimeline" :key="item.time" class="goalflowz-timeline-item">
-                        <span class="goalflowz-timeline-time">{{ item.time }}</span>
-                        <span :class="['goalflowz-dot', `goalflowz-dot-${item.state}`]"></span>
-                        <span class="goalflowz-timeline-text">{{ item.text }}</span>
+            <article class="dreamglows-command-card dreamglows-timeline-card">
+                <p class="dreamglows-card-kicker">Flux opérationnel</p>
+                <p class="dreamglows-card-title">Timeline rapide</p>
+                <ul class="dreamglows-timeline-list">
+                    <li v-for="item in liveTimeline" :key="item.time" class="dreamglows-timeline-item">
+                        <span class="dreamglows-timeline-time">{{ item.time }}</span>
+                        <span :class="['dreamglows-dot', `dreamglows-dot-${item.state}`]"></span>
+                        <span class="dreamglows-timeline-text">{{ item.text }}</span>
                     </li>
                 </ul>
             </article>

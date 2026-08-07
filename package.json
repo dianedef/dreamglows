@@ -1,5 +1,5 @@
 {
-  "name": "goalflowz",
+  "name": "dreamglows",
   "version": "0.1.0",
   "private": true,
   "workspaces": [
@@ -13,7 +13,7 @@
     "build": "pnpm -r --if-present build",
     "dev:chrome-extension": "pnpm --filter dreamglows-extension dev",
     "build:chrome-extension": "pnpm --filter dreamglows-extension build",
-    "dev:obsidian-plugin": "pnpm --filter obsidian-goalflowz dev",
-    "build:obsidian-plugin": "pnpm --filter obsidian-goalflowz build"
+    "dev:obsidian-plugin": "pnpm --filter obsidian-dreamglows dev",
+    "build:obsidian-plugin": "pnpm --filter obsidian-dreamglows build"
   }
 }

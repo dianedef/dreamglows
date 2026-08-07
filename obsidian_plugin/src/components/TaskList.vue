@@ -1,50 +1,50 @@
 <template>
-  <div class="goalflowz-task-list">
-    <div class="goalflowz-task-list-header">
+  <div class="dreamglows-task-list">
+    <div class="dreamglows-task-list-header">
       <h3>Liste des tâches</h3>
-      <button @click="openNewTaskModal" class="goalflowz-add-task-btn">
+      <button @click="openNewTaskModal" class="dreamglows-add-task-btn">
         <i class="fas fa-plus"></i> Nouvelle tâche
       </button>
     </div>
 
-    <div class="goalflowz-task-stats">
-      <div class="goalflowz-stat-item">
-        <span class="goalflowz-stat-label">À faire</span>
-        <span class="goalflowz-stat-value">{{ todoCount }}</span>
+    <div class="dreamglows-task-stats">
+      <div class="dreamglows-stat-item">
+        <span class="dreamglows-stat-label">À faire</span>
+        <span class="dreamglows-stat-value">{{ todoCount }}</span>
       </div>
-      <div class="goalflowz-stat-item">
-        <span class="goalflowz-stat-label">En cours</span>
-        <span class="goalflowz-stat-value">{{ inProgressCount }}</span>
+      <div class="dreamglows-stat-item">
+        <span class="dreamglows-stat-label">En cours</span>
+        <span class="dreamglows-stat-value">{{ inProgressCount }}</span>
       </div>
-      <div class="goalflowz-stat-item">
-        <span class="goalflowz-stat-label">Terminé</span>
-        <span class="goalflowz-stat-value">{{ doneCount }}</span>
+      <div class="dreamglows-stat-item">
+        <span class="dreamglows-stat-label">Terminé</span>
+        <span class="dreamglows-stat-value">{{ doneCount }}</span>
       </div>
     </div>
 
-    <div class="goalflowz-task-search">
+    <div class="dreamglows-task-search">
       <input 
         v-model="searchQuery" 
         type="text" 
         placeholder="Rechercher une tâche..." 
-        class="goalflowz-search-input"
+        class="dreamglows-search-input"
       />
     </div>
 
-    <div class="goalflowz-task-filters">
-      <select v-model="filterStatus" class="goalflowz-filter">
+    <div class="dreamglows-task-filters">
+      <select v-model="filterStatus" class="dreamglows-filter">
         <option value="">Tous les statuts</option>
         <option value="todo">À faire</option>
         <option value="in-progress">En cours</option>
         <option value="done">Terminé</option>
       </select>
-      <select v-model="filterPriority" class="goalflowz-filter">
+      <select v-model="filterPriority" class="dreamglows-filter">
         <option value="">Toutes les priorités</option>
         <option value="high">Haute</option>
         <option value="medium">Moyenne</option>
         <option value="low">Basse</option>
       </select>
-      <select v-model="sortBy" class="goalflowz-filter">
+      <select v-model="sortBy" class="dreamglows-filter">
         <option value="date">Date</option>
         <option value="priority">Priorité</option>
         <option value="title">Titre</option>
@@ -52,52 +52,52 @@
     </div>
 
     <div 
-      class="goalflowz-tasks-container"
+      class="dreamglows-tasks-container"
       @dblclick.self="openNewTaskModal"
     >
       <div v-for="task in sortedAndFilteredTasks" 
            :key="task.id" 
-           class="goalflowz-task-item"
+           class="dreamglows-task-item"
            :class="[
-             'goalflowz-priority-' + task.priority,
-             'goalflowz-status-' + task.status
+             'dreamglows-priority-' + task.priority,
+             'dreamglows-status-' + task.status
            ]"
            @dblclick="editTask(task)">
-        <div class="goalflowz-task-header">
-          <div class="goalflowz-task-controls">
+        <div class="dreamglows-task-header">
+          <div class="dreamglows-task-controls">
             <button 
-              class="goalflowz-task-status-btn" 
+              class="dreamglows-task-status-btn" 
               @click="cycleStatus(task)"
               :title="getNextStatusLabel(task.status)">
               {{ getStatusEmoji(task.status) }}
             </button>
             <button 
-              class="goalflowz-task-edit-btn"
+              class="dreamglows-task-edit-btn"
               @click="editTask(task)"
               title="Modifier la tâche">
               ✍️
             </button>
           </div>
-          <div class="goalflowz-task-priority">
+          <div class="dreamglows-task-priority">
             <button 
-              class="goalflowz-task-priority-btn"
+              class="dreamglows-task-priority-btn"
               @click="cyclePriority(task)"
               :title="getNextPriorityLabel(task.priority)">
               {{ getPriorityLabel(task.priority) }}
             </button>
           </div>
         </div>
-        <div class="goalflowz-task-title">{{ task.title }}</div>
-        <div v-if="task.startDate" class="goalflowz-task-date">
+        <div class="dreamglows-task-title">{{ task.title }}</div>
+        <div v-if="task.startDate" class="dreamglows-task-date">
           {{ formatDate(task.startDate) }}
-          <span v-if="task.dueDate" class="goalflowz-task-due-date">
+          <span v-if="task.dueDate" class="dreamglows-task-due-date">
             → {{ formatDate(task.dueDate) }}
           </span>
         </div>
-        <div v-if="task.tags?.length" class="goalflowz-task-tags">
+        <div v-if="task.tags?.length" class="dreamglows-task-tags">
           <span v-for="tag in task.tags" 
                 :key="tag" 
-                class="goalflowz-tag">
+                class="dreamglows-tag">
             #{{ tag }}
           </span>
         </div>

@@ -13,7 +13,7 @@ export const EMOJI_STATUS: Record<string, Status> = {
 };
 
 export const SECTION_ICONS = {
-    GOALFLOWZ: '🎯',
+    DREAMGLOWS: '🎯',
     GOALS: '🎯',
     TASKS: '📝',
     METRICS: '📊',

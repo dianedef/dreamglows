@@ -2,10 +2,10 @@
 artifact: exploration_report
 metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
-project: "obsidian---goalflowz"
+project: "obsidian---dreamglows"
 created: "2026-08-06"
 updated: "2026-08-06"
-status: decided
+status: reviewed
 source_skill: sg-docs
 scope: "naming and brand/domain selection"
 owner: "user + Codex"
@@ -42,7 +42,7 @@ Quel nom de marque devons-nous retenir pour le produit (famille en `...glows`) e
 
 ## Idee de produit
 
-- Positionnement retenu : système de pilotage personnel et productif (objectifs, tâches, habitudes, journal) ancré sur une boucle de progression.
+- Positionnement retenu : système de pilotage personnel et productif (rêves → milestones → objectifs, tâches, habitudes) ancré sur une boucle de progression.
 - Résultat attendu : une expérience claire de planification + exécution quotidienne qui aide à maintenir un rythme durable.
 - Architecture d’exécution actuelle : plugin Obsidian et composants multi-surface dans le dépôt monorepo.
 

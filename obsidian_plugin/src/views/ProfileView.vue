@@ -1,51 +1,51 @@
 <template>
-  <div class="goalflowz-profile-view">
-    <section class="goalflowz-profile-summary">
+  <div class="dreamglows-profile-view">
+    <section class="dreamglows-profile-summary">
       <h2>Profil Orbit-like</h2>
-      <div class="goalflowz-profile-grid">
-        <article class="goalflowz-profile-card">
+      <div class="dreamglows-profile-grid">
+        <article class="dreamglows-profile-card">
           <h3>Niveau</h3>
-          <div class="goalflowz-profile-value">{{ progression.level }}</div>
-          <div class="goalflowz-profile-sub">{{ progression.xp }} XP / {{ progression.xpToNext }} XP</div>
-          <div class="goalflowz-profile-progress-wrap">
-            <div class="goalflowz-profile-progress" :style="{ width: `${progression.levelProgressPercent}%` }"></div>
+          <div class="dreamglows-profile-value">{{ progression.level }}</div>
+          <div class="dreamglows-profile-sub">{{ progression.xp }} XP / {{ progression.xpToNext }} XP</div>
+          <div class="dreamglows-profile-progress-wrap">
+            <div class="dreamglows-profile-progress" :style="{ width: `${progression.levelProgressPercent}%` }"></div>
           </div>
         </article>
 
-        <article class="goalflowz-profile-card">
+        <article class="dreamglows-profile-card">
           <h3>💰 Récompense</h3>
-          <div class="goalflowz-profile-value">{{ progression.gold }} 🪙</div>
-          <div class="goalflowz-profile-sub">Total XP accumulé : {{ progression.totalXp }}</div>
+          <div class="dreamglows-profile-value">{{ progression.gold }} 🪙</div>
+          <div class="dreamglows-profile-sub">Total XP accumulé : {{ progression.totalXp }}</div>
         </article>
 
-        <article class="goalflowz-profile-card">
+        <article class="dreamglows-profile-card">
           <h3>🔥 Streak</h3>
-          <div class="goalflowz-profile-value">{{ progression.streak }} jours</div>
-          <div class="goalflowz-profile-sub">Meilleur streak : {{ progression.bestStreak }}</div>
+          <div class="dreamglows-profile-value">{{ progression.streak }} jours</div>
+          <div class="dreamglows-profile-sub">Meilleur streak : {{ progression.bestStreak }}</div>
         </article>
       </div>
     </section>
 
-    <section class="goalflowz-profile-section">
+    <section class="dreamglows-profile-section">
       <h3>Répartition des gains</h3>
-      <ul class="goalflowz-profile-breakdown">
+      <ul class="dreamglows-profile-breakdown">
         <li v-for="item in rewardBySource" :key="item.source">
           <span>{{ item.label }}</span>
           <span>{{ item.count }} gains · {{ item.xp }} XP · {{ item.gold }} 🪙</span>
         </li>
       </ul>
-      <p v-if="!rewardBySource.length" class="goalflowz-profile-empty">Aucun gain enregistré pour le moment.</p>
+      <p v-if="!rewardBySource.length" class="dreamglows-profile-empty">Aucun gain enregistré pour le moment.</p>
     </section>
 
-    <section class="goalflowz-profile-section">
+    <section class="dreamglows-profile-section">
       <h3>Historique récent</h3>
-      <ul class="goalflowz-profile-rewards">
+      <ul class="dreamglows-profile-rewards">
         <li v-for="reward in recentRewards" :key="`${reward.source}-${reward.sourceId}-${reward.date}`">
-          <span class="goalflowz-profile-reward-message">{{ reward.message }}</span>
-          <span class="goalflowz-profile-reward-date">{{ formatRewardDate(reward.date) }}</span>
+          <span class="dreamglows-profile-reward-message">{{ reward.message }}</span>
+          <span class="dreamglows-profile-reward-date">{{ formatRewardDate(reward.date) }}</span>
         </li>
       </ul>
-      <p v-if="!recentRewards.length" class="goalflowz-profile-empty">Aucun gain récent.</p>
+      <p v-if="!recentRewards.length" class="dreamglows-profile-empty">Aucun gain récent.</p>
     </section>
   </div>
 </template>

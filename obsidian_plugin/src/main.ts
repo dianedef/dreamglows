@@ -7,12 +7,12 @@ import { useSettingsStore } from './stores/settingsStore';
 import { useGoalsStore } from './stores/goalsStore';
 import { useTasksStore } from './stores/tasksStore';
 import { useProgressionStore } from './stores/progressionStore';
-import { GoalFlowzSettingsTab } from './services/SettingsTabService';
+import { DreamGlowsSettingsTab } from './services/SettingsTabService';
 import { NotesGeneratorService } from './services/NotesGeneratorService';
 import { TimeManagementService } from './services/TimeManagementService';
 import { GoalModal } from './components/modals/GoalModal';
 import { TaskModal } from './components/modals/TaskModal';
-import { GoalFlowzView, IGoalFlowz } from './views/GoalFlowzView';
+import { DreamGlowsView, IDreamGlows } from './views/DreamGlowsView';
 import { DateService } from './services/DateService';
 import { ValidationService } from './services/ValidationService';
 import { FormatterService } from './services/FormatterService';
@@ -21,11 +21,11 @@ import { EventService } from './services/EventService';
 import { StorageService } from './services/StorageService';
 import type { Goal } from './types/goals';
 import type { Task } from './types/tasks';
-import type { GoalFlowzSettings } from './types/settings';
+import type { DreamGlowsSettings } from './types/settings';
 import { DEFAULT_SETTINGS } from './types/settings';
 import { v4 as uuidv4 } from 'uuid';
 
-const VIEW_TYPE_GOALFLOWZ = 'goalflowz-view';
+const VIEW_TYPE_DREAMGLOWS = 'dreamglows-view';
 
 interface DefaultTask {
     label: string;
@@ -34,7 +34,7 @@ interface DefaultTask {
     linkToGenerator: boolean;
 }
 
-export default class GoalFlowz extends Plugin implements IGoalFlowz {
+export default class DreamGlows extends Plugin implements IDreamGlows {
     // Services
     private dateService!: DateService;
     private validationService!: ValidationService;
@@ -54,19 +54,19 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
     private progressionStore!: ReturnType<typeof useProgressionStore>;
 
     // Vue
-    private view: GoalFlowzView | null = null;
+    private view: DreamGlowsView | null = null;
 
     // Settings
-    settings!: GoalFlowzSettings;
+    settings!: DreamGlowsSettings;
 
-    // Getter pour pinia (requis par l'interface IGoalFlowz)
+    // Getter pour pinia (requis par l'interface IDreamGlows)
     get pinia(): ReturnType<typeof createPinia> {
         return this._pinia;
     }
 
     async onload() {
         try {
-            console.log('Initialisation de GoalFlowz...');
+            console.log('Initialisation de DreamGlows...');
             
             // 1. Initialiser les settings (requis pour tout le reste)
             await this.initializeSettings();
@@ -86,10 +86,10 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
             // 6. Initialiser l'interface utilisateur
             await this.initializeUI();
             
-            console.log('GoalFlowz initialisé avec succès');
+            console.log('DreamGlows initialisé avec succès');
         } catch (error) {
-            console.error('Erreur fatale lors de l\'initialisation de GoalFlowz:', error);
-            new Notice('Erreur lors du chargement de GoalFlowz. Vérifiez la console pour plus de détails.');
+            console.error('Erreur fatale lors de l\'initialisation de DreamGlows:', error);
+            new Notice('Erreur lors du chargement de DreamGlows. Vérifiez la console pour plus de détails.');
             throw error;
         }
     }
@@ -109,7 +109,7 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
 
     private async initializeDataFile() {
         try {
-            const dataPath = '.obsidian/plugins/obs-GoalFlowz/data.json';
+            const dataPath = '.obsidian/plugins/obs-dreamglows/data.json';
             const exists = await this.app.vault.adapter.exists(dataPath);
             
             if (!exists) {
@@ -259,15 +259,15 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
         console.log('Initialisation de l\'interface...');
         try {
             // Enregistrer la vue
-            this.registerView(VIEW_TYPE_GOALFLOWZ, (leaf) => {
-                this.view = new GoalFlowzView(leaf, this);
+            this.registerView(VIEW_TYPE_DREAMGLOWS, (leaf) => {
+                this.view = new DreamGlowsView(leaf, this);
                 return this.view;
             });
 
         // Ajouter les commandes
         this.addCommand({
-            id: 'open-goalflowz',
-            name: 'Ouvrir GoalFlowz',
+            id: 'open-dreamglows',
+            name: 'Ouvrir DreamGlows',
             callback: () => this.activateView(),
             hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "O" }]
         });
@@ -294,12 +294,12 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
         });
 
         // Ajouter le ruban
-        this.addRibbonIcon('target', 'GoalFlowz', () => {
+        this.addRibbonIcon('target', 'DreamGlows', () => {
             this.activateView();
         });
 
         // Ajouter l'onglet de paramètres
-        this.addSettingTab(new GoalFlowzSettingsTab(this.app, this));
+        this.addSettingTab(new DreamGlowsSettingsTab(this.app, this));
 
             console.log('Interface initialisée');
         } catch (error) {
@@ -309,13 +309,13 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
     }
 
     onunload() {
-        console.log('Déchargement de GoalFlowz...');
+        console.log('Déchargement de DreamGlows...');
         try {
         unregisterStyles();
-        this.app.workspace.detachLeavesOfType(VIEW_TYPE_GOALFLOWZ);
-            console.log('GoalFlowz déchargé avec succès');
+        this.app.workspace.detachLeavesOfType(VIEW_TYPE_DREAMGLOWS);
+            console.log('DreamGlows déchargé avec succès');
         } catch (error) {
-            console.error('Erreur lors du déchargement de GoalFlowz:', error);
+            console.error('Erreur lors du déchargement de DreamGlows:', error);
         }
     }
 
@@ -360,12 +360,12 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
 
     async activateView() {
         const { workspace } = this.app;
-        let leaf = workspace.getLeavesOfType(VIEW_TYPE_GOALFLOWZ)[0];
+        let leaf = workspace.getLeavesOfType(VIEW_TYPE_DREAMGLOWS)[0];
         
         if (!leaf) {
             leaf = workspace.getLeaf('tab');
             await leaf.setViewState({
-                    type: VIEW_TYPE_GOALFLOWZ,
+                    type: VIEW_TYPE_DREAMGLOWS,
                     active: true,
                 });
         }
@@ -373,7 +373,7 @@ export default class GoalFlowz extends Plugin implements IGoalFlowz {
         workspace.revealLeaf(leaf);
     }
 
-    private validateSettings(loadedData: any): GoalFlowzSettings {
+    private validateSettings(loadedData: any): DreamGlowsSettings {
         const settings = { ...DEFAULT_SETTINGS };
 
         if (loadedData) {

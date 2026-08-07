@@ -1,8 +1,8 @@
 {
-  "name": "goalflowz-android-app",
+  "name": "dreamglows-android-app",
   "private": true,
   "version": "0.0.0",
-  "description": "Android app surface for GoalFlowz",
+  "description": "Android app surface for DreamGlows",
   "scripts": {
     "todo": "echo \"Scaffold Android app implementation here\""
   }
