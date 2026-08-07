@@ -304,6 +304,9 @@
     "loadState": true,
     "useHighlight": true,
     "useTreeSearch": true,
-    "useSettingsStore": true
+    "useSettingsStore": true,
+    "createRef": true,
+    "onElementRemoval": true,
+    "useCountdown": true
   }
 }

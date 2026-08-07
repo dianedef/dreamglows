@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-type ChromeMock = {
+interface ChromeMock {
   runtime: {
     onInstalled: {
       addListener: ReturnType<typeof vi.fn>
@@ -14,7 +14,7 @@ type ChromeMock = {
   }
 }
 
-describe('Background Script', () => {
+describe('background Script', () => {
   it('gère correctement l\'installation', async () => {
     const mockChrome: ChromeMock = {
       runtime: {

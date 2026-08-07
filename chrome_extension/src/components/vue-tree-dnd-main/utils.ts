@@ -1,5 +1,5 @@
 import { isProxy, isReactive, isRef, toRaw } from 'vue'
-import type { TreeItem, TreeItemId, FlatTreeItem } from './env'
+import type { FlatTreeItem, TreeItem, TreeItemId } from './env'
 
 export const getFlatTreeWithAncestors: (nodes: TreeItem[]) => FlatTreeItem[] = (nodes: TreeItem[]) => {
   const result: FlatTreeItem[] = []

@@ -1,4 +1,4 @@
-export { TreeValidator } from './TreeValidator'
 export { TreeOperations } from './TreeOperations'
+export { TreePersistence } from './TreePersistence'
 export { TreeUtils } from './TreeUtils'
-export { TreePersistence } from './TreePersistence' 
+export { TreeValidator } from './TreeValidator'

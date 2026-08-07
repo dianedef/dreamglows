@@ -1,134 +1,18 @@
-<template>
-  <div 
-    :data-node-id="item.id"
-    class="p-3 my-0.5 bg-white border border-gray-200 rounded-lg flex items-center cursor-pointer transition-all duration-200 text-gray-900 w-[calc(100%-40px)] box-border group"
-    :class="nodeClasses"
-    :style="{ marginLeft: depth * 20 + 'px' }"
-    draggable="true"
-    @click="handleClick"
-    @dragstart="handleDragStart"
-    @dragend="handleDragEnd"
-    @dragover.prevent="handleDragOver"
-    @drop.prevent="handleDrop"
-  >
-    <span 
-      v-if="item.children?.length" 
-      class="tree-toggle flex items-center justify-center w-6 h-6 mr-2 rounded cursor-pointer select-none text-gray-500 flex-shrink-0 bg-transparent hover:bg-gray-200"
-      @click.stop="toggleExpanded"
-    >
-      <svg 
-        class="toggle-icon transition-transform duration-200 bg-none"
-        :class="{ 'rotate-90': expanded }"
-        viewBox="0 0 24 24" 
-        width="16" 
-        height="16"
-      >
-        <path 
-          fill="currentColor" 
-          d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"
-        />
-      </svg>
-    </span>
-
-    <!-- Text ou Input selon l'état d'édition -->
-    <input
-      v-if="editingNodeId === item.id"
-      v-model="editingNodeText"
-      type="text"
-      class="flex-grow bg-transparent border-none outline-none text-sm font-medium focus:ring-0"
-      placeholder="Nom du nœud..."
-      @keyup.enter="handleNodeTextSubmit"
-      @keyup.esc="editingNodeId = null"
-      autofocus
-      @click.stop
-    >
-    <span 
-      v-else 
-      class="node-text select-none text-sm font-medium flex-grow"
-    >
-      {{ item.text }}
-    </span>
-
-    <span 
-      v-if="item.children"
-      class="flex items-center justify-center w-6 h-6 ml-2 rounded cursor-pointer opacity-0 transition-all duration-200 text-gray-500 hover:bg-gray-200 hover:text-gray-700 group-hover:opacity-100"
-      @click.stop="handleZoom"
-      title="Zoom sur ce nœud"
-    >
-      <svg 
-        viewBox="0 0 24 24" 
-        width="16" 
-        height="16"
-      >
-        <path 
-          fill="currentColor" 
-          d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-        />
-      </svg>
-    </span>
-    <span 
-      class="flex items-center justify-center w-6 h-6 ml-2 rounded cursor-pointer opacity-0 transition-all duration-200 text-gray-500 hover:bg-gray-200 hover:text-gray-700 group-hover:opacity-100"
-      @click.stop="$emit('duplicate', item)"
-      title="Dupliquer ce nœud"
-    >
-      <svg 
-        viewBox="0 0 24 24" 
-        width="16" 
-        height="16"
-      >
-        <path 
-          fill="currentColor" 
-          d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
-        />
-      </svg>
-    </span>
-    <span 
-      class="flex items-center justify-center w-6 h-6 ml-2 rounded cursor-pointer opacity-0 transition-all duration-200 text-gray-500 hover:bg-gray-200 hover:text-gray-700 group-hover:opacity-100"
-      @click.stop="$emit('delete', item)"
-      title="Supprimer ce nœud"
-    >
-      <svg 
-        viewBox="0 0 24 24" 
-        width="16" 
-        height="16"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />
-      </svg>
-    </span>
-    <span 
-      class="flex items-center justify-center w-6 h-6 ml-2 rounded cursor-pointer opacity-0 transition-all duration-200 text-gray-500 hover:bg-gray-200 hover:text-gray-700 group-hover:opacity-100"
-      @click.stop="handleAddNode"
-      title="Ajouter un nœud"
-    >
-      <svg 
-        viewBox="0 0 24 24" 
-        width="16" 
-        height="16"
-      >
-        <path 
-          fill="currentColor" 
-          d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
-        />
-      </svg>
-    </span>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, inject, onMounted, onUnmounted, computed } from 'vue'
+import { computed, inject, onMounted, onUnmounted, ref, type Ref } from 'vue'
+import { filter, map, takeUntil } from 'rxjs/operators'
+import { Subject } from 'rxjs'
 import type { TreeItem } from './vue-tree-dnd-main/env'
 import { useTreeStore } from '@/stores/treeStore'
-import { filter, withLatestFrom, takeUntil, map } from 'rxjs/operators'
-import { Subject } from 'rxjs'
+import { clampProgress, getChildType, getNodeType, NODE_TYPE_LABELS } from '@/lib/tree/semantics'
 
-const props = defineProps<{
-  item: TreeItem
-  depth: number
-  expanded: boolean
-  viewId: string
+const props = defineProps<{ item: TreeItem; depth: number; expanded: boolean; viewId: string }>()
+const emit = defineEmits<{
+  setExpanded: [value: boolean]
+  'zoom': [item: TreeItem]
+  'duplicate': [item: TreeItem]
+  'delete': [item: TreeItem]
+  'add': [parentId: string]
 }>()
 
 const store = useTreeStore()
@@ -136,78 +20,52 @@ const isDragging = ref(false)
 const isDropTarget = ref(false)
 const isSelected = ref(false)
 const destroy$ = new Subject<void>()
-const editingNodeId = inject<Ref<string | null>>('editingNodeId')
-const editingNodeText = inject<Ref<string>>('editingNodeText')
-const handleNodeTextSubmit = inject<() => void>('handleNodeTextSubmit')
+const editingNodeId = inject<Ref<string | null>>('editingNodeId')!
+const editingNodeText = inject<Ref<string>>('editingNodeText')!
+const handleNodeTextSubmit = inject<() => void>('handleNodeTextSubmit')!
 const handleAdd = inject<(parentId: string) => void>('handleAdd')
 
-// Computed pour les classes dynamiques
+const nodeType = computed(() => getNodeType(props.item, props.depth))
+const typeLabel = computed(() => NODE_TYPE_LABELS[nodeType.value])
+const childTypeLabel = computed(() => NODE_TYPE_LABELS[getChildType(props.item, props.depth)])
+const progress = computed(() => props.item.status === 'done' ? 100 : clampProgress(props.item.progress))
+const formattedDueDate = computed(() => {
+  if (!props.item.dueDate) return ''
+  const date = new Date(`${props.item.dueDate}T00:00:00`)
+  return Number.isNaN(date.getTime()) ? props.item.dueDate : new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(date)
+})
 const nodeClasses = computed(() => ({
   'is-dragging': isDragging.value,
   'is-drop-target': isDropTarget.value,
   'is-selected': isSelected.value,
-  'hover:bg-gray-100 hover:border-gray-300': !isDragging.value
+  'is-done': props.item.status === 'done' || props.item.isChecked
 }))
 
-const emit = defineEmits<{
-  'set-expanded': [value: boolean]
-  'zoom': [item: TreeItem]
-  'duplicate': [item: TreeItem]
-  'delete': [item: TreeItem]
-  'add': [parentId: string]
-}>()
+function determineDropPosition(event: DragEvent, rect: DOMRect) {
+  if (event.clientY < rect.top + rect.height / 3) return 'FIRST_CHILD'
+  if (event.clientY > rect.bottom - rect.height / 3) return 'LAST_CHILD'
+  return event.clientX < rect.left + rect.width / 2 ? 'LEFT' : 'RIGHT'
+}
 
 onMounted(() => {
-  // Souscription aux événements de drag & drop
-  store.interactions.drag$.pipe(
-    takeUntil(destroy$),
-    filter(event => event.sourceId === props.item.id || event.targetId === props.item.id)
-  ).subscribe(event => {
-    switch (event.type) {
-      case 'dragstart':
-        isDragging.value = event.sourceId === props.item.id
-        break
-      case 'dragend':
-        isDragging.value = false
-        break
-      case 'dragover':
-        isDropTarget.value = event.targetId === props.item.id
-        break
-      case 'drop':
-        isDropTarget.value = false
-        break
-    }
+  store.interactions.drag$.pipe(takeUntil(destroy$), filter(event => event.sourceId === props.item.id || event.targetId === props.item.id)).subscribe(event => {
+    if (event.type === 'dragstart') isDragging.value = event.sourceId === props.item.id
+    if (event.type === 'dragend') isDragging.value = false
+    if (event.type === 'dragover') isDropTarget.value = event.targetId === props.item.id
+    if (event.type === 'drop') isDropTarget.value = false
   })
-
-  // Souscription aux événements de sélection
   store.interactions.selection$.pipe(
-    takeUntil(destroy$),
-    filter(event => event.viewId === props.viewId),
-    map(event => event.nodeIds.includes(props.item.id))
-  ).subscribe(selected => {
-    isSelected.value = selected
-  })
-
-  // Souscription aux événements de vue (expand/collapse)
+    takeUntil(destroy$), filter(event => event.viewId === props.viewId), map(event => event.nodeIds.includes(props.item.id))
+  ).subscribe(selected => { isSelected.value = selected })
   store.interactions.view$.pipe(
-    takeUntil(destroy$),
-    filter(event => 
-      event.viewId === props.viewId && 
-      event.nodeId === props.item.id
-    )
+    takeUntil(destroy$), filter(event => event.viewId === props.viewId && event.nodeId === props.item.id)
   ).subscribe(event => {
-    if (event.type === 'expand' || event.type === 'collapse') {
-      emit('set-expanded', event.type === 'expand')
-    }
+    if (event.type === 'expand' || event.type === 'collapse') emit('setExpanded', event.type === 'expand')
   })
 })
 
-onUnmounted(() => {
-  destroy$.next()
-  destroy$.complete()
-})
+onUnmounted(() => { destroy$.next(); destroy$.complete() })
 
-// Gestionnaires d'événements
 const handleDragStart = (event: DragEvent) => {
   if (!event.dataTransfer) return
   event.dataTransfer.effectAllowed = 'move'
@@ -215,92 +73,125 @@ const handleDragStart = (event: DragEvent) => {
   isDragging.value = true
   store.interactions.handleDragStart(props.item.id)
 }
-
 const handleDragEnd = () => {
   isDragging.value = false
-  store.interactions.emitDragEvent({
-    type: 'dragend',
-    sourceId: props.item.id
-  })
+  store.interactions.emitDragEvent({ type: 'dragend', sourceId: props.item.id })
 }
-
 const handleDragOver = (event: DragEvent) => {
-  event.preventDefault()
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-  const position = determineDropPosition(event, rect)
-  store.interactions.handleDragOver(props.item.id, position)
+  store.interactions.handleDragOver(props.item.id, determineDropPosition(event, rect))
 }
-
 const handleDrop = (event: DragEvent) => {
-  event.preventDefault()
   const sourceId = event.dataTransfer?.getData('text/plain')
-  if (sourceId) {
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
-    const position = determineDropPosition(event, rect)
-    store.interactions.handleDrop(sourceId, props.item.id, position)
-  }
+  if (sourceId) store.interactions.handleDrop(sourceId, props.item.id, determineDropPosition(event, (event.currentTarget as HTMLElement).getBoundingClientRect()))
 }
-
-const handleClick = (event: MouseEvent) => {
-  const isMultiSelect = event.ctrlKey || event.metaKey
-  store.interactions.selectNode(props.viewId, props.item.id, isMultiSelect)
-}
-
-const toggleExpanded = () => {
-  store.interactions.toggleNodeExpansion(props.viewId, props.item.id, !props.expanded)
-}
-
-const handleZoom = () => {
-  store.interactions.zoomToNode(props.viewId, props.item.id)
-}
-
-const handleAddNode = () => {
-  if (handleAdd) {
-    handleAdd(props.item.id)
-  }
-}
-
-// Utilitaire pour déterminer la position de drop
-const determineDropPosition = (event: DragEvent, rect: DOMRect) => {
-  const mouseY = event.clientY
-  const thirdHeight = rect.height / 3
-
-  if (mouseY < rect.top + thirdHeight) {
-    return 'FIRST_CHILD'
-  } else if (mouseY > rect.bottom - thirdHeight) {
-    return 'LAST_CHILD'
-  } else {
-    return event.clientX < rect.left + rect.width / 2 ? 'LEFT' : 'RIGHT'
-  }
-}
+const handleClick = (event: MouseEvent | KeyboardEvent) => store.interactions.selectNode(props.viewId, props.item.id, 'ctrlKey' in event && (event.ctrlKey || event.metaKey))
+const toggleExpanded = () => store.interactions.toggleNodeExpansion(props.viewId, props.item.id, !props.expanded)
+const handleZoom = () => store.interactions.zoomToNode(props.viewId, props.item.id)
+const handleAddNode = () => handleAdd?.(props.item.id)
 </script>
 
+<template>
+  <article
+    :data-node-id="item.id"
+    class="dream-node"
+    :class="nodeClasses"
+    :style="{ '--node-depth': depth }"
+    draggable="true"
+    tabindex="0"
+    :aria-label="`${typeLabel} : ${item.text}`"
+    @click="handleClick"
+    @keydown.enter.prevent="handleClick"
+    @dragstart="handleDragStart"
+    @dragend="handleDragEnd"
+    @dragover.prevent="handleDragOver"
+    @drop.prevent="handleDrop"
+  >
+    <button
+      class="tree-toggle"
+      :class="{ invisible: !item.children?.length }"
+      type="button"
+      :aria-label="expanded ? 'Replier' : 'Déplier'"
+      :aria-expanded="expanded"
+      @click.stop="toggleExpanded"
+    >
+      <span class="toggle-icon" aria-hidden="true" :class="{ expanded }">›</span>
+    </button>
+
+    <span class="type-mark" :data-type="nodeType" aria-hidden="true" />
+
+    <div class="node-main">
+      <input
+        v-if="editingNodeId === item.id"
+        v-model="editingNodeText"
+        class="node-input"
+        placeholder="Nom de l’élément…"
+        autofocus
+        @keyup.enter="handleNodeTextSubmit"
+        @keyup.esc="editingNodeId = null"
+        @click.stop
+      >
+      <template v-else>
+        <span class="node-text">{{ item.text || `Nouvelle ${typeLabel.toLowerCase()}` }}</span>
+        <span class="node-meta">
+          <span class="type-label">{{ typeLabel }}</span>
+          <span v-if="item.dueDate" class="due-date">{{ formattedDueDate }}</span>
+          <span v-if="progress > 0" class="progress-label">{{ progress }} %</span>
+        </span>
+      </template>
+    </div>
+
+    <div v-if="progress > 0" class="progress-track" aria-hidden="true">
+      <span :style="{ width: `${progress}%` }" />
+    </div>
+
+    <div class="node-actions" @click.stop>
+      <button type="button" title="Se concentrer sur cette branche" aria-label="Se concentrer sur cette branche" @click="handleZoom">
+        ⌕
+      </button>
+      <button type="button" :title="`Ajouter : ${childTypeLabel}`" :aria-label="`Ajouter : ${childTypeLabel}`" @click="handleAddNode">
+        ＋
+      </button>
+      <button type="button" title="Dupliquer" aria-label="Dupliquer" @click="$emit('duplicate', item)">
+        ⧉
+      </button>
+      <button class="danger" type="button" title="Supprimer" aria-label="Supprimer" @click="$emit('delete', item)">
+        ×
+      </button>
+    </div>
+  </article>
+</template>
+
 <style scoped>
-.is-dragging {
-  opacity: 0.5;
-  border-style: dashed;
-}
-
-.is-drop-target {
-  border-color: #4299e1;
-  background-color: #ebf8ff;
-}
-
-.is-selected {
-  background-color: #e5e7eb;
-  border-color: #9ca3af;
-}
-
-:deep(.ghost) {
-  @apply opacity-50 bg-gray-100 border border-dashed border-gray-400;
-}
-
-:deep(.ghost .tree-node) {
-  @apply bg-gray-100 border border-dashed border-gray-400;
-}
-
-/* Style pour masquer le ghost par défaut du drag */
-:deep([draggable="true"]) {
-  -webkit-user-drag: none;
-}
-</style> 
+.dream-node { --accent: #7c3aed; position: relative; display: flex; align-items: center; gap: .5rem; width: calc(100% - (var(--node-depth) * 1.25rem)); min-height: 3.25rem; margin: .2rem 0 .2rem calc(var(--node-depth) * 1.25rem); padding: .45rem .5rem; box-sizing: border-box; border: 1px solid transparent; border-radius: .75rem; color: #172033; background: transparent; cursor: grab; transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease; }
+.dream-node:hover, .dream-node:focus-visible { background: #f8fafc; border-color: #e2e8f0; outline: none; }
+.dream-node.is-selected { background: #f5f3ff; border-color: #c4b5fd; box-shadow: inset 3px 0 var(--accent); }
+.dream-node.is-dragging { opacity: .45; cursor: grabbing; }
+.dream-node.is-drop-target { border-color: #8b5cf6; background: #f5f3ff; }
+.dream-node.is-done .node-text { color: #64748b; text-decoration: line-through; }
+.tree-toggle, .node-actions button { display: inline-grid; place-items: center; border: 0; background: transparent; color: #64748b; border-radius: .45rem; cursor: pointer; }
+.tree-toggle { width: 1.8rem; height: 1.8rem; flex: 0 0 auto; font-size: 1.35rem; }
+.tree-toggle:hover, .node-actions button:hover { color: #5b21b6; background: #ede9fe; }
+.tree-toggle span { transition: transform .16s ease; }
+.tree-toggle span.expanded { transform: rotate(90deg); }
+.invisible { visibility: hidden; }
+.type-mark { width: .68rem; height: .68rem; flex: 0 0 auto; border: 2px solid var(--accent); border-radius: 50%; }
+.type-mark[data-type="objective"] { --accent: #2563eb; border-radius: .2rem; transform: rotate(45deg); }
+.type-mark[data-type="milestone"] { --accent: #d97706; border-radius: .15rem; }
+.type-mark[data-type="task"] { --accent: #059669; border-radius: .18rem; border-width: 1px; }
+.node-main { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: .15rem; }
+.node-text { overflow: hidden; color: #172033; font-size: .9rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.node-meta { display: flex; align-items: center; gap: .45rem; color: #788397; font-size: .68rem; }
+.type-label { color: #6d28d9; font-weight: 650; text-transform: uppercase; letter-spacing: .055em; }
+.due-date::before { content: '·'; margin-right: .45rem; }
+.progress-label { margin-left: auto; }
+.progress-track { position: absolute; right: .65rem; bottom: .22rem; left: 4.35rem; height: 2px; overflow: hidden; border-radius: 1rem; background: #e2e8f0; }
+.progress-track span { display: block; height: 100%; background: linear-gradient(90deg, #8b5cf6, #22c55e); }
+.node-actions { display: flex; gap: .1rem; opacity: 0; transition: opacity .16s ease; }
+.dream-node:hover .node-actions, .dream-node:focus-within .node-actions, .is-selected .node-actions { opacity: 1; }
+.node-actions button { width: 1.8rem; height: 1.8rem; font-size: 1rem; }
+.node-actions .danger:hover { color: #b91c1c; background: #fee2e2; }
+.node-input { width: 100%; border: 0; border-bottom: 1px solid #8b5cf6; outline: none; background: transparent; font: inherit; }
+@media (max-width: 640px) { .node-actions { opacity: 1; } .node-actions button:nth-child(3) { display: none; } .dream-node { gap: .3rem; } }
+@media (prefers-reduced-motion: reduce) { .dream-node, .tree-toggle span, .node-actions { transition: none; } }
+</style>

@@ -1,16 +1,16 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { useTreeStore } from '../tree'
-import type { TreeItem } from '@/components/vue-tree-dnd-main/env'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { useTreeStore } from '../treeStore'
+import type { TreeItem } from '@/lib/tree/types'
 
-describe('Tree Store', () => {
+describe('tree Store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
   })
 
   it('initializes with empty tree data', () => {
     const store = useTreeStore()
-    expect(store.treeData.value).toEqual([])
+    expect(store.treeData).toEqual([])
   })
 
   it('can initialize store with data', () => {
@@ -18,11 +18,10 @@ describe('Tree Store', () => {
     const initialData: TreeItem[] = [{
       id: '1',
       text: 'Root',
-      expanded: true,
       children: []
     }]
-    store.initializeStore(initialData)
-    expect(store.treeData.value).toEqual(initialData)
+    store.initializeStore(initialData, true)
+    expect(store.treeData).toEqual(initialData)
   })
 
   it('can add a node', () => {
@@ -30,19 +29,17 @@ describe('Tree Store', () => {
     const initialData: TreeItem[] = [{
       id: '1',
       text: 'Root',
-      expanded: true,
       children: []
     }]
-    store.initializeStore(initialData)
+    store.initializeStore(initialData, true)
 
     const newNode: TreeItem = {
       id: '2',
       text: 'New Node',
-      expanded: false,
       children: []
     }
     store.addNode('1', newNode)
-    expect(store.treeData.value[0].children).toContainEqual(newNode)
+    expect(store.treeData[0].children[0]).toMatchObject({ text: newNode.text })
   })
 
   it('can remove a node', () => {
@@ -50,29 +47,27 @@ describe('Tree Store', () => {
     const initialData: TreeItem[] = [{
       id: '1',
       text: 'Root',
-      expanded: true,
       children: [{
         id: '2',
         text: 'Child',
-        expanded: false,
         children: []
       }]
     }]
-    store.initializeStore(initialData)
+    store.initializeStore(initialData, true)
     store.removeNode('2')
-    expect(store.treeData.value[0].children).toEqual([])
+    expect(store.treeData[0].children).toEqual([])
   })
 
-  it('can toggle node expansion', () => {
+  it('can toggle node expansion in a view', () => {
     const store = useTreeStore()
     const initialData: TreeItem[] = [{
       id: '1',
       text: 'Root',
-      expanded: false,
       children: []
     }]
-    store.initializeStore(initialData)
-    store.toggleNode('1')
-    expect(store.treeData.value[0].expanded).toBe(true)
+    store.initializeStore(initialData, true)
+    store.createTreeView('test-view')
+    store.setNodeExpanded('test-view', '1', true)
+    expect(store.isNodeExpanded('test-view', '1')).toBe(true)
   })
-}) 
+})

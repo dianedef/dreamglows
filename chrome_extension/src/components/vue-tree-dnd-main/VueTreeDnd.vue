@@ -1,38 +1,34 @@
 <script setup lang="ts">
+/* eslint-disable ts/no-use-before-define */
 import {
   computed,
+  markRaw,
   onMounted,
   onUnmounted,
   provide,
   ref,
-  watch,
-  defineComponent,
-  markRaw
+  watch
 } from 'vue'
 import {
-  deepToRaw,
   getFlatTreeWithAncestors
 } from './utils'
 import type {
-  DragStartEventHandler,
-  DragOverEventHandler,
   DragEndEventHandler,
+  DragOverEventHandler,
+  DragStartEventHandler,
   DropProposalSetterHandler,
   FlatTreeItem,
   MoveMutation,
   MoveMutationProposal,
+  TreeItem,
   TreeItemId,
-  VueTreeDndProps,
-  TreeItem
+  VueTreeDndProps
 } from './env'
 import TreeNode from './TreeNode.vue'
 import RawTreeNodeContent from '@/components/TreeNodeContent.vue'
 
-const TreeNodeContent = markRaw(RawTreeNodeContent)
-
-const LEFT_OF_ROOT_ID: TreeItemId = '__vue-dnd-tree-root__'
-
 const props = defineProps<VueTreeDndProps>()
+
 const emit = defineEmits<{
   'move': [move: MoveMutation]
   'update:modelValue': [tree: TreeItem[]]
@@ -45,6 +41,10 @@ const emit = defineEmits<{
   'dragover': [event: DragOverEventHandler, itemId: TreeItemId]
   'dragend': [event: DragEndEventHandler]
 }>()
+
+markRaw(RawTreeNodeContent)
+
+const LEFT_OF_ROOT_ID: TreeItemId = '__vue-dnd-tree-root__'
 
 const flatTreeNodes = ref<FlatTreeItem[]>([])
 const flatTreeIds = ref<TreeItemId[]>([])
@@ -86,20 +86,6 @@ const getPreviousNodeId: (nodeId: TreeItemId) => TreeItemId = (nodeId: TreeItemI
     : flatTreeIds.value[index - 1]
 }
 
-const isSomeParentCollapsed: (targetId: TreeItemId) => boolean = (targetId: TreeItemId) => {
-  if (targetId === LEFT_OF_ROOT_ID) {
-    return false
-  }
-  const targetNode = flatTreeNodes.value.find((node: FlatTreeItem) => node.id === targetId)
-
-  if (targetNode === undefined) {
-    throw new Error(`targetId ${targetId} not found in flatTreeNodes`)
-  }
-
-  const parentIds = targetNode.__vue_dnd_tree_ancestors
-  return parentIds.some((parentId: TreeItemId) => !isNodeExpanded(parentId))
-}
-
 type DragEventData = {
   initialX: number
   initialDepth: number
@@ -115,7 +101,7 @@ const dragOverDeltaXCalculator: (event: DragEvent) => void = (event: DragEvent) 
   event.preventDefault()
   if (dragdata.value === null) return
   
-  const { initialX, initialDepth } = dragdata.value
+  const { initialX } = dragdata.value
   const deltaFromStart = event.clientX - initialX
   
   // Calculer le niveau d'indentation de manière plus directe
@@ -189,7 +175,7 @@ watch(dropTarget, () => {
 // --------------------------------- DRAG EVENTS ---------------------------------
 
 const cleanNodeForJSON = (node: TreeItem): TreeItem => {
-  const { parent, ...cleanNode } = node
+  const { parent, __vue_dnd_tree_ancestors, ...cleanNode } = node as TreeItem & { __vue_dnd_tree_ancestors?: TreeItemId[] }
   return {
     ...cleanNode,
     children: node.children?.map(child => cleanNodeForJSON(child)) || []
@@ -269,12 +255,7 @@ const dragend: DragEndEventHandler = () => {
   }
   
   // Créer le nœud source
-  const sourceNodeToMove = cleanNodeForJSON({
-    id: proposal.id,
-    text: sourceNode.text || '',
-    children: sourceNode.children || [],
-    hierarchicalId: ''
-  })
+  const sourceNodeToMove = cleanNodeForJSON(sourceNode)
 
   // Si on déplace à la racine (deltaX === -1)
   if (deltaX.value === -1) {
@@ -311,18 +292,6 @@ const dragend: DragEndEventHandler = () => {
     }
   }
 
-  // Mettre à jour les hierarchicalIds
-  const updateHierarchicalIds = (nodes: TreeItem[], parentId: string = '') => {
-    nodes.forEach((node, index) => {
-      const currentIndex = index + 1
-      node.hierarchicalId = parentId ? `${parentId}.${currentIndex}` : `${currentIndex}`
-      if (node.children?.length > 0) {
-        updateHierarchicalIds(node.children, node.hierarchicalId)
-      }
-    })
-  }
-  
-  updateHierarchicalIds(newTree)
   emit('update:modelValue', newTree)
   
   // Reset state after move
@@ -366,9 +335,6 @@ const dragstart: DragStartEventHandler = (event: DragEvent, itemId: TreeItemId, 
 }
 provide<DragStartEventHandler>('dragstart', dragstart)
 
-let lastDragOverEvent: { itemId: TreeItemId, offsetY: number } | null = null
-let dragOverDebounceTimer: number | null = null
-
 const treeRoot = ref<HTMLElement | null>(null)
 
 const handleDragLeave = (event: DragEvent) => {
@@ -382,52 +348,6 @@ const handleDragLeave = (event: DragEvent) => {
       }
     }
   }
-}
-
-// Ajouter le calcul des positions possibles
-const getPossiblePositions = (targetId: TreeItemId): MoveMutationProposal[] => {
-  if (!dragItemId.value) return []
-  
-  const targetNode = getNodeById(targetId)
-  if (!targetNode) return []
-  
-  const draggedNode = getNodeById(dragItemId.value)
-  if (!draggedNode) return []
-  
-  const hasExpandedChildren = targetNode.children?.length > 0 && isNodeExpanded(targetId)
-  const currentDepth = flatTreeNodes.value.find(node => node.id === targetId)?.__vue_dnd_tree_ancestors.length || 0
-  
-  // Si le nœud a des enfants développés, on ne peut que l'ajouter comme premier enfant
-  if (hasExpandedChildren) {
-    return [{
-      id: dragItemId.value,
-      targetId,
-      position: 'FIRST_CHILD',
-      ghostIndent: currentDepth + 1
-    }]
-  }
-  
-  // Sinon, on peut le mettre avant, après ou comme enfant
-  return [
-    {
-      id: dragItemId.value,
-      targetId,
-      position: 'LEFT',
-      ghostIndent: currentDepth
-    },
-    {
-      id: dragItemId.value,
-      targetId,
-      position: 'RIGHT',
-      ghostIndent: currentDepth
-    },
-    {
-      id: dragItemId.value,
-      targetId,
-      position: 'LAST_CHILD',
-      ghostIndent: currentDepth + 1
-    }
-  ]
 }
 
 const dragover: DragOverEventHandler = (event: DragEvent, itemId: TreeItemId) => {
@@ -630,7 +550,7 @@ provide('handleDuplicate', (item: TreeItem) => {
       class="root-placeholder"
     >
       <!-- Line placeholder -->
-      <div class="placeholder-line"></div>
+      <div class="placeholder-line" />
       
       <!-- Ghost placeholder -->
       <div class="ghost-placeholder">

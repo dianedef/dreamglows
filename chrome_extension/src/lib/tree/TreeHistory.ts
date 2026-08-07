@@ -1,4 +1,4 @@
-import { Subject, BehaviorSubject } from 'rxjs'
+import { BehaviorSubject, Subject } from 'rxjs'
 import type { TreeItem } from './types'
 import type { TreeEvent } from './TreeEvents'
 

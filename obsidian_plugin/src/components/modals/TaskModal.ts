@@ -7,10 +7,12 @@ import { pinia } from '../../stores';
 export class TaskModal extends Modal {
     private vueApp: VueApp | null = null;
     private task?: Task;
+    private initialGoalId?: string;
 
-    constructor(app: App, task?: Task) {
+    constructor(app: App, task?: Task, initialGoalId?: string) {
         super(app);
         this.task = task;
+        this.initialGoalId = initialGoalId;
         console.log('TaskModal: Constructor called');
     }
 
@@ -23,7 +25,8 @@ export class TaskModal extends Modal {
         console.log('TaskModal: Container created');
 
         this.vueApp = createApp(TaskModalContent, {
-            editingTask: this.task
+            editingTask: this.task,
+            initialGoalId: this.initialGoalId
         });
         
         this.vueApp.use(pinia);
@@ -56,4 +59,4 @@ export class TaskModal extends Modal {
             console.log('TaskModal: Native modal cleanup complete');
         }
     }
-} 
+}

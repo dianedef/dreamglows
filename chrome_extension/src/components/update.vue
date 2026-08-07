@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, toRaw, watch, nextTick } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useTreeStore } from '../stores/treeStore'
+import type { TreeView } from '../lib/tree/types'
+import { useHighlight } from '../composables/useHighlight'
 import VueTreeDnd from './vue-tree-dnd-main/VueTreeDnd.vue'
-import type { TreeItem, MoveMutation } from './vue-tree-dnd-main/env'
+import type { MoveMutation, TreeItem } from './vue-tree-dnd-main/env'
 import Changelog from './Changelog.vue'
 import TreeNodeContent from './TreeNodeContent.vue'
-import { useTreeStore } from '../stores/treeStore'
-import type { TreeView } from '../stores/treeStore'
-import { useHighlight } from '../composables/useHighlight'
 import Settings from './Settings.vue'
 
 const displayName = __DISPLAY_NAME__
@@ -124,7 +124,7 @@ const displayedData = computed({
 
 // Initialiser les données de l'arbre si nécessaire
 onMounted(() => {
-  new Promise<void>((resolve) => {
+  void new Promise<void>((resolve) => {
     const checkStore = () => {
       const store = useTreeStore()
       let view = store.getTreeView(VIEW_ID)
@@ -142,18 +142,38 @@ onMounted(() => {
       view = store.createTreeView(VIEW_ID)
       
       if (!store.treeDataRef || store.treeDataRef.length === 0) {
-        const initialData = [{
+        const initialData: TreeItem[] = [{
           id: '1',
           text: 'Root',
           children: [
             {
               id: '1-1',
-              text: 'Frontend',
+              text: 'Créer une activité qui me ressemble',
+              type: 'dream',
+              status: 'in-progress',
+              progress: 35,
               children: [
                 {
                   id: '1-1-1',
-                  text: 'Vue',
-                  children: []
+                  text: 'Atteindre 5 000 € par mois',
+                  type: 'objective',
+                  status: 'in-progress',
+                  progress: 35,
+                  children: [{
+                    id: '1-1-1-1',
+                    text: 'Valider l’offre',
+                    type: 'milestone',
+                    status: 'in-progress',
+                    progress: 50,
+                    children: [{
+                      id: '1-1-1-1-1',
+                      text: 'Interroger 10 prospects',
+                      type: 'task',
+                      status: 'todo',
+                      progress: 0,
+                      children: []
+                    }]
+                  }]
                 }
               ]
             }
@@ -162,7 +182,7 @@ onMounted(() => {
         store.initializeStore(initialData)
       }
       
-      const initialNodes = ['1', '1-1', '1-1-1']
+      const initialNodes = ['1', '1-1', '1-1-1', '1-1-1-1']
       initialNodes.forEach(id => {
         store.setNodeExpanded(VIEW_ID, id, true)
       })
@@ -177,15 +197,6 @@ onMounted(() => {
     
     checkStore()
   })
-})
-
-// Données filtrées selon la vue actuelle
-const treeData = computed(() => {
-  if (!store.treeDataRef || store.treeDataRef.length === 0) {
-    return []
-  }
-  const data = store.getViewData(VIEW_ID)
-  return data
 })
 
 // Mettre à jour la vue après chaque action
@@ -228,20 +239,6 @@ const handleZoom = (item: TreeItem) => {
   })
 }
 
-const handleExpand = (item: TreeItem) => {
-  store.setNodeExpanded(VIEW_ID, item.id, !store.isNodeExpanded(VIEW_ID, item.id))
-  nextTick(() => {
-    const updatedView = store.getTreeView(VIEW_ID)
-    if (updatedView) {
-      currentView.value = {
-        ...updatedView,
-        expandedNodes: updatedView.expandedNodes,
-        selectedNodes: updatedView.selectedNodes
-      }
-    }
-  })
-}
-
 const handleMove = (moveData: MoveMutation) => {
   store.moveNode(moveData)
 }
@@ -262,14 +259,10 @@ const handleDelete = (item: TreeItem) => {
   })
 }
 
-const handleReference = () => {
-  // Implementation for handleReference
-}
-
 const handleAddNode = () => {
   const newNode: TreeItem = {
     id: crypto.randomUUID(),
-    text: 'Nouveau nœud',
+    text: 'Nouvel élément',
     children: []
   }
   
@@ -277,7 +270,7 @@ const handleAddNode = () => {
   const selectedNodes = Array.from(currentView.value?.selectedNodes || [])
   if (selectedNodes.length === 1) {
     const parentId = selectedNodes[0]
-    store.addChildNode(parentId, newNode)
+    store.addNode(parentId, newNode)
   } else {
     // Sinon on ajoute à la racine
     store.addNode('1', newNode) // '1' est l'ID du nœud racine
@@ -287,7 +280,7 @@ const handleAddNode = () => {
 const handleAdd = (parentId: string) => {
   const newNode: TreeItem = {
     id: crypto.randomUUID(),
-    text: '',
+    text: 'Nouvel élément',
     children: []
   }
   store.addNode(parentId, newNode)
@@ -300,14 +293,22 @@ const handleAdd = (parentId: string) => {
       class="flex flex-col gap-y-4"
       style="grid-area: title"
     >
-      <h1 class="text-4xl font-bold text-center">🎉 Updated! 🎉</h1>
-      <p class="text-lg">
-        {{ displayName }} has been updated to the latest version. 🎉
-      </p>
-      <p class="text-lg">Version: {{ version }}</p>
+      <div class="workspace-heading">
+        <div>
+          <p class="eyebrow">
+            {{ displayName }} · {{ version }}
+          </p>
+          <h1>Mon chemin</h1>
+          <p>Du rêve à la prochaine action, dans une seule arborescence.</p>
+        </div>
+        <button class="primary-action" @click="handleAddNode">
+          <i-heroicons-plus-circle-20-solid class="w-4 h-4" />
+          Ajouter
+        </button>
+      </div>
 
       <div class="tree-container">
-        <div class="highlight-controls mb-4">
+        <div class="highlight-controls mb-4" aria-label="Outils de capture">
           <div class="flex gap-2">
             <button
               class="control-button"
@@ -316,14 +317,6 @@ const handleAdd = (parentId: string) => {
             >
               <i-heroicons-bookmark-20-solid class="w-4 h-4 mr-2" />
               Référence
-            </button>
-
-            <button
-              class="control-button"
-              @click="handleAddNode"
-            >
-              <i-heroicons-plus-circle-20-solid class="w-4 h-4 mr-2" />
-              Ajouter un node
             </button>
 
             <button
@@ -382,7 +375,9 @@ const handleAdd = (parentId: string) => {
         </div>
       </div>
 
-      <h1 class="text-2xl font-bold">What's new?</h1>
+      <h2 class="text-2xl font-bold">
+        Nouveautés
+      </h2>
     </div>
 
     <p>Icons</p>
@@ -469,11 +464,40 @@ const handleAdd = (parentId: string) => {
 
 .tree-container {
   padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
   background: white;
   margin: 20px 0;
   position: relative;
+}
+
+.workspace-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+
+  h1 { margin: 2px 0 4px; color: #172033; font-size: 2rem; line-height: 1.15; }
+  p { margin: 0; color: #64748b; }
+  .eyebrow { color: #7c3aed; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+}
+
+.primary-action {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 10px;
+  color: white;
+  background: #6d28d9;
+  font-size: .875rem;
+  font-weight: 650;
+  cursor: pointer;
+
+  &:hover { background: #5b21b6; }
+  &:focus-visible { outline: 3px solid #ddd6fe; outline-offset: 2px; }
 }
 
 .highlight-controls {

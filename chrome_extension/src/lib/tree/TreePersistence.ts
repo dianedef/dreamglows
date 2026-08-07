@@ -1,4 +1,3 @@
-import type { TreeItem, TreeView } from './types'
 
 export class TreePersistence {
   private key: string
@@ -9,7 +8,7 @@ export class TreePersistence {
 
   getStorage() {
     return {
-      getItem: (key: string): string | null => {
+      getItem: (_key: string): string | null => {
         if ((window as any).__INITIAL_TREE_STORE_DATA__) {
           return (window as any).__INITIAL_TREE_STORE_DATA__
         }
@@ -65,4 +64,4 @@ export class TreePersistence {
       serializer: this.getSerializer()
     }
   }
-} 
+}

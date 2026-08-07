@@ -1,5 +1,5 @@
-import { ref, computed, Ref } from 'vue'
-import type { TreeItem } from '../components/vue-tree-dnd-main/env'
+import { computed, ref, type Ref } from 'vue'
+import type { TreeItem } from '@/lib/tree/types'
 
 interface SearchFilter {
   id: string
@@ -48,7 +48,7 @@ export function useTreeSearch(initialData?: TreeItem[]) {
   }
 
   // Vérifie si un item correspond aux critères de recherche
-  const matchesSearchCriteria = (item: TreeItem, path: TreeItem[]): boolean => {
+  const matchesSearchCriteria = (item: TreeItem, _path: TreeItem[]): boolean => {
     // Si pas de terme de recherche et pas de filtres actifs, tout correspond
     if (!searchTerm.value && !filters.value.some(f => f.enabled)) return true
 
@@ -64,7 +64,7 @@ export function useTreeSearch(initialData?: TreeItem[]) {
 
       if (searchOptions.value.wholeWord) {
         const words = compareText.split(/\s+/)
-        if (!words.some(word => word === searchText)) return false
+        if (!words.includes(searchText)) return false
       } else if (!compareText.includes(searchText)) {
         return false
       }
@@ -91,7 +91,7 @@ export function useTreeSearch(initialData?: TreeItem[]) {
                 return String(value).includes(String(filter.value))
             }
           
-          case 'date':
+          case 'date': {
             const dateValue = new Date(value)
             const filterDate = new Date(filter.value)
             switch (filter.operator) {
@@ -104,6 +104,7 @@ export function useTreeSearch(initialData?: TreeItem[]) {
               default:
                 return true
             }
+          }
           
           case 'custom':
             return filter.customMatcher ? filter.customMatcher(item, filter.value) : true
@@ -134,7 +135,9 @@ export function useTreeSearch(initialData?: TreeItem[]) {
         const aValue = a.item[searchOptions.value.sortBy as keyof TreeItem]
         const bValue = b.item[searchOptions.value.sortBy as keyof TreeItem]
         
-        const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+        const normalizedA = aValue ?? ''
+        const normalizedB = bValue ?? ''
+        const comparison = normalizedA < normalizedB ? -1 : normalizedA > normalizedB ? 1 : 0
         return searchOptions.value.sortDirection === 'desc' ? -comparison : comparison
       })
     }
@@ -201,4 +204,4 @@ export function useTreeSearch(initialData?: TreeItem[]) {
     // Utilitaires
     traverseTree
   }
-} 
+}

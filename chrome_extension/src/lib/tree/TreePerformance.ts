@@ -1,4 +1,5 @@
-import { Subject, Observable, timer } from 'rxjs'
+import type { Observable} from 'rxjs';
+import { Subject, timer } from 'rxjs'
 import { buffer, filter, map } from 'rxjs/operators'
 import type { TreeEvent } from './TreeEvents'
 

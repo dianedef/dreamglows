@@ -12,6 +12,8 @@ DreamGlows dans Obsidian est conçu pour t’aider à atteindre tes rêves par u
 - **Pilotage par objectifs**
   - Créer, suivre et prioriser des objectifs.
   - Structurer les objectifs par jalons (`milestones`) pour garder un cap clair.
+  - Parcourir objectifs, sous-objectifs et tâches dans un arbre repliable avec panneau de détail.
+  - Utiliser l’arbre au clavier ou sur écran étroit sans perdre le contexte.
 
 - **Exécution quotidienne**
   - Planifier et suivre les tâches liées à chaque milestone.
@@ -34,12 +36,14 @@ DreamGlows dans Obsidian est conçu pour t’aider à atteindre tes rêves par u
 Le dépôt contient un plugin installé en mode développement avec:
 - `manifest.json`
 - `main.js`
+- `styles.css`
 - `versions.json`
 
 ## Structure du plugin
 
 - `obsidian_plugin/src` : code source de l’interface et de la logique métier.
 - `obsidian_plugin/main.js` : build distribué.
+- `obsidian_plugin/styles.css` : styles distribués chargés par Obsidian.
 
 ### Données persistées
 

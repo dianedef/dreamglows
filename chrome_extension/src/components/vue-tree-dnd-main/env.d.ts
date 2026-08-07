@@ -3,6 +3,8 @@ import { type Component } from 'vue'
 export type Position = 'LEFT' | 'RIGHT' | 'FIRST_CHILD' | 'LAST_CHILD'
 
 export type TreeItemId = string
+export type DreamNodeType = 'dream' | 'objective' | 'milestone' | 'task'
+export type DreamNodeStatus = 'todo' | 'in-progress' | 'done'
 
 export interface TreeItem {
   id: TreeItemId
@@ -11,6 +13,10 @@ export interface TreeItem {
   parent?: TreeItem | null
   isChecked?: boolean
   hierarchicalId?: string
+  type?: DreamNodeType
+  status?: DreamNodeStatus
+  progress?: number
+  dueDate?: string
 }
 
 export interface FlatTreeItem extends TreeItem {

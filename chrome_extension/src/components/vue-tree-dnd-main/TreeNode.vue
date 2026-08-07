@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import {
-  inject,
   computed,
-  watch,
-  type ComputedRef
+  type ComputedRef,
+  inject,
+  watch
 } from 'vue'
 import type {
-  DragStartEventHandler,
   DragOverEventHandler,
+  DragStartEventHandler,
   DropProposalSetterHandler,
   MoveMutationProposal,
   TreeItem,
@@ -34,7 +34,7 @@ if (!props.item || typeof props.item.id !== 'string' || props.item.id === '') {
   throw new Error('item.id is required and must be a non-empty string')
 }
 if (!Array.isArray(props.item.children)) {
-  throw new Error('item.children array is required')
+  throw new TypeError('item.children array is required')
 }
 if (!props.component) {
   throw new Error('component is required')
@@ -135,29 +135,29 @@ const isBeingDraggedStyle = computed(() => dragItem?.value?.id === props.item.id
 <template>
   <a
     href="#"
-    @click.prevent
     class="text-inherit no-underline group"
     :style="isBeingDraggedStyle"
     data-test="tree-node"
+    @click.prevent
   >
     <!-- Display actual node -->
     <div
       class="flex flex-row items-center"
-      @dragover="dragover($event, item.id)"
       data-test="tree-node-content"
+      @dragover="dragover($event, item.id)"
     >
       <component
         :is="component"
         :item="item"
         :depth="depth"
         :expanded="expanded"
-        :viewId="viewId"
+        :view-id="viewId"
+        data-test="tree-node-component"
         @set-expanded="scopedSetExpanded"
         @zoom="handleZoom"
         @delete="handleDelete"
         @duplicate="handleDuplicate"
         @add="handleAdd"
-        data-test="tree-node-component"
       />
     </div>
 
@@ -165,7 +165,7 @@ const isBeingDraggedStyle = computed(() => dragItem?.value?.id === props.item.id
     <div
       v-if="dropTarget === item.id && !isGhost && dragItem !== undefined"
       class="relative my-1 pointer-events-none w-[calc(100%-40px)] box-border"
-      :style="{ marginLeft: ghostIndent * 20 + 'px', width: `calc(100% - ${ghostIndent * 20}px)` }"
+      :style="{ marginLeft: `${ghostIndent * 20 }px`, width: `calc(100% - ${ghostIndent * 20}px)` }"
       data-test="tree-node-placeholder"
     >
       <!-- Line placeholder -->

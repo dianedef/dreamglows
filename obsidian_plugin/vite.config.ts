@@ -30,7 +30,8 @@ export default defineConfig({
         lib: {
             entry: resolve(__dirname, 'src/main.ts'),
             formats: ['cjs'],
-            fileName: () => 'main.js'
+            fileName: () => 'main.js',
+            cssFileName: 'styles'
         },
         rollupOptions: {
             external: ['obsidian'],
@@ -65,4 +66,4 @@ export default defineConfig({
             'p-queue': resolve(__dirname, 'node_modules/p-queue/dist/index.js')
         }
     }
-}); 
+});

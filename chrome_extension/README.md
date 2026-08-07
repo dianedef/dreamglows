@@ -16,5 +16,8 @@ La surface Chrome est en cours d’harmonisation avec l’implémentation Obsidi
 Fournir un accès léger au même modèle de pilotage:
 
 - tableau de bord de progression,
-- navigation rapide entre objectif et tâches,
+- arbre typé `Rêve → Objectif → Jalon → Tâche`,
+- navigation rapide avec expansion, fil d’Ariane et focus sur une branche,
+- réorganisation par glisser-déposer avec validation de la hiérarchie,
+- statut, progression et échéance visibles dans chaque nœud,
 - synchronisation conceptuelle avec les autres surfaces.

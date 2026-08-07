@@ -1,14 +1,13 @@
 import { defineStore } from 'pinia'
-import type { PiniaPluginContext } from 'pinia'
-import persistedState from 'pinia-plugin-persistedstate'
-import type { MoveMutation } from '@/components/vue-tree-dnd-main/env'
 import type { StateTree } from 'pinia'
-import { TreeValidator, TreeOperations, TreeUtils, TreePersistence } from '@/lib/tree'
+import type { MoveMutation } from '@/components/vue-tree-dnd-main/env'
+import { TreeValidator } from '@/lib/tree'
 import type { TreeItem, TreeView } from '@/lib/tree/types'
 import { TreeEventManager } from '@/lib/tree/TreeEvents'
 import { TreeHistory } from '@/lib/tree/TreeHistory'
 import { TreePerformance } from '@/lib/tree/TreePerformance'
 import { TreeInteractions } from '@/lib/tree/TreeInteractions'
+import { canContain, clampProgress, getChildType, getNodeType, normalizeStatus } from '@/lib/tree/semantics'
 
 interface TreeState extends StateTree {
   treeDataRef: TreeItem[]
@@ -21,30 +20,6 @@ interface TreeState extends StateTree {
   history: TreeHistory
   performance: TreePerformance
   interactions: TreeInteractions
-}
-
-interface TreeStoreActions {
-  findNodeById(nodes: TreeItem[], id: string): TreeItem | null
-  findNodeAndPath(nodes: TreeItem[], targetId: string, path?: TreeItem[]): { node: TreeItem, path: TreeItem[] } | null
-  createTreeView(viewId: string): TreeView
-  getTreeView(viewId: string): TreeView | undefined
-  deleteTreeView(viewId: string): void
-  zoomTreeView(viewId: string, nodeId: string): void
-  resetTreeViewZoom(viewId: string): void
-  setNodeExpanded(viewId: string, nodeId: string, expanded: boolean): void
-  getViewData(viewId: string): TreeItem[]
-  isNodeExpanded(viewId: string, nodeId: string): boolean
-  addNode(parentId: string, newNode: Partial<TreeItem>): void
-  updateNode(nodeId: string, updates: Partial<TreeItem>): void
-  removeNodeFromTree(nodes: TreeItem[], id: string): TreeItem | null
-  removeNode(id: string): TreeItem | null
-  isDescendantOf(targetNode: TreeItem, draggedNode: TreeItem): boolean
-  moveNode(mutation: MoveMutation): void
-  initializeStore(initialData: TreeItem[], isTestMode: boolean): void
-  getNodePath(nodeId: string | null): TreeItem[]
-  duplicateNode(sourceId: string, newNode: TreeItem): void
-  findParentNode(nodes: TreeItem[], nodeId: string): TreeItem | null
-  updateHierarchicalIds(nodes: TreeItem[], parentId: string): void
 }
 
 export const useTreeStore = defineStore('tree', {
@@ -189,12 +164,15 @@ export const useTreeStore = defineStore('tree', {
           return
         }
 
+        const parentDepth = Math.max(0, (parent.hierarchicalId?.split('.').length || 1) - 1)
         const node: TreeItem = this.sanitizeNode({
           id: crypto.randomUUID(),
           text: newNode.text || 'Nouveau nœud',
           children: [],
+          type: newNode.type || (parent.text === 'Root' ? 'dream' : getChildType(parent, parentDepth)),
+          status: newNode.status || 'todo',
           ...newNode,
-        })
+        }, parentDepth + 1)
 
         if (!this.validateNodeStructure(node)) {
           console.warn('addNode: Structure du nouveau nœud invalide')
@@ -296,6 +274,16 @@ export const useTreeStore = defineStore('tree', {
       if (!this.validator.validateDragOperation(draggedNode, targetNode, mutation.position, this.isDescendantOf)) {
         console.warn('moveNode: Opération de déplacement invalide')
         return
+      }
+
+      const futureParent = mutation.position.includes('CHILD') ? targetNode : targetNode.parent
+      if (futureParent && futureParent.text !== 'Root') {
+        const parentDepth = Math.max(0, (futureParent.hierarchicalId?.split('.').length || 1) - 1)
+        const childDepth = Math.max(0, (draggedNode.hierarchicalId?.split('.').length || 1) - 1)
+        if (!canContain(getNodeType(futureParent, parentDepth), getNodeType(draggedNode, childDepth))) {
+          console.warn('moveNode: Hiérarchie DreamGlows invalide')
+          return
+        }
       }
 
       const previousState = [...this.treeDataRef]
@@ -457,7 +445,7 @@ export const useTreeStore = defineStore('tree', {
         this.validator.setTestMode(true)
       }
 
-      const sanitizedData = initialData.map(node => this.sanitizeNode(node))
+      const sanitizedData = initialData.map(node => this.sanitizeNode(node, node.text === 'Root' ? -1 : 0))
       
       if (!this.validateTreeStructure(sanitizedData)) {
         console.error('initializeStore: Structure des données initiales invalide')
@@ -562,14 +550,20 @@ export const useTreeStore = defineStore('tree', {
       return this.validator.validateTreeStructure(nodes)
     },
 
-    sanitizeNode(node: TreeItem): TreeItem {
-      return {
+    sanitizeNode(node: TreeItem, depth: number = 0): TreeItem {
+      const status = normalizeStatus(node)
+      const sanitized: TreeItem = {
         id: node.id,
         text: String(node.text || '').slice(0, 1000),
-        children: Array.isArray(node.children) ? node.children.map(child => this.sanitizeNode(child)) : [],
+        children: Array.isArray(node.children) ? node.children.map(child => this.sanitizeNode(child, depth + 1)) : [],
         hierarchicalId: node.hierarchicalId,
         isChecked: Boolean(node.isChecked)
       }
+      if (node.type) sanitized.type = node.type
+      if (node.status || node.progress !== undefined) sanitized.status = status
+      if (node.progress !== undefined || status === 'done') sanitized.progress = status === 'done' ? 100 : clampProgress(node.progress)
+      if (typeof node.dueDate === 'string') sanitized.dueDate = node.dueDate
+      return sanitized
     },
 
     validateDragOperation(draggedNodeId: string, targetNodeId: string, position: string): boolean {
@@ -669,7 +663,7 @@ export const useTreeStore = defineStore('tree', {
   persist: {
     key: 'tree-store',
     storage: {
-      getItem: (key: string): string | null => {
+      getItem: (_key: string): string | null => {
         if ((window as any).__INITIAL_TREE_STORE_DATA__) {
           return (window as any).__INITIAL_TREE_STORE_DATA__
         }
@@ -714,4 +708,4 @@ export const useTreeStore = defineStore('tree', {
       }
     }
   }
-}) 
+})

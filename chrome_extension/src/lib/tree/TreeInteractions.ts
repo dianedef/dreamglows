@@ -1,6 +1,6 @@
-import { Subject, Observable, merge, fromEvent } from 'rxjs'
-import { map, filter, debounceTime, distinctUntilChanged, withLatestFrom } from 'rxjs/operators'
-import type { TreeItem } from './types'
+import type { Observable} from 'rxjs';
+import { Subject } from 'rxjs'
+import { distinctUntilChanged, filter, map } from 'rxjs/operators'
 
 export interface DragEvent {
   type: 'dragstart' | 'dragend' | 'dragover' | 'drop'

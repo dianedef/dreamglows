@@ -1,6 +1,6 @@
 import type { TreeItem } from './types'
-import type { MoveMutation } from '@/components/vue-tree-dnd-main/env'
 import type { TreeValidator } from './TreeValidator'
+import type { MoveMutation } from '@/components/vue-tree-dnd-main/env'
 
 export class TreeOperations {
   private validator: TreeValidator

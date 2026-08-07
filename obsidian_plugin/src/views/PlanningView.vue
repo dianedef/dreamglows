@@ -321,9 +321,9 @@ const toggleTask = async (note: Note, task: { id: string; done: boolean } | Task
     });
 
         // Mettre à jour la tâche dans la note
-        const taskIndex = note.tasks.findIndex(t => t.id === task.id);
-        if (taskIndex >= 0) {
-            note.tasks[taskIndex] = updatedTask;
+        const noteTaskIndex = note.tasks.findIndex(t => t.id === task.id);
+        if (noteTaskIndex >= 0) {
+            note.tasks[noteTaskIndex] = updatedTask;
         }
     } catch (error) {
         console.error(`Erreur lors de la mise à jour de la tâche dans ${note.path}:`, error);

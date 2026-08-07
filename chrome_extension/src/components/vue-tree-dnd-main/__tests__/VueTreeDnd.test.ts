@@ -1,12 +1,11 @@
 import { mount } from '@vue/test-utils'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
+import { markRaw } from 'vue'
 import VueTreeDnd from '../VueTreeDnd.vue'
 import TreeNode from '../TreeNode.vue'
-import TreeNodeContent from '@/components/TreeNodeContent.vue'
-import { describe, it, expect, beforeEach, vi } from 'vitest'
 import type { TreeItem } from '../env'
-import { createPinia, setActivePinia } from 'pinia'
-import { useTreeStore } from '@/stores/treeStore'
-import { markRaw } from 'vue'
+import TreeNodeContent from '@/components/TreeNodeContent.vue'
 
 const defaultProps = {
   modelValue: [] as TreeItem[],
@@ -43,7 +42,7 @@ vi.mock('@/stores/treeStore', () => ({
   })
 }))
 
-describe('VueTreeDnd', () => {
+describe('vueTreeDnd', () => {
   let wrapper: ReturnType<typeof mount>
 
   beforeEach(() => {
@@ -72,7 +71,7 @@ describe('VueTreeDnd', () => {
     expect(wrapper.findAll('[data-test="tree-node"]')).toHaveLength(0)
   })
 
-  describe('Affichage des nœuds', () => {
+  describe('affichage des nœuds', () => {
     const sampleData: TreeItem[] = [{
       id: '1',
       text: 'Node 1',
@@ -180,7 +179,7 @@ describe('VueTreeDnd', () => {
     })
   })
 
-  describe('Interactions', () => {
+  describe('interactions', () => {
     it('émet update:modelValue lors d\'une opération de drag & drop', async () => {
       const nodes = [
         {
@@ -288,7 +287,7 @@ describe('VueTreeDnd', () => {
     })
   })
 
-  describe('Rendu personnalisé', () => {
+  describe('rendu personnalisé', () => {
     it('utilise le composant spécifié dans les props', async () => {
       const node = {
         id: '1',
@@ -306,7 +305,7 @@ describe('VueTreeDnd', () => {
     })
   })
 
-  describe('Interactions avec le store', () => {
+  describe('interactions avec le store', () => {
     it('appelle handleDragStart du store lors du début du drag', async () => {
       const node = {
         id: '1',

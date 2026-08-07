@@ -1,4 +1,30 @@
 {
+  "name": "dreamglows-extension",
+  "displayName": "DreamGlows Extension",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "description": "DreamGlows vue3",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dianedef/dreamglows"
+  },
+  "scripts": {
+    "build": "npm run build:chrome && npm run build:firefox",
+    "build:chrome": "vite build -c vite.chrome.config.ts",
+    "build:firefox": "vite build -c vite.firefox.config.ts",
+    "dev": "concurrently \"npm run dev:chrome\" \"npm run dev:firefox\"",
+    "dev:chrome": "vite -c vite.chrome.config.ts",
+    "dev:firefox": "vite build --mode development --watch -c vite.firefox.config.ts",
+    "format": "prettier --write .",
+    "lint": "eslint . --fix",
+    "lint:manifest": "web-ext lint --pretty",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test"
+  },
   "dependencies": {
     "dockview-core": "^2.1.4",
     "marked": "^15.0.4",
@@ -9,9 +35,6 @@
     "vue-router": "^4.5.0",
     "webextension-polyfill": "^0.12.0"
   },
-  "name": "dreamglows-extension",
-  "displayName": "DreamGlows Extension",
-  "description": "DreamGlows vue3",
   "devDependencies": {
     "@antfu/eslint-config": "^3.12.1",
     "@crxjs/vite-plugin": "2.0.0-beta.28",
@@ -56,9 +79,6 @@
     "web-ext": "^8.3.0",
     "webext-bridge": "^6.0.1"
   },
-  "overrides": {
-    "@crxjs/vite-plugin": "$@crxjs/vite-plugin"
-  },
   "pnpm": {
     "overrides": {},
     "peerDependencyRules": {
@@ -67,27 +87,7 @@
       "ignoreMissing": []
     }
   },
-  "private": true,
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/dianedef/dreamglows"
-  },
-  "scripts": {
-    "build": "npm run build:chrome && npm run build:firefox",
-    "build:chrome": "vite build -c vite.chrome.config.ts",
-    "build:firefox": "vite build -c vite.firefox.config.ts",
-    "dev": "concurrently \"npm run dev:chrome\" \"npm run dev:firefox\"",
-    "dev:chrome": "vite -c vite.chrome.config.ts",
-    "dev:firefox": "vite build --mode development --watch -c vite.firefox.config.ts",
-    "format": "prettier --write .",
-    "lint": "eslint . --fix",
-    "lint:manifest": "web-ext lint --pretty",
-    "preview": "vite preview",
-    "typecheck": "vue-tsc --noEmit",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
-  },
-  "type": "module",
-  "version": "0.0.1"
+  "overrides": {
+    "@crxjs/vite-plugin": "$@crxjs/vite-plugin"
+  }
 }

@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import type { TreeItem } from './vue-tree-dnd-main/env'
 
-const props = defineProps<{
+defineProps<{
   show: boolean
 }>()
 
@@ -41,7 +41,9 @@ const handleClose = () => {
       @click.stop
     >
       <div class="flex justify-between items-center p-4 border-b border-gray-200">
-        <h3 class="text-lg font-medium">Ajouter un nœud</h3>
+        <h3 class="text-lg font-medium">
+          Ajouter un nœud
+        </h3>
         <button
           class="text-gray-400 hover:text-gray-500 transition-colors"
           @click="handleClose"
@@ -90,4 +92,4 @@ const handleClose = () => {
       </form>
     </div>
   </div>
-</template> 
+</template>

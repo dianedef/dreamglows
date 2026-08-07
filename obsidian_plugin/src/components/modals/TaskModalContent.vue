@@ -96,6 +96,7 @@ import type { Task } from '@/types/tasks';
 
 const props = defineProps<{
   editingTask?: Task;
+  initialGoalId?: string;
 }>();
 
 const tasksStore = useTasksStore();
@@ -111,7 +112,7 @@ const taskData = reactive<Partial<Task>>({
   dueDate: '',
   priority: 'medium',
   status: 'todo',
-  goalId: '',
+  goalId: props.initialGoalId || '',
   notes: '',
   tags: []
 });

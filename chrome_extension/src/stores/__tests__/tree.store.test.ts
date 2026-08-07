@@ -1,10 +1,9 @@
-import { setActivePinia, createPinia } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { useTreeStore } from '../treeStore'
-import { describe, it, expect, beforeEach } from 'vitest'
 import type { TreeItem } from '@/lib/tree/types'
-import type { MoveMutation } from '@/components/vue-tree-dnd-main/env'
 
-describe('Tree Store', () => {
+describe('tree Store', () => {
   let store: ReturnType<typeof useTreeStore>
 
   beforeEach(() => {
@@ -12,7 +11,7 @@ describe('Tree Store', () => {
     store = useTreeStore()
   })
 
-  describe('Initialisation', () => {
+  describe('initialisation', () => {
     it('démarre avec un arbre vide', () => {
       expect(store.treeData).toEqual([])
     })
@@ -31,7 +30,7 @@ describe('Tree Store', () => {
     })
   })
 
-  describe('Opérations CRUD', () => {
+  describe('opérations CRUD', () => {
     const rootNode: TreeItem = {
       id: '1',
       text: 'Root',
@@ -46,6 +45,18 @@ describe('Tree Store', () => {
       store.addNode('1', { text: 'Child', children: [] })
       expect(store.treeData[0].children).toHaveLength(1)
       expect(store.treeData[0].children[0].text).toBe('Child')
+      expect(store.treeData[0].children[0].type).toBe('dream')
+    })
+
+    it('attribue le niveau sémantique suivant aux nouveaux enfants', () => {
+      store.addNode('1', { id: 'dream', text: 'Mon rêve', type: 'dream', children: [] })
+      store.addNode('dream', { id: 'objective', text: 'Mon objectif', children: [] })
+      store.addNode('objective', { id: 'milestone', text: 'Mon jalon', children: [] })
+      store.addNode('milestone', { id: 'task', text: 'Ma tâche', children: [] })
+
+      expect(store.findNodeById(store.treeData, 'objective')?.type).toBe('objective')
+      expect(store.findNodeById(store.treeData, 'milestone')?.type).toBe('milestone')
+      expect(store.findNodeById(store.treeData, 'task')?.type).toBe('task')
     })
 
     it('ajoute un nœud avec des enfants', () => {
@@ -89,7 +100,7 @@ describe('Tree Store', () => {
     })
   })
 
-  describe('Gestion des vues', () => {
+  describe('gestion des vues', () => {
     it('crée une nouvelle vue', () => {
       const view = store.createTreeView('test-view')
       expect(view).toBeTruthy()

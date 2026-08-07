@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useSettingsStore } from '../stores/settings.store'
 
 const store = useSettingsStore()
@@ -29,7 +29,9 @@ const handleSettingChange = (id: string, value: any) => {
 <template>
   <div class="bg-white rounded-lg shadow-sm p-6 mt-6">
     <div class="flex justify-between items-center mb-6">
-      <h2 class="text-2xl font-bold mb-4">Paramètres</h2>
+      <h2 class="text-2xl font-bold mb-4">
+        Paramètres
+      </h2>
       <button
         class="flex items-center px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
         @click="store.resetAllSettings"
@@ -62,8 +64,12 @@ const handleSettingChange = (id: string, value: any) => {
           class="flex justify-between items-center py-4 border-b border-gray-100 last:border-0"
         >
           <div class="flex-1 pr-8">
-            <h3 class="font-medium mb-1">{{ setting.name }}</h3>
-            <p class="text-sm text-gray-500">{{ setting.description }}</p>
+            <h3 class="font-medium mb-1">
+              {{ setting.name }}
+            </h3>
+            <p class="text-sm text-gray-500">
+              {{ setting.description }}
+            </p>
           </div>
 
           <div class="flex items-center">
@@ -85,8 +91,8 @@ const handleSettingChange = (id: string, value: any) => {
             <select
               v-else-if="setting.type === 'select'"
               :value="setting.value"
-              @change="(e: Event) => handleSettingChange(setting.id, (e.target as HTMLSelectElement).value)"
               class="px-3 py-1.5 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              @change="(e: Event) => handleSettingChange(setting.id, (e.target as HTMLSelectElement).value)"
             >
               <option
                 v-for="option in setting.options"
@@ -102,8 +108,8 @@ const handleSettingChange = (id: string, value: any) => {
               v-else-if="setting.type === 'number'"
               type="number"
               :value="setting.value"
-              @input="(e: Event) => handleSettingChange(setting.id, Number((e.target as HTMLInputElement).value))"
               class="px-3 py-1.5 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              @input="(e: Event) => handleSettingChange(setting.id, Number((e.target as HTMLInputElement).value))"
             >
 
             <!-- Input color -->
@@ -111,8 +117,8 @@ const handleSettingChange = (id: string, value: any) => {
               v-else-if="setting.type === 'string' && setting.id === 'highlightColor'"
               type="color"
               :value="setting.value"
-              @input="(e: Event) => handleSettingChange(setting.id, (e.target as HTMLInputElement).value)"
               class="w-12 h-8 p-0 border-0 rounded cursor-pointer"
+              @input="(e: Event) => handleSettingChange(setting.id, (e.target as HTMLInputElement).value)"
             >
 
             <!-- Input text par défaut -->
@@ -120,8 +126,8 @@ const handleSettingChange = (id: string, value: any) => {
               v-else
               type="text"
               :value="setting.value"
-              @input="(e: Event) => handleSettingChange(setting.id, (e.target as HTMLInputElement).value)"
               class="px-3 py-1.5 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              @input="(e: Event) => handleSettingChange(setting.id, (e.target as HTMLInputElement).value)"
             >
           </div>
         </div>

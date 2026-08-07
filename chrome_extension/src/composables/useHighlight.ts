@@ -1,4 +1,7 @@
-import { ref, Ref } from 'vue'
+import type { Ref } from 'vue';
+import { ref } from 'vue'
+
+/* eslint-disable ts/no-use-before-define */
 
 interface Highlight {
   id: string
@@ -108,11 +111,12 @@ export function useHighlight() {
           }
         )
 
-        let node: Node | null
-        while (node = walker.nextNode()) {
+        let node = walker.nextNode()
+        while (node) {
           if (node.nodeType === Node.TEXT_NODE) {
             textNodes.push(node as Text)
           }
+          node = walker.nextNode()
         }
 
         console.log('📚 Nombre de nœuds de texte trouvés:', textNodes.length)
@@ -237,4 +241,4 @@ export function useHighlight() {
     updateHighlightColor,
     highlights
   }
-} 
+}

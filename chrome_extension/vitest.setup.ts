@@ -1,6 +1,5 @@
 import { config } from '@vue/test-utils'
 import { vi } from 'vitest'
-import type { Chrome } from 'chrome'
 
 // Mock global de chrome pour tous les tests
 const mockChrome = {

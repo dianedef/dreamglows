@@ -7,3 +7,5 @@
 ## Active product chantiers
 
 🟢 [DreamGlows] task: Nom de marque et actif principal validés (`DreamGlows` / `dreamgleams.com`) | status: done | area: branding | id: shortlist-final-name | status_note: Décision validée en 2026-08-06 via exploration "domain-name-dreamglows"
+
+🟠 [DreamGlows] task: Arbre de pilotage livré sur Obsidian et Chrome | status: done | area: product | id: hierarchical-goals-tasks-tree | status_note: Hiérarchie accessible Objectifs → jalons → tâches dans Obsidian et Rêves → objectifs → jalons → tâches dans Chrome; typecheck, tests et builds validés en 2026-08-07

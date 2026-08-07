@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 
 test('extension s\'installe correctement', async ({ page }) => {
   await page.goto('chrome-extension://[ID]/src/options/index.html')

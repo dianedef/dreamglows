@@ -22,7 +22,7 @@ export class TreeValidator {
     }
 
     if (!this.isTestMode) {
-      if (!/^[a-zA-Z0-9-_]+$/.test(node.id)) {
+      if (!/^[\w-]+$/.test(node.id)) {
         console.warn('validateNodeStructure: Format d\'ID invalide')
         return false
       }

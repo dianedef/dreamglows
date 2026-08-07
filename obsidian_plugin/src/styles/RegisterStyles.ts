@@ -1,23 +1,23 @@
-import planningStyles from './planning-view.css';
-import listViewStyles from './planning/list-view.css';
-import weekViewStyles from './planning/week-view.css';
-import dailyViewStyles from './daily-view.css';
-import goalsViewStyles from './goals/goals-view.css';
-import goalsModalStyles from './goals/goals-modal.css';
-import taskListStyles from './goals/task-list.css';
-import taskModalStyles from './goals/task-modal-content.css';
-import dayViewStyles from './day-view.css';
-import timeNavStyles from './time-nav.css';
-import categoryModalStyles from './goals/category-modal-content.css';
-import statsViewStyles from './stats/stats-view.css';
-import profileViewStyles from './profile-view.css';
-import './main-view.css';
+import planningStyles from './planning-view.css?inline';
+import listViewStyles from './planning/list-view.css?inline';
+import weekViewStyles from './planning/week-view.css?inline';
+import dailyViewStyles from './daily-view.css?inline';
+import goalsViewStyles from './goals/goals-view.css?inline';
+import goalsModalStyles from './goals/goals-modal.css?inline';
+import taskListStyles from './goals/task-list.css?inline';
+import taskModalStyles from './goals/task-modal-content.css?inline';
+import dayViewStyles from './day-view.css?inline';
+import timeNavStyles from './time-nav.css?inline';
+import categoryModalStyles from './goals/category-modal-content.css?inline';
+import statsViewStyles from './stats/stats-view.css?inline';
+import profileViewStyles from './profile-view.css?inline';
+import mainViewStyles from './main-view.css?inline';
 
 export function registerStyles(viewType: string) {
     const styleEl = document.createElement('style');
     styleEl.id = 'dreamglows-styles';
     styleEl.textContent = `
-        /* Styles de base */    
+        /* Styles de base */
         ${planningStyles}
         ${goalsViewStyles}
         ${goalsModalStyles}
@@ -28,6 +28,7 @@ export function registerStyles(viewType: string) {
         ${categoryModalStyles}
         ${statsViewStyles}
         ${profileViewStyles}
+        ${mainViewStyles}
 
         /* Styles spécifiques à la vue */
         ${weekViewStyles}

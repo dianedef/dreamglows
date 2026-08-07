@@ -39,8 +39,7 @@
 import { computed, ref } from 'vue';
 import { DateTime } from 'luxon';
 import type { WeekNotes } from '../../services/TimeManagementService';
-import type { Note } from '../../types';
-import type { Day, WeekViewProps, WeekViewEmits } from '../../types/weekView';
+import type { Day } from '../../types/weekView';
 import type { TFile } from 'obsidian';
 
 type DreamGlowsFrontmatter = Record<string, any>;
@@ -54,7 +53,10 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const emit = defineEmits<WeekViewEmits>();
+defineEmits<{
+    'toggle-note': [path: string];
+    'toggle-task': [note: { path: string }, task: { id: string; done: boolean }];
+}>();
 
 const isCompactView = ref(false);
 
