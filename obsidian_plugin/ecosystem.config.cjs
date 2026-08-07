@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
-    name: "obsidian---goalflowz",
-    cwd: "/home/claude/obsidian---goalflowz",
+    name: "dreamglows",
+    cwd: "/home/claude/dreamglows",
     script: "bash",
     args: ["-lc", "export PORT=3003 && flox activate -- bash -lc 'pnpm exec vite --port 3003 --host'"],
     env: {

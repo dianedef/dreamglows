@@ -32,7 +32,7 @@ Pour tester en BRAT :
 
 1. Installer le plugin **BRAT** dans Obsidian.
 2. Ouvrir `Settings → BRAT → Add beta plugin`.
-3. Ajouter le repo GitHub : `https://github.com/dianedef/obsidian---goalflowz`
+3. Ajouter le repo GitHub : `https://github.com/dianedef/dreamglows`
 4. Utiliser le manifest direct si demandé :  
-   `https://raw.githubusercontent.com/dianedef/obsidian---goalflowz/main/obsidian_plugin/manifest.json`
+   `https://raw.githubusercontent.com/dianedef/dreamglows/main/obsidian_plugin/manifest.json`
 5. Cocher le plugin `goalflowz` puis activer.
