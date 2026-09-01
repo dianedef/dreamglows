@@ -240,6 +240,7 @@ const commandMetrics = computed(() => {
 
     const doneGoals = goals.filter((goal) => goal.status === 'done' || (goal as any).status === 'completed').length;
     const doneTasks = tasks.filter((task) => task.status === 'done').length;
+    const inProgressTasks = tasks.filter((task) => task.status === 'in-progress').length;
     const urgentTasks = tasks.filter((task) => task.priority === 'high' && task.status !== 'done').length;
     const highPriorityTasks = tasks.filter((task) => task.priority === 'high').length;
 

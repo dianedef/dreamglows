@@ -547,17 +547,19 @@ const initializeNoteView = async (element: HTMLElement, app: any) => {
         // Nettoyer l'élément existant
         element.innerHTML = '';
         
-        // Obtenir le fichier
-        const file = app.vault.getAbstractFileByPath(currentNote.value.path);
-        if (!(file instanceof TFile)) {
-            throw new Error('Fichier non trouvé ou invalide');
-        }
+        // Une note du jour peut ne pas encore exister dans un coffre vide.
+        // L'afficher comme un brouillon vide et ne créer le fichier qu'au
+        // premier changement évite une erreur au simple chargement de la vue.
+        const notePath = currentNote.value.path;
+        let file = app.vault.getAbstractFileByPath(notePath);
 
         // Créer un conteneur pour la note
         const noteContainer = element.createDiv('markdown-source-view');
         
         // Charger le contenu
-        const content = await app.vault.read(file);
+        const content = file instanceof TFile
+            ? await app.vault.read(file)
+            : currentNote.value.content;
         
         // Créer un élément textarea pour l'édition
         const textarea = noteContainer.createEl('textarea', {
@@ -574,8 +576,35 @@ const initializeNoteView = async (element: HTMLElement, app: any) => {
         textarea.style.fontFamily = 'monospace';
         
         // Configurer la sauvegarde automatique
-        textarea.addEventListener('input', async () => {
-            await app.vault.modify(file, textarea.value);
+        let saveQueue = Promise.resolve();
+        textarea.addEventListener('input', () => {
+            const contentToSave = textarea.value;
+            saveQueue = saveQueue.then(async () => {
+                if (file instanceof TFile) {
+                    await app.vault.modify(file, contentToSave);
+                    return;
+                }
+
+                const pathParts = notePath.split('/').filter(Boolean);
+                for (let index = 1; index < pathParts.length; index += 1) {
+                    const folderPath = pathParts.slice(0, index).join('/');
+                    if (!app.vault.getAbstractFileByPath(folderPath)) {
+                        await app.vault.createFolder(folderPath);
+                    }
+                }
+
+                const existingFile = app.vault.getAbstractFileByPath(notePath);
+                if (existingFile instanceof TFile) {
+                    file = existingFile;
+                    await app.vault.modify(file, contentToSave);
+                    return;
+                }
+
+                file = await app.vault.create(notePath, contentToSave);
+            }).catch((error: any) => {
+                console.error('Erreur lors de la sauvegarde de la note:', error);
+                new Notice('Erreur lors de la sauvegarde de la note: ' + (error.message || 'Erreur inconnue'));
+            });
         });
 
         console.log('Vue de note initialisée avec succès');
