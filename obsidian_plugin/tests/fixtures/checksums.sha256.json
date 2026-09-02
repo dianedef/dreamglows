@@ -1,0 +1,8 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "legacy/models-dialect.json": "2ce5f62b65d2e8239553c2d855a95ec78f97422e4a346c23f0d0e2dc1fd1d50c",
+    "legacy/settings-only.json": "24cc0a896f82458a9d8c8337ac2a23f5a38dea025ad2b325b140efb6f5106bbe",
+    "legacy/view-dialect-conflicts.json": "d9029c62090d7a9a92522946ad7ba6401d858aafee96c2697dbe7e834def404d"
+  }
+}

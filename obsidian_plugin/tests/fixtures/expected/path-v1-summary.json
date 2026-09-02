@@ -1,0 +1,57 @@
+{
+  "models-dialect.json": {
+    "schemaVersion": 1,
+    "revision": 0,
+    "identities": [
+      "10000000-0000-4000-8000-000000000001",
+      "20000000-0000-4000-8000-000000000001"
+    ],
+    "types": ["goal", "action"],
+    "statuses": ["in-progress", "done"],
+    "parents": [null, "10000000-0000-4000-8000-000000000001"],
+    "planned": [
+      ["2026-03-28T23:00:00.000Z", "2026-04-05T22:00:00.000Z"],
+      ["2026-03-29T00:30:00.000Z", "2026-03-29T01:30:00.000Z"]
+    ],
+    "diagnostics": ["missing-created-at", "missing-updated-at"]
+  },
+  "view-dialect-conflicts.json": {
+    "schemaVersion": 1,
+    "revision": 0,
+    "identities": [
+      "10000000-0000-4000-8000-000000000010",
+      "10000000-0000-4000-8000-000000000011",
+      "20000000-0000-4000-8000-000000000010"
+    ],
+    "types": ["goal", "goal", "action"],
+    "statuses": ["in-progress", "todo", "in-progress"],
+    "parents": [
+      null,
+      "10000000-0000-4000-8000-000000000099",
+      "10000000-0000-4000-8000-000000000011"
+    ],
+    "planned": [
+      ["2026-01-01T00:00:00.000Z", "2026-12-31T23:59:59.000Z"],
+      ["2026-04-01T00:00:00.000Z", "2026-03-01T00:00:00.000Z"],
+      ["2026-09-02", null]
+    ],
+    "diagnostics": [
+      "missing-created-at",
+      "missing-updated-at",
+      "orphan-relation-preserved",
+      "conflicting-relation-preserved",
+      "missing-created-at",
+      "missing-updated-at"
+    ]
+  },
+  "settings-only.json": {
+    "schemaVersion": 1,
+    "revision": 0,
+    "identities": [],
+    "types": [],
+    "statuses": [],
+    "parents": [],
+    "planned": [],
+    "diagnostics": []
+  }
+}

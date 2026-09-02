@@ -1,0 +1,41 @@
+{
+  "goals": [
+    {
+      "id": "10000000-0000-4000-8000-000000000010",
+      "title": "Parent synthétique",
+      "description": "Relation contradictoire volontaire.",
+      "timeframe": "yearly",
+      "status": "in_progress",
+      "progress": 10,
+      "childGoals": ["10000000-0000-4000-8000-000000000011"],
+      "startDate": "2026-01-01T00:00:00.000Z",
+      "endDate": "2026-12-31T23:59:59.000Z"
+    },
+    {
+      "id": "10000000-0000-4000-8000-000000000011",
+      "title": "Enfant synthétique orphelin",
+      "description": "Le parent déclaré ne correspond pas à la collection inverse.",
+      "timeframe": "quarterly",
+      "status": "todo",
+      "progress": 0,
+      "parentGoalId": "10000000-0000-4000-8000-000000000099",
+      "startDate": "2026-04-01T00:00:00.000Z",
+      "endDate": "2026-03-01T00:00:00.000Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "20000000-0000-4000-8000-000000000010",
+      "title": "Action non planifiée synthétique",
+      "startDate": "2026-09-02",
+      "priority": "low",
+      "status": "in-progress",
+      "goalId": "10000000-0000-4000-8000-000000000011",
+      "tags": [],
+      "createdAt": "2026-09-02T08:00:00+02:00",
+      "updatedAt": "2026-09-02T08:00:00+02:00"
+    }
+  ],
+  "futureEnvelopeField": ["must", "survive"],
+  "syntheticFixture": true
+}

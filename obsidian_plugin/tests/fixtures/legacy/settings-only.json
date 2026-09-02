@@ -1,0 +1,17 @@
+{
+  "lastActiveTab": "planning",
+  "folderStructure": "monthly",
+  "monthLanguage": "fr",
+  "notesPath": "Journal synthétique",
+  "timelineStartHour": 7,
+  "timelineEndHour": 21,
+  "defaultTasks": [
+    {
+      "label": "Préparer une étape fictive",
+      "isCompleted": false,
+      "linkToOptimizer": true,
+      "linkToGenerator": false
+    }
+  ],
+  "syntheticFixture": true
+}

@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "privacy": "All values are synthetic and were derived from repository type declarations, never from a vault or plugin data file.",
+  "dialects": [
+    {
+      "fixture": "legacy/settings-only.json",
+      "source": "src/main.ts initializeDataFile/validateSettings",
+      "goalCount": 0,
+      "taskCount": 0,
+      "identifiers": [],
+      "relations": [],
+      "dateFields": []
+    },
+    {
+      "fixture": "legacy/models-dialect.json",
+      "source": "src/types/models.ts",
+      "goalCount": 1,
+      "taskCount": 1,
+      "identifiers": [
+        "10000000-0000-4000-8000-000000000001",
+        "20000000-0000-4000-8000-000000000001"
+      ],
+      "relations": [
+        "goal.tasks -> task.id",
+        "task.goalId -> goal.id"
+      ],
+      "dateFields": ["startDate", "dueDate", "createdAt", "updatedAt", "completedAt"]
+    },
+    {
+      "fixture": "legacy/view-dialect-conflicts.json",
+      "source": "src/types/goals.ts and src/types/tasks.ts",
+      "goalCount": 2,
+      "taskCount": 1,
+      "identifiers": [
+        "10000000-0000-4000-8000-000000000010",
+        "10000000-0000-4000-8000-000000000011",
+        "20000000-0000-4000-8000-000000000010"
+      ],
+      "relations": [
+        "goal.childGoals -> goal.id",
+        "goal.parentGoalId -> missing goal.id",
+        "task.goalId -> goal.id"
+      ],
+      "dateFields": ["startDate", "endDate", "createdAt", "updatedAt"]
+    }
+  ]
+}
