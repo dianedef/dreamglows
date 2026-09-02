@@ -1,7 +1,7 @@
 <template>
   <section class="dreamglows-focus-panel">
     <template v-if="activeSession && activeTask">
-      <p class="dreamglows-focus-kicker">Focus en cours · {{ modeLabel(activeSession.mode) }}</p>
+      <p class="dreamglows-focus-kicker">Focus en cours · {{ modeLabel(activeMode) }}</p>
       <h2>{{ activeTask.title }}</h2>
       <p v-if="activeGoal" class="dreamglows-focus-context">🎯 {{ activeGoal.title }}</p>
       <p class="dreamglows-focus-duration">{{ elapsedLabel }}</p>
@@ -49,15 +49,13 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 import { usePathCommandPort } from '@/application/path-command-port';
-import { useFocusSessionsStore } from '@/stores/focusSessionsStore';
-import { useGoalsStore } from '@/stores/goalsStore';
-import { useTasksStore } from '@/stores/tasksStore';
-import type { FocusMode } from '@/types/focusSessions';
-import type { Task } from '@/types/tasks';
+import type { PathEntity } from '@/domain/path/model';
+import { usePathStore } from '@/stores/pathStore';
 
-const focusSessionsStore = useFocusSessionsStore();
-const tasksStore = useTasksStore();
-const goalsStore = useGoalsStore();
+type FocusMode = 'focus' | 'creation' | 'administration';
+type FocusAction = PathEntity & { type: 'action' };
+
+const pathStore = usePathStore();
 const pathCommands = usePathCommandPort();
 const selectedMode = ref<FocusMode>('focus');
 const handoffNote = ref('');
@@ -76,20 +74,32 @@ const modes: Array<{ value: FocusMode; label: string }> = [
   { value: 'administration', label: 'Administration' }
 ];
 
-const activeSession = computed(() => focusSessionsStore.activeSession);
-const activeTask = computed(() => activeSession.value ? tasksStore.getTaskById(activeSession.value.taskId) : undefined);
-const activeGoal = computed(() => activeSession.value?.goalId ? goalsStore.getGoalById(activeSession.value.goalId) : undefined);
-const availableTasks = computed(() => tasksStore.getTasks.filter((task) => task.status !== 'done').slice(0, 6));
+const entities = computed(() => pathStore.document?.envelope.entities ?? []);
+const activeSession = computed(() => entities.value.find((entity) =>
+  entity.type === 'focus-session' && entity.status === 'in-progress' && !entity.deletedAt));
+const activeTask = computed(() => activeSession.value?.parentId
+  ? entities.value.find((entity) => entity.id === activeSession.value?.parentId && entity.type === 'action' && !entity.deletedAt)
+  : undefined);
+const activeGoal = computed(() => activeTask.value?.parentId
+  ? entities.value.find((entity) => entity.id === activeTask.value?.parentId
+      && (entity.type === 'goal' || entity.type === 'milestone') && !entity.deletedAt)
+  : undefined);
+const availableTasks = computed(() => entities.value.filter((entity): entity is FocusAction =>
+  entity.type === 'action' && entity.status !== 'done' && entity.status !== 'cancelled' && !entity.deletedAt).slice(0, 6));
+const activeMode = computed<FocusMode>(() => {
+  const mode = activeSession.value?.extensions.mode;
+  return mode === 'creation' || mode === 'administration' ? mode : 'focus';
+});
 const elapsedLabel = computed(() => {
   if (!activeSession.value) return '';
-  const minutes = Math.max(0, Math.floor((tick.value - Date.parse(activeSession.value.startedAt)) / 60000));
+  const minutes = Math.max(0, Math.floor((tick.value - Date.parse(activeSession.value.occurredAt ?? activeSession.value.createdAt)) / 60000));
   const hours = Math.floor(minutes / 60);
   return hours ? `${hours} h ${minutes % 60} min` : `${minutes} min`;
 });
 
 const modeLabel = (mode: FocusMode) => modes.find((item) => item.value === mode)?.label || 'Focus';
 
-const startSession = async (task: Task): Promise<boolean> => {
+const startSession = async (task: FocusAction): Promise<boolean> => {
   const operation = startOperation.value?.taskId === task.id && startOperation.value.mode === selectedMode.value
     ? startOperation.value
     : { commandId: uuidv4(), sessionId: uuidv4(), taskId: task.id, mode: selectedMode.value };
@@ -118,7 +128,7 @@ const startSession = async (task: Task): Promise<boolean> => {
   }
 };
 
-const switchSession = async (task: Task) => {
+const switchSession = async (task: FocusAction) => {
   if (activeSession.value) {
     const ended = await finishSession('interrupted', false);
     if (!ended) return;

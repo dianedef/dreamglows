@@ -3,10 +3,7 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { registerStyles, unregisterStyles } from './styles/RegisterStyles';
 import { useSettingsStore } from './stores/settingsStore';
-import { useGoalsStore } from './stores/goalsStore';
-import { useTasksStore } from './stores/tasksStore';
 import { useProgressionStore } from './stores/progressionStore';
-import { useFocusSessionsStore } from './stores/focusSessionsStore';
 import { usePathStore } from './stores/pathStore';
 import { DreamGlowsSettingsTab } from './services/SettingsTabService';
 import { NotesGeneratorService } from './services/NotesGeneratorService';
@@ -15,19 +12,11 @@ import { TaskModal } from './components/modals/TaskModal';
 import { DreamGlowsView, IDreamGlows } from './views/DreamGlowsView';
 import { DateService } from './services/DateService';
 import { ValidationService } from './services/ValidationService';
-import type { Goal } from './types/goals';
-import type { Task } from './types/tasks';
 import type { DreamGlowsSettings } from './types/settings';
-import type { FocusSession } from './types/focusSessions';
 import { DEFAULT_SETTINGS } from './types/settings';
 import { PathRepository } from './domain/path/repository';
 import { ObsidianPathRepositoryAdapter } from './domain/path/obsidian-adapter';
 import { PathPersistenceCoordinator } from './domain/path/persistence-coordinator';
-import {
-    mergeLegacyStoreSnapshot,
-    projectLegacyStoreSnapshot,
-    type LegacyStoreSnapshot
-} from './domain/path/legacy-store-bridge';
 import type { JsonObject, ZonedInstant } from './domain/path/model';
 import { createPathCommandPort, type PathCommandPort } from './domain/path/command-port';
 import { createPathEntityEditor, type PathEntityEditor } from './application/path-entity-editor';
@@ -47,13 +36,10 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
     // Stores
     private _pinia!: ReturnType<typeof createPinia>;
     private settingsStore!: ReturnType<typeof useSettingsStore>;
-    private goalsStore!: ReturnType<typeof useGoalsStore>;
-    private tasksStore!: ReturnType<typeof useTasksStore>;
     private progressionStore!: ReturnType<typeof useProgressionStore>;
-    private focusSessionsStore!: ReturnType<typeof useFocusSessionsStore>;
     private pathStore!: ReturnType<typeof usePathStore>;
     private pathPersistence!: PathPersistenceCoordinator;
-    private initialStoreSnapshot!: LegacyStoreSnapshot;
+    private initialSettings!: JsonObject;
     pathCommands!: PathCommandPort;
     entityEditor!: PathEntityEditor;
 
@@ -102,13 +88,12 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
         const repository = new PathRepository(new ObsidianPathRepositoryAdapter(this));
         this.pathPersistence = new PathPersistenceCoordinator(repository);
         const loaded = await this.pathPersistence.load();
-        this.initialStoreSnapshot = projectLegacyStoreSnapshot(loaded.document);
+        this.initialSettings = loaded.document.settings;
 
         // A successful legacy read is checkpointed once as a canonical document.
         // Corrupt or unreadable input throws before this point and is never replaced.
         if (loaded.migrated) {
-            await this.pathPersistence.update(current =>
-                mergeLegacyStoreSnapshot(current, this.initialStoreSnapshot));
+            await this.pathPersistence.update(current => current);
         }
         this.pathCommands = createPathCommandPort({
             updateDocument: updater => this.pathPersistence.update(updater),
@@ -121,7 +106,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
 
     private async initializeSettings() {
         console.log('Initialisation des settings...');
-        this.settings = this.validateSettings(this.initialStoreSnapshot.settings);
+        this.settings = this.validateSettings(this.initialSettings);
         console.log('Settings initialisés:', this.settings);
     }
 
@@ -164,29 +149,19 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
         
         // Initialiser les stores
             this.settingsStore = useSettingsStore(this._pinia);
-            this.goalsStore = useGoalsStore(this._pinia);
-            this.tasksStore = useTasksStore(this._pinia);
             this.progressionStore = useProgressionStore(this._pinia);
-            this.focusSessionsStore = useFocusSessionsStore(this._pinia);
             this.pathStore = usePathStore(this._pinia);
-        
-        // Charger les données initiales
-            const data = this.initialStoreSnapshot;
-            console.log('Données chargées:', data);
             
             // Mettre à jour les stores en utilisant les actions
             this.settingsStore.$patch({ settings: this.settings });
-            await this.goalsStore.setGoals(data.goals as unknown as Goal[]);
-            await this.tasksStore.setTasks(data.tasks as unknown as Task[]);
             this.progressionStore.hydrate(this.settings.gameProgression);
-            this.focusSessionsStore.hydrate(data.focusSessions);
             const currentPathDocument = this.pathPersistence.document;
             if (currentPathDocument) this.pathStore.hydrate(currentPathDocument);
             
             // Configurer les watchers
             this.setupStoreWatchers();
             
-            console.log('Stores initialisés avec', data.tasks.length, 'tâches');
+            console.log('Stores initialisés depuis le document Chemin canonique');
         } catch (error) {
             console.error('Erreur lors de l\'initialisation des stores:', error);
             throw new Error('Échec de l\'initialisation des stores');
@@ -269,11 +244,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
     }
 
     private async syncCanonicalState(document: import('./domain/path/repository').PathRepositoryDocument) {
-        const snapshot = projectLegacyStoreSnapshot(document);
         this.pathStore.hydrate(document);
-        await this.goalsStore.setGoals(snapshot.goals as unknown as Goal[]);
-        await this.tasksStore.setTasks(snapshot.tasks as unknown as Task[]);
-        this.focusSessionsStore.hydrate(snapshot.focusSessions);
     }
 
     async saveSettings() {

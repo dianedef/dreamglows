@@ -49,7 +49,7 @@
           <label for="task-goal">Objectif lié (optionnel)</label>
           <select id="task-goal" v-model="taskData.goalId">
             <option value="">Aucun objectif</option>
-            <option v-for="goal in goalsStore.goals" :key="goal.id" :value="goal.id">{{ goal.title }}</option>
+            <option v-for="goal in canonicalGoals" :key="goal.id" :value="goal.id">{{ goal.title }}</option>
           </select>
         </div>
         <div class="dreamglows-modal-field">
@@ -100,8 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, inject } from 'vue';
-import { useGoalsStore } from '@/stores/goalsStore';
+import { computed, ref, reactive, onMounted, inject } from 'vue';
 import type { Task } from '@/types/tasks';
 import { useDreamGlowsUiContext } from '@/application/ui-context';
 import { usePathStore } from '@/stores/pathStore';
@@ -109,8 +108,10 @@ import { v4 as uuidv4 } from 'uuid';
 
 const props = defineProps<{ editingTask?: Task; initialGoalId?: string }>();
 
-const goalsStore = useGoalsStore();
 const { entityEditor }=useDreamGlowsUiContext(); const pathStore=usePathStore();
+const canonicalGoals = computed(() => pathStore.document?.envelope.entities.filter(entity =>
+  (entity.type === 'goal' || entity.type === 'milestone') && !entity.deletedAt
+) ?? []);
 const submitting=ref(false);const feedback=ref<{error:boolean;text:string}>();const operationId=ref<string>();const entityId=ref(props.editingTask?.id??uuidv4());
 const closeModal = inject('closeModal') as () => void;
 const isEditing = !!props.editingTask;

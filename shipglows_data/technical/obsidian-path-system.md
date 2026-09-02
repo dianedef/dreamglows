@@ -1,7 +1,7 @@
 ---
 artifact: technical_context
 metadata_schema_version: "1.0"
-artifact_version: "1.7.0"
+artifact_version: "2.0.0"
 project: DreamGlows
 created: "2026-09-02"
 updated: "2026-09-02"
@@ -36,8 +36,11 @@ evidence:
   - "Modal hosts now receive the plugin-owned Pinia and command port; a source-boundary test and the 102-test suite prevent regression to the singleton store."
   - "Atomic Goal/Action saves passed 107/107 tests and the create-task command opened in the disposable host without the prior missing-context diagnostic."
   - "Focus lifecycle UI, complete history labels, the legacy-writer boundary, and a full create-to-history reload slice passed 114/114 tests; legacy Goal/Task/Focus stores are now read-only projections with no persistence subscriptions."
+  - "The final consolidation removed the runtime compatibility bridge and stores; active Goal, Action, Focus, Today, Journey, and form-option readers now use canonical entities."
+  - "The final 124-test suite covers 1,000/10,000-entity migration/projection corpora and static accessibility boundaries; the production artifact loaded and opened DreamGlows in the disposable Lab without diagnostics."
+  - "The unused vis-timeline dependency and its transitives were removed after the semantic Journey implementation proved complete and independent."
 next_review: "2026-10-02"
-next_step: "Move the remaining GoalTree and form-option readers onto canonical selectors, then prove populated accessibility and host interactions before removing the one-way compatibility projection."
+next_step: "Adopt the canonical Path envelope in another DreamGlows client through a separately approved cross-platform chantier."
 ---
 
 # Obsidian canonical Path system
@@ -56,7 +59,7 @@ Chemin is the single business source for planning, acting, reviewing, and preser
 | Read model | `projections.ts`, `dashboard-view-model.ts`, `stores/pathStore.ts` | Today, Week, Journey, History, and dashboard summaries share filters, reference date, timezone rules, durable events, and canonical entity identity |
 | Presentation | `CheminShell.vue`, `PathActionsPanel.vue`, `PathJourneyTree.vue`, `PathDetailPanel.vue`, Path views | Accessible list/tree and form actions remain complete without a graphical timeline dependency |
 | Statistics | `statistics.ts`, `StatsView.vue` | Inclusive Paris civil ranges count durable facts separately from current status; complete and reopen remain distinct; hierarchy cycles and orphans are explicit |
-| Compatibility | `legacy-store-bridge.ts` | Legacy input is checkpointed once; canonical state then mirrors one way into temporary read-only Goal/Task/Focus projections |
+| Legacy import | `legacy-v0.ts`, `migration-v0.ts` | Existing plugin data is decoded, diagnosed, migrated, and checkpointed once; there is no runtime dual-write or legacy store projection |
 
 ## Invariants
 
@@ -71,9 +74,9 @@ Chemin is the single business source for planning, acting, reviewing, and preser
 - Gamification history and Obsidian note content remain separate sources until an explicit product mapping exists.
 - Long-range statistics never infer accomplishments from current status or planned-period changes.
 
-## Current compatibility boundary
+## Legacy import boundary
 
-The plugin still contains legacy Goal/Task read consumers for some form options and daily presentation. They are compatibility projections only: no Goal, Task, or Focus store subscription can reconstruct or persist the canonical document. Settings update their own field through the repository without merging a legacy business snapshot. Dashboard facts and portfolio counters are canonical, and only the canonical repository owns plugin `data.json`.
+All active Goal, Action, and Focus surfaces read canonical entities or shared projections. Legacy Goal/Task/Focus stores, the runtime bridge, and their old tree/list components are retired. Existing installations still pass through the permissive decoder and deterministic migration at first opening; a successful migration is checkpointed directly as a canonical document. Settings update their own field through the repository, and only that repository owns plugin `data.json`.
 
 Modal Vue apps use the same Pinia, command port, and entity editor as the main plugin app. They never import or instantiate the legacy singleton Pinia. Goal/Action form submission is one atomic repository update; rejection or write failure leaves the form open and persists no partial draft. Focus start, pause, completion, and task switching use replay-safe canonical lifecycle commands with visible pending and failure feedback.
 

@@ -3,7 +3,6 @@ export * from './primitives.ts';
 export * from './legacy-v0.ts';
 export * from './migration-v0.ts';
 export * from './repository.ts';
-export * from './legacy-store-bridge.ts';
 export * from './obsidian-adapter.ts';
 export * from './persistence-coordinator.ts';
 export * from './commands.ts';

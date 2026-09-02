@@ -82,7 +82,6 @@
 
 <script setup lang="ts">
 import { ref, computed, inject } from 'vue';
-import { useGoalsStore } from '@/stores/goalsStore';
 import type { Goal, GoalStatus, GoalPriority, GoalFrequency } from '@/types/goals';
 import { Notice } from 'obsidian';
 import { v4 as uuidv4 } from 'uuid';
@@ -90,7 +89,6 @@ import { useDreamGlowsUiContext } from '@/application/ui-context';
 import { usePathStore } from '@/stores/pathStore';
 
 const props = defineProps<{ editingGoal?: Goal }>();
-const goalsStore = useGoalsStore();
 const { entityEditor } = useDreamGlowsUiContext(); const pathStore=usePathStore();
 const submitting=ref(false); const feedback=ref<{error:boolean;text:string}>(); const operationId=ref<string>();
 const closeModal = inject('closeModal') as () => void;
@@ -103,8 +101,16 @@ const defaultFormData: Goal = {
   metrics: { target: 0, current: 0, unit: '' }, recurring: { frequency: '' as GoalFrequency, endDate: undefined }
 };
 const formData = ref<Goal>(props.editingGoal ? { ...props.editingGoal } : { ...defaultFormData });
-const categories = computed(() => [...new Set(goalsStore.goals.map(goal => goal.category).filter(Boolean))]);
-const existingTags = computed(() => [...new Set(goalsStore.goals.flatMap(goal => goal.tags || []))]);
+const canonicalGoals = computed(() => pathStore.document?.envelope.entities.filter(entity =>
+  (entity.type === 'goal' || entity.type === 'milestone') && !entity.deletedAt
+) ?? []);
+const categories = computed(() => [...new Set(canonicalGoals.value.flatMap(entity => {
+  const legacyStore = entity.extensions.legacyStore;
+  if (!legacyStore || Array.isArray(legacyStore) || typeof legacyStore !== 'object') return [];
+  const category = legacyStore.category;
+  return typeof category === 'string' && category ? [category] : [];
+}))]);
+const existingTags = computed(() => [...new Set(canonicalGoals.value.flatMap(entity => entity.tags))]);
 const handleCategoryChange = () => { if (formData.value.category === 'new') { showNewCategoryInput.value = true; formData.value.category = ''; } };
 const addNewCategory = () => { if (newCategory.value.trim()) { formData.value.category = newCategory.value.trim(); newCategory.value = ''; } showNewCategoryInput.value = false; };
 const addTag = () => { const tag = tagInput.value.trim(); if (tag && !formData.value.tags?.includes(tag)) { if (!formData.value.tags) formData.value.tags = []; formData.value.tags.push(tag); } tagInput.value = ''; };

@@ -13,6 +13,18 @@ test('FocusSessionPanel writes its lifecycle only through canonical commands', a
   assert.doesNotMatch(panel, /tasksStore\.updateTask\(/);
 });
 
+test('FocusSessionPanel derives sessions, actions and goal context from canonical entities', async () => {
+  const panel = await readFile(source, 'utf8');
+  assert.match(panel, /usePathStore\(\)/);
+  assert.match(panel, /pathStore\.document\?\.envelope\.entities/);
+  assert.match(panel, /entity\.type === 'focus-session' && entity\.status === 'in-progress'/);
+  assert.match(panel, /entity\.type === 'action'/);
+  assert.match(panel, /entity\.type === 'goal' \|\| entity\.type === 'milestone'/);
+  assert.match(panel, /activeSession\.value\.occurredAt \?\? activeSession\.value\.createdAt/);
+  assert.doesNotMatch(panel, /use(?:FocusSessions|Goals|Tasks)Store/);
+  assert.doesNotMatch(panel, /@\/types\/(?:focusSessions|goals|tasks)/);
+});
+
 test('FocusSessionPanel keeps retry identities and user context across persistence errors', async () => {
   const panel = await readFile(source, 'utf8');
   assert.match(panel, /startOperation\.value\?\.taskId === task\.id/);

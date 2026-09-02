@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - La modale de tâche adopte une mise en page bornée et responsive, une hiérarchie claire, des libellés accessibles et des actions explicites.
 - Les formulaires Objectif/Action et le cycle Focus écrivent désormais exclusivement dans le Chemin canonique, avec sauvegardes atomiques ou rejouables et erreurs visibles.
 - Les anciens stores Goal/Task/Focus sont devenus des projections en lecture seule et ne peuvent plus réécrire les données métier.
+- La vue Objectifs, le résumé quotidien, les formulaires et Focus lisent maintenant directement les entités Chemin ; le pont et les composants legacy ont été retirés.
+- La dépendance graphique `vis-timeline`, devenue inutile, a été retirée ; l’arbre et les formulaires accessibles restent l’interface complète.
 
 ### Fixed
 - Compatibilité du build avec Vite 8 pour les types Vue importés et les feuilles de styles injectées.

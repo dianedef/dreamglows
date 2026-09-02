@@ -223,15 +223,13 @@
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue';
 import { DateTime } from 'luxon';
 import { useHabitsStore } from '@/stores/habitsStore';
-import { useGoalsStore } from '@/stores/goalsStore';
-import { useTasksStore } from '@/stores/tasksStore';
 import { useProgressionStore } from '@/stores/progressionStore';
 import FocusSessionPanel from '@/components/FocusSessionPanel.vue';
 import PathActionsPanel from '@/components/PathActionsPanel.vue';
 import { usePathStore } from '@/stores/pathStore';
 import { getMoodEmoji, getLoveEmoji, getEnergyEmoji, type MoodLevel, type LoveLevel, type EnergyLevel } from '@/stores/habitsStore';
 import type { Habit } from '@/types/habits';
-import type { Task, TaskStatus } from '@/types/tasks';
+import type { JsonObject, JsonValue, PathEntity } from '@/domain/path/model';
 import type { Note } from '@/types/notes';
 import { WorkspaceLeaf, MarkdownView, TFile, Notice } from 'obsidian';
 import { DateService } from '@/services/DateService';
@@ -291,10 +289,16 @@ const props = defineProps<{
 const getDreamGlowsPlugin = (app: any) => app?.plugins?.plugins?.dreamglows;
 
 const habitsStore = useHabitsStore();
-const goalsStore = useGoalsStore();
-const tasksStore = useTasksStore();
 const progressionStore = useProgressionStore();
 const pathStore = usePathStore();
+
+const isObject = (value: JsonValue | undefined): value is JsonObject => typeof value === 'object' && value !== null && !Array.isArray(value);
+const legacyFields = (entity: PathEntity): JsonObject => isObject(entity.extensions.legacyStore) ? entity.extensions.legacyStore : {};
+const numericLegacyField = (entity: PathEntity, key: string) => {
+  const value = legacyFields(entity)[key];
+  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
+};
+const activeEntities = computed(() => (pathStore.document?.envelope.entities ?? []).filter(entity => entity.status !== 'cancelled'));
 
 const dayNotes = ref('');
 const currentNote = ref<DayNote | null>(null);
@@ -348,46 +352,42 @@ const progression = computed(() => ({
 const recentRewards = computed(() => progressionStore.recentRewardHistory);
 
 const nextGoal = computed(() => {
-  const goals = goalsStore.goals
-    .filter(g => g.status !== 'done' && g.dueDate)
-    .sort((a, b) => DateTime.fromISO(a.dueDate || '').toMillis() - DateTime.fromISO(b.dueDate || '').toMillis());
-  return goals[0];
+  return activeEntities.value
+    .filter(entity => (entity.type === 'goal' || entity.type === 'milestone') && entity.status !== 'done' && entity.planned?.end)
+    .sort((a, b) => String(a.planned?.end).localeCompare(String(b.planned?.end)))
+    .map(entity => ({ ...entity, dueDate: entity.planned?.end }))[0];
 });
 
 const lastCompletedGoal = computed(() => {
-  const goals = goalsStore.goals
-    .filter(g => g.status === 'done')
-    .sort((a, b) => DateTime.fromISO(b.completedDate || '').toMillis() - DateTime.fromISO(a.completedDate || '').toMillis());
-  return goals[0];
+  return activeEntities.value
+    .filter(entity => (entity.type === 'goal' || entity.type === 'milestone') && entity.status === 'done')
+    .sort((a, b) => String(b.completedAt ?? '').localeCompare(String(a.completedAt ?? '')))
+    .map(entity => ({ ...entity, completedDate: entity.completedAt }))[0];
 });
 
 const nextTask = computed(() => {
-  const tasks = tasksStore.getTasks
-    .filter((t: Task) => t.status !== 'done' && t.startDate)
-    .sort((a: Task, b: Task) => {
-      if (!a.startDate || !b.startDate) return 0;
-      return DateTime.fromISO(a.startDate).toMillis() - DateTime.fromISO(b.startDate).toMillis();
-    });
-  return tasks[0];
+  return activeEntities.value
+    .filter(entity => entity.type === 'action' && entity.status !== 'done' && entity.planned?.start)
+    .sort((a, b) => String(a.planned?.start).localeCompare(String(b.planned?.start)))[0];
 });
 
 const todayTaskItems = computed(() => {
   const ids = new Set((pathStore.todayProjection?.items ?? []).filter(item => item.entity.type === 'action').map(item => item.id));
-  return tasksStore.getTasks
-    .filter((task: Task) => ids.has(task.id))
-    .sort((a: Task, b: Task) => {
-      const aTime = a.startTime || '99:99';
-      const bTime = b.startTime || '99:99';
+  return activeEntities.value
+    .filter(entity => entity.type === 'action' && ids.has(entity.id))
+    .sort((a, b) => {
+      const aTime = String(legacyFields(a).startTime || '99:99');
+      const bTime = String(legacyFields(b).startTime || '99:99');
       return aTime.localeCompare(bTime);
     });
 });
 
 const todayPlannedMinutes = computed(() => {
-  return todayTaskItems.value.reduce((sum, task) => sum + (task.plannedMinutes || 0), 0);
+  return todayTaskItems.value.reduce((sum, task) => sum + numericLegacyField(task, 'plannedMinutes'), 0);
 });
 
 const todayActualMinutes = computed(() => {
-  return todayTaskItems.value.reduce((sum, task) => sum + (task.actualMinutes || 0), 0);
+  return todayTaskItems.value.reduce((sum, task) => sum + numericLegacyField(task, 'actualMinutes'), 0);
 });
 
 // Computed properties pour la semaine courante

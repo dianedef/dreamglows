@@ -38,10 +38,19 @@ test('goal and task forms do not mutate legacy stores', async () => {
   }
 });
 
+test('goal and task forms read suggestions from canonical path entities', async () => {
+  for (const name of ['GoalModalContent.vue', 'TaskModalContent.vue']) {
+    const modal = await readFile(new URL(`components/modals/${name}`, source), 'utf8');
+    assert.doesNotMatch(modal, /useGoalsStore|goalsStore\./);
+    assert.match(modal, /pathStore\.document\?\.envelope\.entities\.filter/);
+    assert.match(modal, /entity\.type === 'goal'.*entity\.type === 'milestone'/s);
+    assert.match(modal, /!entity\.deletedAt/);
+  }
+});
+
 test('runtime components cannot mutate legacy path stores', async () => {
   const components = [
     'components/FocusSessionPanel.vue',
-    'components/TaskList.vue',
     'components/modals/GoalModalContent.vue',
     'components/modals/TaskModalContent.vue',
     'views/DayView.vue',
@@ -61,9 +70,16 @@ test('plugin entry point has no legacy path-store persistence subscriptions', as
   assert.doesNotMatch(main, /savePluginData|currentStoreSnapshot|persistCurrentState/);
 });
 
-test('compatibility stores expose hydration and selection only, never business writers', async () => {
+test('legacy Goal, Task and Focus stores stay retired', async () => {
   for (const name of ['goalsStore.ts', 'tasksStore.ts', 'focusSessionsStore.ts']) {
-    const store = await readFile(new URL(`stores/${name}`, source), 'utf8');
-    assert.doesNotMatch(store, /\b(?:addGoal|createGoal|updateGoal|deleteGoal|addTask|updateTask|deleteTask|start|finish|interrupt)\s*\(/);
+    await assert.rejects(access(new URL(`stores/${name}`, source)));
   }
+});
+
+test('runtime compatibility bridge stays retired while legacy decoding remains available', async () => {
+  await assert.rejects(access(new URL('domain/path/legacy-store-bridge.ts', source)));
+  await access(new URL('domain/path/legacy-v0.ts', source));
+  await access(new URL('domain/path/migration-v0.ts', source));
+  const main = await readFile(new URL('main.ts', source), 'utf8');
+  assert.match(main, /if \(loaded\.migrated\)[\s\S]*update\(current => current\)/);
 });
