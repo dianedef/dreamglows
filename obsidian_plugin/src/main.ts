@@ -36,6 +36,7 @@ import {
 } from './domain/path/legacy-store-bridge';
 import type { JsonObject, ZonedInstant } from './domain/path/model';
 import { createPathCommandPort, type PathCommandPort } from './domain/path/command-port';
+import { createPathEntityEditor, type PathEntityEditor } from './application/path-entity-editor';
 import { v4 as uuidv4 } from 'uuid';
 import './styles/dreamglows-tokens.css';
 import './styles/goals/task-modal-content.css';
@@ -66,6 +67,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
     private pathPersistence!: PathPersistenceCoordinator;
     private initialStoreSnapshot!: LegacyStoreSnapshot;
     pathCommands!: PathCommandPort;
+    entityEditor!: PathEntityEditor;
     private syncingCanonicalToLegacy = false;
 
     // Vue
@@ -127,6 +129,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
             now: () => new Date().toISOString() as ZonedInstant,
             createId: () => uuidv4()
         });
+        this.entityEditor = createPathEntityEditor({ updateDocument: updater => this.pathPersistence.update(updater), afterPersist: document => this.syncCanonicalState(document), now: () => new Date().toISOString() as ZonedInstant, createId: () => uuidv4() });
     }
 
     private async initializeSettings() {
@@ -268,7 +271,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
             name: 'Nouvel objectif',
             callback: () => {
                 console.log('Command: Opening goal modal');
-                const modal = new GoalModal(this.app, { pinia: this.pinia, pathCommands: this.pathCommands });
+                const modal = new GoalModal(this.app, { pinia: this.pinia, pathCommands: this.pathCommands, entityEditor: this.entityEditor });
                 modal.open();
             },
             hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "G" }]
@@ -278,7 +281,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
                 id: 'create-new-task',
                 name: 'Créer une nouvelle tâche',
                 callback: () => {
-                    const modal = new TaskModal(this.app, { pinia: this.pinia, pathCommands: this.pathCommands });
+                    const modal = new TaskModal(this.app, { pinia: this.pinia, pathCommands: this.pathCommands, entityEditor: this.entityEditor });
                     modal.open();
                 },
                 hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "T" }]

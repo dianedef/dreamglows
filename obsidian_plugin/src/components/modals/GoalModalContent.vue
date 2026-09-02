@@ -1,5 +1,5 @@
 <template>
-  <form class="dreamglows-goal-modal" aria-labelledby="dreamglows-goal-modal-title" @submit.prevent="handleSubmit">
+  <form class="dreamglows-goal-modal" aria-labelledby="dreamglows-goal-modal-title" :aria-busy="submitting" @submit.prevent="handleSubmit">
     <header class="dreamglows-goal-modal__header">
       <p class="dreamglows-goal-modal__eyebrow">DreamGlows · Objectif</p>
       <h2 id="dreamglows-goal-modal-title">{{ isEditing ? 'Modifier l’objectif' : 'Nouvel objectif' }}</h2>
@@ -72,9 +72,10 @@
     </div>
 
     <footer class="dreamglows-goal-modal__actions">
-      <button v-if="isEditing" type="button" class="dreamglows-goal-modal__delete" @click="handleDelete">Supprimer</button>
-      <button type="button" @click="cancel">Annuler</button>
-      <button type="submit" class="mod-cta">{{ isEditing ? 'Enregistrer les modifications' : 'Créer l’objectif' }}</button>
+      <p v-if="feedback" :role="feedback.error ? 'alert' : 'status'">{{ feedback.text }}</p>
+      <button v-if="isEditing" type="button" class="dreamglows-goal-modal__delete" :disabled="submitting" @click="handleDelete">Archiver</button>
+      <button type="button" :disabled="submitting" @click="cancel">Annuler</button>
+      <button type="submit" class="mod-cta" :disabled="submitting">{{ isEditing ? 'Enregistrer les modifications' : 'Créer l’objectif' }}</button>
     </footer>
   </form>
 </template>
@@ -85,9 +86,13 @@ import { useGoalsStore } from '@/stores/goalsStore';
 import type { Goal, GoalStatus, GoalPriority, GoalFrequency } from '@/types/goals';
 import { Notice } from 'obsidian';
 import { v4 as uuidv4 } from 'uuid';
+import { useDreamGlowsUiContext } from '@/application/ui-context';
+import { usePathStore } from '@/stores/pathStore';
 
 const props = defineProps<{ editingGoal?: Goal }>();
 const goalsStore = useGoalsStore();
+const { entityEditor } = useDreamGlowsUiContext(); const pathStore=usePathStore();
+const submitting=ref(false); const feedback=ref<{error:boolean;text:string}>(); const operationId=ref<string>();
 const closeModal = inject('closeModal') as () => void;
 const isEditing = computed(() => !!props.editingGoal);
 const showNewCategoryInput = ref(false);
@@ -105,9 +110,11 @@ const addNewCategory = () => { if (newCategory.value.trim()) { formData.value.ca
 const addTag = () => { const tag = tagInput.value.trim(); if (tag && !formData.value.tags?.includes(tag)) { if (!formData.value.tags) formData.value.tags = []; formData.value.tags.push(tag); } tagInput.value = ''; };
 const removeTag = (tag: string) => { if (formData.value.tags) formData.value.tags = formData.value.tags.filter(item => item !== tag); };
 const handleSubmit = async () => {
-  try { if (isEditing.value) { await goalsStore.updateGoal(formData.value); new Notice('Objectif mis à jour avec succès'); } else { await goalsStore.createGoal(formData.value); new Notice('Objectif créé avec succès'); } closeModal(); }
-  catch (error) { console.error('Erreur lors de la sauvegarde de l’objectif:', error); new Notice('Erreur lors de la sauvegarde de l’objectif'); }
+  submitting.value=true;feedback.value=undefined;const commandId=operationId.value??uuidv4();operationId.value=commandId;
+  try { const existing=pathStore.document?.envelope.entities.find(entity=>entity.id===formData.value.id); const result=await entityEditor.saveGoal({id:formData.value.id,title:formData.value.title,description:formData.value.description||'',priority:formData.value.priority,tags:formData.value.tags||[],planned:formData.value.startDate||formData.value.dueDate?{...(formData.value.startDate?{start:String(formData.value.startDate).slice(0,10)}:{}),...(formData.value.dueDate?{end:String(formData.value.dueDate).slice(0,10)}:{})}:undefined,status:formData.value.status,parentId:existing?.parentId,extensions:{...(existing?.extensions??{}),legacyStore:{category:formData.value.category||'',metrics:formData.value.metrics as any,recurring:formData.value.recurring as any}}},commandId); if(!result.accepted){operationId.value=undefined;feedback.value={error:true,text:`Enregistrement refusé : ${result.reason}.`};return}new Notice(isEditing.value?'Objectif mis à jour avec succès':'Objectif créé avec succès');closeModal(); }
+  catch { feedback.value={error:true,text:'La sauvegarde a échoué; aucun changement n’a été enregistré.'}; }
+  finally{submitting.value=false}
 };
-const handleDelete = async () => { if (!formData.value.id) return; try { await goalsStore.deleteGoal(formData.value.id); new Notice('Objectif supprimé avec succès'); closeModal(); } catch (error) { console.error('Erreur lors de la suppression de l’objectif:', error); new Notice('Erreur lors de la suppression de l’objectif'); } };
+const handleDelete = async () => { if (!formData.value.id)return;submitting.value=true;feedback.value=undefined;try{const result=await entityEditor.archive(formData.value.id,uuidv4());if(!result.accepted){feedback.value={error:true,text:result.reason==='has-children'?'Déplacez ou archivez d’abord les éléments enfants.':`Archivage refusé : ${result.reason}.`};return}new Notice('Objectif archivé');closeModal()}catch{feedback.value={error:true,text:'L’archivage a échoué; l’objectif reste disponible.'}}finally{submitting.value=false} };
 const cancel = () => closeModal();
 </script>

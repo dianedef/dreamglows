@@ -8,12 +8,14 @@ import type { Task } from '@/types/tasks';
 import type { PathCommandPort } from '@/domain/path/command-port';
 import { PATH_COMMAND_PORT_KEY } from '@/application/path-command-port';
 import { DREAMGLOWS_UI_CONTEXT_KEY } from '@/application/ui-context';
+import type { PathEntityEditor } from '@/application/path-entity-editor';
 
 export interface IDreamGlows extends Plugin {
     savePluginData(goals: Goal[], tasks: Task[]): Promise<void>;
     generateNotes(): Promise<void>;
     readonly pinia: ReturnType<typeof createPinia>;
     readonly pathCommands: PathCommandPort;
+    readonly entityEditor: PathEntityEditor;
 }
 
 export class DreamGlowsView extends ItemView {
@@ -54,7 +56,7 @@ export class DreamGlowsView extends ItemView {
         // Utiliser l'instance Pinia existante du plugin
         this.vueApp.use(this.plugin.pinia);
         this.vueApp.provide(PATH_COMMAND_PORT_KEY, this.plugin.pathCommands);
-        this.vueApp.provide(DREAMGLOWS_UI_CONTEXT_KEY, { pinia: this.plugin.pinia, pathCommands: this.plugin.pathCommands });
+        this.vueApp.provide(DREAMGLOWS_UI_CONTEXT_KEY, { pinia: this.plugin.pinia, pathCommands: this.plugin.pathCommands, entityEditor: this.plugin.entityEditor });
         
         // Monter l'application
         this.vueApp.mount(container.children[0]);

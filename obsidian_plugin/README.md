@@ -51,6 +51,7 @@ Chaque release BRAT contient les assets suivants :
 
 - Une enveloppe Chemin versionnée constitue la source de vérité du plugin.
 - Les écritures sont sérialisées, révisionnées et rejouables par identifiant de commande.
+- Les formulaires Objectif/Action appliquent ensemble leurs changements de texte, dates, parent et statut, ou n'en appliquent aucun en cas d'échec.
 - Aucun service de notes ou de métriques ne peut écrire directement le document global du plugin.
 - Les anciennes formes Goal/Task sont décodées de façon permissive : les ambiguïtés sont diagnostiquées et les champs inconnus restent récupérables.
 - Un pont temporaire maintient les écrans legacy pendant leur migration ; il ne remplace pas l'enveloppe canonique.

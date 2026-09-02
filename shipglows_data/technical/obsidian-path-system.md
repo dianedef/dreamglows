@@ -1,7 +1,7 @@
 ---
 artifact: technical_context
 metadata_schema_version: "1.0"
-artifact_version: "1.5.0"
+artifact_version: "1.6.0"
 project: DreamGlows
 created: "2026-09-02"
 updated: "2026-09-02"
@@ -34,6 +34,7 @@ evidence:
   - "Canonical 7/30/90/365-day statistics passed 97/97 tests and loaded in the disposable host; removing Chart.js reduced the production bundle from about 5.94 MB to 4.38 MB."
   - "Canonical create/update/tombstone and Focus start/end commands passed 101/101 tests, strict type checking, production build, and disposable host load."
   - "Modal hosts now receive the plugin-owned Pinia and command port; a source-boundary test and the 102-test suite prevent regression to the singleton store."
+  - "Atomic Goal/Action saves passed 107/107 tests and the create-task command opened in the disposable host without the prior missing-context diagnostic."
 next_review: "2026-10-02"
 next_step: "Canonicalize dashboard projections, then remove duplicate legacy writers only after parity proof."
 ---
@@ -73,7 +74,7 @@ Chemin is the single business source for planning, acting, reviewing, and preser
 
 The plugin still contains legacy Goal/Task consumers for modals, Focus Session, and some daily presentation. Store subscriptions therefore remain active. Dashboard facts and portfolio counters are canonical. `StorageService` may read and format daily notes, but can no longer write plugin `data.json`; only the canonical repository owns that document.
 
-Modal Vue apps must use the same Pinia and command port as the main plugin app. They must never import or instantiate the legacy singleton Pinia. TaskList completion, reopening, and priority changes already use this port; form submission and Focus UI migration remain in progress.
+Modal Vue apps use the same Pinia, command port, and entity editor as the main plugin app. They never import or instantiate the legacy singleton Pinia. Goal/Action form submission is one atomic repository update; rejection or write failure leaves the form open and persists no partial draft. Focus UI migration remains in progress.
 
 ## Verification
 

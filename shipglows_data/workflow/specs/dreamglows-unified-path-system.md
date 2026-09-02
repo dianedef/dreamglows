@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.11.0"
+artifact_version: "1.12.0"
 project: DreamGlows
 created: "2026-09-02"
 updated: "2026-09-02"
@@ -32,7 +32,7 @@ evidence:
   - "Operator approved the unified Chemin implementation plan on 2026-09-02."
   - "Repository investigation found duplicate Goal and Task schemas, competing persistence paths, an unconsumed TimelineService, and temporal views derived from file creation dates."
   - "GoalTree, GoalsView detail, DayView, PlanningView, EventService, progression history, and the installed vis-timeline package provide reusable foundations."
-next_step: "Add atomic application-level saveGoal/saveAction operations, then migrate modal submissions without partial persistence."
+next_step: "Migrate FocusSessionPanel to canonical start/end commands, then audit remaining legacy writers before bridge removal."
 ---
 
 # Spec: DreamGlows unified path system
@@ -286,6 +286,7 @@ None for the safety baseline and canonical vertical slice. The four product scop
 | 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Replaced the recursive Chart.js/RxJS Stats implementation with pure inclusive Paris-range statistics, accessible summaries/table, explicit hierarchy diagnostics, and honest separation from wellbeing notes; removed the orphaned metrics service and Chart.js dependency. | implemented and host-proven empty-state; 97/97 tests; bundle reduced ~26% | Migrate remaining active editors and Focus Session writes to canonical commands. |
 | 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Added canonical entity creation, whitelisted editorial updates, recoverable tombstones without implicit cascade, and atomic Focus start/end commands with dedicated durable events and exact-intent replay through the persistence port. | domain/port implemented and host-compatible; 101/101 tests | Inject the shared UI context into modal hosts and migrate active writers surface by surface. |
 | 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Replaced modal singleton Pinia use with the plugin-owned Pinia/command context and migrated TaskList completion, reopen, and priority mutations to the canonical port with pending/error feedback; added a static boundary regression test. | implemented; 102/102 tests and build pass; host command executes but modal DOM capture remains unavailable in the disposable Lab | Add atomic modal save operations before migrating multi-field forms. |
+| 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Added an atomic entity editor that composes create/update/planning/parent/status changes into one repository update, migrated Goal and Task forms plus recoverable archive, preserved compatibility extensions, and fixed nested modal context injection found by the Lab. | implemented; 107/107 tests, build, and host command diagnostics pass | Migrate FocusSessionPanel to canonical lifecycle commands. |
 
 ## Current Chantier Flow
 
@@ -293,8 +294,8 @@ None for the safety baseline and canonical vertical slice. The four product scop
 - Investigation: complete; data, UI, accessibility, migration, and test surfaces mapped.
 - Specification: complete and adversarially reviewed.
 - Readiness: ready; no material product, data, security, platform, or proof decision remains for task 1.
-- Implementation: in progress; shared modal infrastructure and TaskList canonical mutations now pass 102/102 tests alongside recoverable deletion, exact replay, long-range statistics, a no-secondary-writer boundary, and durable event facts.
+- Implementation: in progress; atomic Goal/Action forms and prior Chemin surfaces now pass 107/107 tests alongside recoverable deletion, exact replay, long-range statistics, a no-secondary-writer boundary, and durable event facts.
 - Verification: canonical dashboard/Today/Week/Journey/History empty states and tab activation are host-proven; populated composition and rollback remain unit/integration-proven because the Lab cannot yet seed plugin data.
 - Delivery: implementation checkpoint `465d337` is present on `origin/main`; the overall chantier remains open.
 
-  Next step: add atomic application-level saveGoal/saveAction operations, then migrate modal submissions without partial persistence.
+  Next step: migrate FocusSessionPanel to canonical start/end commands, then audit remaining legacy writers before bridge removal.

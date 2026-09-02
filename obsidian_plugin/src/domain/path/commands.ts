@@ -41,7 +41,7 @@ export interface RecordedEntityInput {
 }
 
 export interface CreateEntityInput { id: string; type: 'goal' | 'action'; title: string; description?: string; priority?: 'low' | 'medium' | 'high'; tags?: string[]; parentId?: string; planned?: PlannedPeriod; extensions?: JsonObject }
-export interface UpdateEntityInput { title?: string; description?: string; priority?: 'low' | 'medium' | 'high'; tags?: string[] }
+export interface UpdateEntityInput { title?: string; description?: string; priority?: 'low' | 'medium' | 'high'; tags?: string[]; extensions?: JsonObject }
 export interface StartFocusInput { id: string; actionId: string; mode: 'focus' | 'creation' | 'administration' }
 export interface EndFocusInput { outcome: 'completed' | 'interrupted'; handoffNote?: string; nextAction?: string }
 
@@ -318,8 +318,8 @@ export function updateEntity(envelope: PathEnvelope, entityId: string, patch: Up
     const entity = envelope.entities.find(item => item.id === entityId && !item.deletedAt); if (!entity) return reject(envelope, 'entity-not-found');
     if (entity.type !== 'goal' && entity.type !== 'action') return reject(envelope, 'incompatible-type');
     if (patch.title !== undefined && !patch.title.trim()) return reject(envelope, 'invalid-command');
-    const next: PathEntity = { ...entity, ...(patch.title !== undefined ? { title: patch.title } : {}), ...(patch.description !== undefined ? { description: patch.description } : {}), ...(patch.priority !== undefined ? { priority: patch.priority } : {}), ...(patch.tags !== undefined ? { tags: [...patch.tags] } : {}) };
-    const keys = ['title','description','priority','tags'] as const; const before: JsonObject = {}, after: JsonObject = {};
+    const next: PathEntity = { ...entity, ...(patch.title !== undefined ? { title: patch.title } : {}), ...(patch.description !== undefined ? { description: patch.description } : {}), ...(patch.priority !== undefined ? { priority: patch.priority } : {}), ...(patch.tags !== undefined ? { tags: [...patch.tags] } : {}), ...(patch.extensions !== undefined ? { extensions: patch.extensions } : {}) };
+    const keys = ['title','description','priority','tags','extensions'] as const; const before: JsonObject = {}, after: JsonObject = {};
     for (const key of keys) if (patch[key] !== undefined && JSON.stringify(entity[key]) !== JSON.stringify(next[key])) { before[key] = (entity[key] ?? null) as any; after[key] = (next[key] ?? null) as any; }
     if (!Object.keys(after).length) return reject(envelope, 'no-op');
     const now = instant(dependencies); if (!now) return reject(envelope, 'invalid-date'); next.updatedAt = now;

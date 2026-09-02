@@ -1,5 +1,5 @@
 <template>
-  <form class="dreamglows-task-modal" aria-labelledby="dreamglows-task-modal-title" @submit.prevent="save">
+  <form class="dreamglows-task-modal" aria-labelledby="dreamglows-task-modal-title" :aria-busy="submitting" @submit.prevent="save">
     <header class="dreamglows-task-modal__header">
       <p class="dreamglows-task-modal__eyebrow">DreamGlows · Tâche</p>
       <h2 id="dreamglows-task-modal-title">{{ isEditing ? 'Modifier la tâche' : 'Nouvelle tâche' }}</h2>
@@ -92,22 +92,26 @@
     </section>
 
     <footer class="dreamglows-modal-actions">
-      <button v-if="isEditing" type="button" class="dreamglows-modal-delete" @click="deleteTask">Supprimer</button>
-      <button type="submit" class="dreamglows-modal-save">{{ isEditing ? 'Enregistrer les modifications' : 'Créer la tâche' }}</button>
+      <p v-if="feedback" :role="feedback.error ? 'alert' : 'status'">{{ feedback.text }}</p>
+      <button v-if="isEditing" type="button" class="dreamglows-modal-delete" :disabled="submitting" @click="deleteTask">Archiver</button>
+      <button type="submit" class="dreamglows-modal-save" :disabled="submitting">{{ isEditing ? 'Enregistrer les modifications' : 'Créer la tâche' }}</button>
     </footer>
   </form>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, inject } from 'vue';
-import { useTasksStore } from '@/stores/tasksStore';
 import { useGoalsStore } from '@/stores/goalsStore';
 import type { Task } from '@/types/tasks';
+import { useDreamGlowsUiContext } from '@/application/ui-context';
+import { usePathStore } from '@/stores/pathStore';
+import { v4 as uuidv4 } from 'uuid';
 
 const props = defineProps<{ editingTask?: Task; initialGoalId?: string }>();
 
-const tasksStore = useTasksStore();
 const goalsStore = useGoalsStore();
+const { entityEditor }=useDreamGlowsUiContext(); const pathStore=usePathStore();
+const submitting=ref(false);const feedback=ref<{error:boolean;text:string}>();const operationId=ref<string>();const entityId=ref(props.editingTask?.id??uuidv4());
 const closeModal = inject('closeModal') as () => void;
 const isEditing = !!props.editingTask;
 const newTag = ref('');
@@ -152,7 +156,7 @@ const save = async () => {
     ...taskData,
     title: taskData.title || '',
     description: taskData.description || '',
-    startDate: taskData.startDate || new Date().toISOString().split('T')[0],
+    startDate: taskData.startDate || '',
     dueDate: taskData.dueDate || undefined,
     startTime: taskData.startTime || undefined,
     dueTime: taskData.dueTime || undefined,
@@ -170,20 +174,13 @@ const save = async () => {
   };
 
   try {
-    const savedTask = isEditing
-      ? await tasksStore.updateTask({ ...completeTaskData, id: props.editingTask!.id })
-      : await tasksStore.addTask(completeTaskData);
-    if (savedTask?.goalId) await goalsStore.addTaskToGoal(savedTask.goalId, savedTask.id);
-    closeModal();
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde de la tâche:', error);
-  }
+    submitting.value=true;feedback.value=undefined;const commandId=operationId.value??uuidv4();operationId.value=commandId;const existing=pathStore.document?.envelope.entities.find(entity=>entity.id===entityId.value);const result=await entityEditor.saveAction({id:entityId.value,title:completeTaskData.title,description:completeTaskData.description,priority:completeTaskData.priority,tags:completeTaskData.tags,parentId:completeTaskData.goalId,planned:completeTaskData.startDate||completeTaskData.dueDate?{...(completeTaskData.startDate?{start:completeTaskData.startDate}:{}),...(completeTaskData.dueDate?{end:completeTaskData.dueDate}:{})}:undefined,status:completeTaskData.status,extensions:{...(existing?.extensions??{}),legacyStore:{startTime:completeTaskData.startTime??null,dueTime:completeTaskData.dueTime??null,plannedMinutes:completeTaskData.plannedMinutes??null,actualMinutes:completeTaskData.actualMinutes??null,notes:completeTaskData.notes,linkToOptimizer:completeTaskData.linkToOptimizer,linkToGenerator:completeTaskData.linkToGenerator}}},commandId);if(!result.accepted){operationId.value=undefined;feedback.value={error:true,text:`Enregistrement refusé : ${result.reason}.`};return}closeModal();
+  } catch { feedback.value={error:true,text:'La sauvegarde a échoué; aucun changement n’a été enregistré.'}; }
+  finally{submitting.value=false}
 };
 
 const deleteTask = async () => {
   if (!isEditing) return;
-  const deletedTask = await tasksStore.deleteTask(props.editingTask!.id);
-  if (deletedTask?.goalId) await goalsStore.removeTaskFromGoal(deletedTask.goalId, deletedTask.id);
-  closeModal();
+  submitting.value=true;feedback.value=undefined;try{const result=await entityEditor.archive(props.editingTask!.id,uuidv4());if(!result.accepted){feedback.value={error:true,text:`Archivage refusé : ${result.reason}.`};return}closeModal()}catch{feedback.value={error:true,text:'L’archivage a échoué; la tâche reste disponible.'}}finally{submitting.value=false}
 };
 </script>

@@ -3,7 +3,7 @@ import { createApp, type App as VueApp } from 'vue';
 import TaskModalContent from './TaskModalContent.vue';
 import type { Task } from '../../types/tasks';
 import { PATH_COMMAND_PORT_KEY } from '../../application/path-command-port';
-import type { DreamGlowsUiContext } from '../../application/ui-context';
+import { DREAMGLOWS_UI_CONTEXT_KEY, type DreamGlowsUiContext } from '../../application/ui-context';
 
 export class TaskModal extends Modal {
     private vueApp: VueApp | null = null;
@@ -35,6 +35,7 @@ export class TaskModal extends Modal {
         
         this.vueApp.use(this.context.pinia);
         this.vueApp.provide(PATH_COMMAND_PORT_KEY, this.context.pathCommands);
+        this.vueApp.provide(DREAMGLOWS_UI_CONTEXT_KEY, this.context);
         
         // Fournir la fonction closeModal via provide/inject
         this.vueApp.provide('closeModal', () => this.close());

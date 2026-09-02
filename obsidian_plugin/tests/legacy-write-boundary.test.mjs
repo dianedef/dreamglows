@@ -26,5 +26,14 @@ test('modal hosts receive the shared Pinia and canonical command context', async
     assert.doesNotMatch(modal, /from ['"]\.\.\/\.\.\/stores['"]/);
     assert.match(modal, /this\.vueApp\.use\(this\.context\.pinia\)/);
     assert.match(modal, /provide\(PATH_COMMAND_PORT_KEY, this\.context\.pathCommands\)/);
+    assert.match(modal, /provide\(DREAMGLOWS_UI_CONTEXT_KEY, this\.context\)/);
+  }
+});
+
+test('goal and task forms do not mutate legacy stores', async () => {
+  for (const name of ['GoalModalContent.vue', 'TaskModalContent.vue']) {
+    const modal = await readFile(new URL(`components/modals/${name}`, source), 'utf8');
+    assert.doesNotMatch(modal, /\.(?:createGoal|updateGoal|deleteGoal|addTask|updateTask|deleteTask|addTaskToGoal|removeTaskFromGoal)\s*\(/);
+    assert.match(modal, /entityEditor\.(?:saveGoal|saveAction)/);
   }
 });
