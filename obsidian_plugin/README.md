@@ -12,15 +12,17 @@ DreamGlows dans Obsidian est conçu pour t’aider à atteindre tes rêves par u
 - **Pilotage par objectifs**
   - Créer, suivre et prioriser des objectifs.
   - Structurer les objectifs par jalons (`milestones`) pour garder un cap clair.
-  - Parcourir objectifs, sous-objectifs et tâches dans un arbre repliable avec panneau de détail.
+  - Parcourir rêves, objectifs, jalons et actions dans l'arbre canonique **Parcours**, avec sélection et panneau de détail partagés.
   - Utiliser l’arbre au clavier ou sur écran étroit sans perdre le contexte.
 
 - **Exécution quotidienne**
-  - Planifier et suivre les tâches liées à chaque milestone.
+  - Planifier, replanifier, terminer et rouvrir les actions depuis les vues Aujourd'hui et Semaine.
+  - Retrouver les actions non planifiées sans dépendre du glisser-déposer.
   - Centraliser notes, décisions et statut d’avancement.
 
 - **Suivi visuel de progression**
-  - Vue jour / semaine pour voir les actions accomplies.
+  - Une même source alimente Aujourd'hui, Semaine, Parcours et Histoire.
+  - Histoire conserve séparément planifications, réalisations, réouvertures, preuves et réflexions.
   - Tableau de bord motivant avec métriques de progression.
 
 - **Habitudes & routines**
@@ -46,16 +48,18 @@ Chaque release BRAT contient les assets suivants :
 
 ### Données persistées
 
-- Les données de la machine utilisateur sont stockées via la configuration/runtime Obsidian.
-- Les données globales de plugin sont sérialisées dans le format attendu par le plugin pour garantir la continuité entre sessions.
+- Une enveloppe Chemin versionnée constitue la source de vérité du plugin.
+- Les écritures sont sérialisées, révisionnées et rejouables par identifiant de commande.
+- Les anciennes formes Goal/Task sont décodées de façon permissive : les ambiguïtés sont diagnostiquées et les champs inconnus restent récupérables.
+- Un pont temporaire maintient les écrans legacy pendant leur migration ; il ne remplace pas l'enveloppe canonique.
 
 ## État actuel
 
-Le plugin Obsidian est la première surface active du projet. Les autres surfaces (`chrome_extension`, `android_app`, `windows_app`) sont alignées sur la même vision produit et restent en phase de montée en maturité.
+Le plugin Obsidian est la première surface active du projet. Le socle Chemin et ses quatre projections y sont implémentés et vérifiés. Les autres surfaces (`chrome_extension`, `android_app`, `windows_app`) sont alignées sur la même vision produit, mais ne consomment pas encore toutes ce modèle commun.
 
 ## Feuille de route de base
 
-- Renforcer la cohérence des vues autour des milestones.
-- Consolider la visibilité “progrès global + next action”.
-- Stabiliser les parcours de création et clôture de milestone.
+- Remplacer les métriques et la pseudo-histoire legacy du tableau de bord par les projections canoniques.
+- Migrer les éditeurs et Focus Session avant de retirer le pont de compatibilité.
+- Ajouter une projection statistique canonique couvrant les périodes longues.
 - Étendre la continuité d’expérience sur les autres surfaces.

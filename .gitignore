@@ -15,11 +15,18 @@ shipglows_data/business/*
 shipglows_data/technical/*
 !shipglows_data/technical/README.md
 !shipglows_data/technical/code-docs-map.md
+!shipglows_data/technical/obsidian-path-system.md
 !shipglows_data/editorial/
 shipglows_data/editorial/*
 !shipglows_data/editorial/README.md
 !shipglows_data/editorial/content-map.md
 !shipglows_data/editorial/ROADMAP.md
+!shipglows_data/workflow/
+shipglows_data/workflow/*
+!shipglows_data/workflow/TASKS.md
+!shipglows_data/workflow/specs/
+shipglows_data/workflow/specs/*
+!shipglows_data/workflow/specs/dreamglows-unified-path-system.md
 
 # Workspaces and build artifacts
 **/dist
