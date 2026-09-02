@@ -76,7 +76,7 @@ test('missing related and parent entities remain explicit rather than disappeari
 });
 
 test('editorial, archive and Focus events always have explicit history labels', () => {
-  const session = entity('focus', 'focus-session', { status: 'completed' });
+  const session = entity('focus', 'focus-session', { status: 'done' });
   const events = [
     event('updated', 'entity-updated', { entityId: session.id }),
     event('deleted', 'entity-deleted', { entityId: session.id }),

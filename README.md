@@ -15,6 +15,7 @@ Le même langage produit s’applique à toutes les surfaces du projet.
 - `chrome_extension/` : surface navigateur Chrome (alignement actif).
 - `windows_app/` : surface Windows (alignement actif).
 - `android_app/` : surface Android (alignement actif).
+- `packages/path-core/` : noyau TypeScript tech-agnostique du document Chemin canonique.
 
 ## Ce que propose DreamGlows, globalement
 

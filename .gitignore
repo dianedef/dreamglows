@@ -27,6 +27,7 @@ shipglows_data/workflow/*
 !shipglows_data/workflow/specs/
 shipglows_data/workflow/specs/*
 !shipglows_data/workflow/specs/dreamglows-unified-path-system.md
+!shipglows_data/workflow/specs/dreamglows-windows-path-adoption.md
 
 # Workspaces and build artifacts
 **/dist

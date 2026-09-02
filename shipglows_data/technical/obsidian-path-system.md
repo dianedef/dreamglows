@@ -1,10 +1,10 @@
 ---
 artifact: technical_context
 metadata_schema_version: "1.0"
-artifact_version: "2.0.0"
+artifact_version: "2.1.0"
 project: DreamGlows
 created: "2026-09-02"
-updated: "2026-09-02"
+updated: "2026-09-03"
 status: active
 source_skill: sg-docs
 scope: obsidian-canonical-path-system
@@ -14,6 +14,7 @@ risk_level: high
 security_impact: yes
 docs_impact: yes
 linked_systems:
+  - packages/path-core/
   - obsidian_plugin/src/domain/path/
   - obsidian_plugin/src/application/path-command-port.ts
   - obsidian_plugin/src/stores/pathStore.ts
@@ -39,8 +40,9 @@ evidence:
   - "The final consolidation removed the runtime compatibility bridge and stores; active Goal, Action, Focus, Today, Journey, and form-option readers now use canonical entities."
   - "The final 124-test suite covers 1,000/10,000-entity migration/projection corpora and static accessibility boundaries; the production artifact loaded and opened DreamGlows in the disposable Lab without diagnostics."
   - "The unused vis-timeline dependency and its transitives were removed after the semantic Journey implementation proved complete and independent."
+  - "The canonical implementation was extracted to @dreamglows/path-core; its technology boundary, strict typecheck, the 124-test Obsidian suite, and the production build passed on 2026-09-03."
 next_review: "2026-10-02"
-next_step: "Adopt the canonical Path envelope in another DreamGlows client through a separately approved cross-platform chantier."
+next_step: "Implement recoverable local Windows persistence through the shared Path repository port."
 ---
 
 # Obsidian canonical Path system
@@ -53,8 +55,8 @@ Chemin is the single business source for planning, acting, reviewing, and preser
 
 | Layer | Primary entrypoints | Contract |
 | --- | --- | --- |
-| Domain | `src/domain/path/model.ts`, `legacy-v0.ts` | Versioned JSON-safe envelope; stable identities; unknown legacy data preserved in extensions; ambiguous input diagnosed rather than guessed |
-| Persistence | `repository.ts`, `persistence-coordinator.ts`, `obsidian-adapter.ts` | One full-document repository, FIFO writes, optimistic revisions, explicit corruption/write failures |
+| Domain | `packages/path-core/src/model.ts`, `legacy-v0.ts` | Shared technology-agnostic TypeScript implementation; versioned JSON-safe envelope; stable identities; unknown legacy data preserved in extensions; ambiguous input diagnosed rather than guessed |
+| Persistence | `packages/path-core/src/repository.ts`, `persistence-coordinator.ts`, plugin `obsidian-adapter.ts` | One shared full-document repository and client-owned adapter; FIFO writes, optimistic revisions, explicit corruption/write failures |
 | Commands | `commands.ts`, `command-port.ts`, `application/path-command-port.ts` | Idempotent create/update/tombstone, planning, status, hierarchy, evidence/reflection, and Focus lifecycle commands; exact-intent replay; persistence before UI synchronization |
 | Read model | `projections.ts`, `dashboard-view-model.ts`, `stores/pathStore.ts` | Today, Week, Journey, History, and dashboard summaries share filters, reference date, timezone rules, durable events, and canonical entity identity |
 | Presentation | `CheminShell.vue`, `PathActionsPanel.vue`, `PathJourneyTree.vue`, `PathDetailPanel.vue`, Path views | Accessible list/tree and form actions remain complete without a graphical timeline dependency |
@@ -87,3 +89,5 @@ Run `pnpm --dir obsidian_plugin test`, then `pnpm --dir obsidian_plugin build`. 
 ## Maintenance Rule
 
 Update this document whenever the envelope, legacy decoder, repository transaction rules, command families, projections, selection behavior, compatibility bridge, or host-proof contract changes. Do not mark cross-platform adoption complete from Obsidian-only evidence.
+
+The canonical implementation now lives in `packages/path-core`. Files under `obsidian_plugin/src/domain/path` are compatibility entrypoints plus the Obsidian host adapter; they must not become a second implementation.

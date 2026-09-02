@@ -1,10 +1,10 @@
 ---
 artifact: technical_guidelines
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: DreamGlows
 created: "2026-09-02"
-updated: "2026-09-02"
+updated: "2026-09-03"
 status: active
 source_skill: sg-docs
 scope: code-docs-map
@@ -17,6 +17,7 @@ linked_systems:
   - README.md
   - website/
   - obsidian_plugin/
+  - packages/path-core/
   - chrome_extension/
   - windows_app/
   - android_app/
@@ -31,6 +32,7 @@ supersedes: []
 evidence:
   - "The 2026-09-02 Astro surface bootstrap established the first public website mapping."
   - "Commit 465d337 established the canonical Obsidian Path subsystem and its focused test suite."
+  - "The 2026-09-03 shared-core extraction established package-level ownership and consuming-client validation."
 next_review: "2026-12-02"
 next_step: none
 ---
@@ -50,6 +52,7 @@ This is the canonical path-to-document routing map for DreamGlows. Match every t
 | `website/package.json`, `website/astro.config.mjs`, `website/tsconfig.json` | `shipglows_data/technical/README.md` | `README.md` | `pnpm build:website` | Framework, build command, output mode, package boundary, or runtime requirements change |
 | `obsidian_plugin/src/**`, `obsidian_plugin/package.json` | `obsidian_plugin/README.md` | `shipglows_data/business/dreamglows-product.md`, `shipglows_data/technical/design-system-authority.md`, `shipglows_data/technical/obsidian-interface-design-reference.md` | `pnpm build:obsidian-plugin` plus focused tests for changed behavior | Plugin behavior, data, build, setup, UI contract, or product promise changes |
 | `obsidian_plugin/src/domain/path/**`, `obsidian_plugin/src/application/path-command-port.ts`, `obsidian_plugin/src/stores/pathStore.ts`, `obsidian_plugin/tests/path-*.test.mjs` | `shipglows_data/technical/obsidian-path-system.md` | `obsidian_plugin/README.md`, `shipglows_data/workflow/specs/dreamglows-unified-path-system.md` | `pnpm --dir obsidian_plugin test`, `pnpm --dir obsidian_plugin build`, then disposable `s obsidian-lab` proof | Canonical schema, migration, persistence, command, projection, compatibility, or proof contract changes |
+| `packages/path-core/**` | `packages/path-core/README.md` | `shipglows_data/technical/obsidian-path-system.md`, `shipglows_data/workflow/specs/dreamglows-windows-path-adoption.md` | `pnpm --dir packages/path-core typecheck`, `pnpm --dir packages/path-core test`, and every consuming-client suite | Canonical schema, command, persistence, projection, compatibility, package boundary, or adapter-port changes |
 | `chrome_extension/src/**`, `chrome_extension/package.json` | `chrome_extension/README.md` | `shipglows_data/business/dreamglows-product.md` | `pnpm build:chrome-extension` plus focused tests | Extension behavior, permissions, setup, build, or product promise changes |
 | `windows_app/**` | `windows_app/README.md` | `shipglows_data/business/dreamglows-product.md` | Package-declared focused check | Windows behavior, setup, distribution, or product promise changes |
 | `android_app/**` | `android_app/README.md` | `shipglows_data/business/dreamglows-product.md` | Package-declared focused check | Android behavior, setup, distribution, or product promise changes |

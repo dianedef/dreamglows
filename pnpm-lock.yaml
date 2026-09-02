@@ -166,6 +166,9 @@ importers:
 
   obsidian_plugin:
     dependencies:
+      '@dreamglows/path-core':
+        specifier: workspace:*
+        version: link:../packages/path-core
       '@langchain/core':
         specifier: ^1.2.5
         version: 1.2.5(openai@6.49.0(ws@8.21.2)(zod@3.25.76))(ws@8.21.2)
@@ -254,6 +257,12 @@ importers:
       vite:
         specifier: ^8.2.0
         version: 8.2.0(@types/node@26.1.2)(esbuild@0.28.2)(jiti@1.21.7)(sass@1.102.0)(terser@5.49.2)(yaml@2.9.0)
+
+  packages/path-core:
+    devDependencies:
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
 
   website:
     dependencies:

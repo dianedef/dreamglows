@@ -1,4 +1,5 @@
 packages:
+  - 'packages/*'
   - 'website'
   - 'obsidian_plugin'
   - 'chrome_extension'
