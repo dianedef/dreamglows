@@ -268,7 +268,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
             name: 'Nouvel objectif',
             callback: () => {
                 console.log('Command: Opening goal modal');
-                const modal = new GoalModal(this.app);
+                const modal = new GoalModal(this.app, { pinia: this.pinia, pathCommands: this.pathCommands });
                 modal.open();
             },
             hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "G" }]
@@ -278,7 +278,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
                 id: 'create-new-task',
                 name: 'Créer une nouvelle tâche',
                 callback: () => {
-                    const modal = new TaskModal(this.app);
+                    const modal = new TaskModal(this.app, { pinia: this.pinia, pathCommands: this.pathCommands });
                     modal.open();
                 },
                 hotkeys: [{ modifiers: ["Ctrl", "Shift"], key: "T" }]

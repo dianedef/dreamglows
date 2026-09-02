@@ -1,5 +1,6 @@
 <template>
   <div class="dreamglows-task-list">
+    <p v-if="commandFeedback" :role="commandFeedback.error ? 'alert' : 'status'">{{ commandFeedback.text }}</p>
     <div class="dreamglows-task-list-header">
       <h3>Liste des tâches</h3>
       <button @click="openNewTaskModal" class="dreamglows-add-task-btn">
@@ -59,7 +60,7 @@
       >
         <div class="dreamglows-task-header">
           <div class="dreamglows-task-controls">
-            <button class="dreamglows-task-status-btn" @click="cycleStatus(task)" :title="getNextStatusLabel(task.status)">
+            <button class="dreamglows-task-status-btn" :disabled="pendingIds.has(task.id)" @click="toggleCompletion(task)" :title="task.status === 'done' ? 'Rouvrir la tâche' : 'Terminer la tâche'">
               {{ getStatusEmoji(task.status) }}
             </button>
             <button class="dreamglows-task-edit-btn" @click="editTask(task)" title="Modifier la tâche">
@@ -67,7 +68,7 @@
             </button>
           </div>
           <div class="dreamglows-task-priority">
-            <button class="dreamglows-task-priority-btn" @click="cyclePriority(task)" :title="getNextPriorityLabel(task.priority)">
+            <button class="dreamglows-task-priority-btn" :disabled="pendingIds.has(task.id)" @click="cyclePriority(task)" :title="getNextPriorityLabel(task.priority)">
               {{ getPriorityLabel(task.priority) }}
             </button>
           </div>
@@ -95,6 +96,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useTasksStore } from '@/stores/tasksStore';
+import { useDreamGlowsUiContext } from '@/application/ui-context';
 import type { Task, TaskStatus, TaskPriority } from '@/types/tasks';
 import { TaskModal } from '@/components/modals/TaskModal';
 import { storeToRefs } from 'pinia';
@@ -102,6 +104,8 @@ import { useApp } from '@/composables/useApp';
 
 const { app } = useApp();
 const tasksStore = useTasksStore();
+const uiContext = useDreamGlowsUiContext();
+const pendingIds=ref(new Set<string>()); const commandFeedback=ref<{error:boolean;text:string}>();
 
 const { tasks } = storeToRefs(tasksStore);
 
@@ -148,22 +152,16 @@ const sortedAndFilteredTasks = computed(() => {
   }
 });
 
-const getStatusLabel = (status: TaskStatus) => ({ todo: 'À faire', 'in-progress': 'En cours', done: 'Terminé' }[status]);
 const getStatusEmoji = (status: TaskStatus) => ({ todo: '◻', 'in-progress': '🔥', done: '✔' }[status]);
 
-const getNextStatus = (status: TaskStatus): TaskStatus => ({
-  todo: 'in-progress',
-  in-progress: 'done',
-  done: 'todo'
-}[status]);
-
-const getNextStatusLabel = (status: TaskStatus) => `Marquer comme ${getStatusLabel(getNextStatus(status)).toLowerCase()}`;
-const cycleStatus = (task: Task) => tasksStore.updateTask({ ...task, status: getNextStatus(task.status) });
+const commandId=()=>globalThis.crypto?.randomUUID?.()??`task-${Date.now()}-${Math.random()}`;
+const execute=async(task:Task,command:Parameters<typeof uiContext.pathCommands.execute>[0],success:string)=>{pendingIds.value=new Set(pendingIds.value).add(task.id);commandFeedback.value=undefined;try{const result=await uiContext.pathCommands.execute(command);commandFeedback.value=result.accepted?{error:false,text:success}:{error:true,text:`Action refusée : ${result.reason}.`}}catch{commandFeedback.value={error:true,text:'La sauvegarde a échoué; la tâche reste inchangée.'}}finally{const next=new Set(pendingIds.value);next.delete(task.id);pendingIds.value=next}};
+const toggleCompletion=(task:Task)=>execute(task,{type:task.status==='done'?'reopen':'complete',commandId:commandId(),entityId:task.id},task.status==='done'?'Tâche rouverte.':'Tâche terminée.');
 
 const getPriorityLabel = (priority: TaskPriority) => ({ high: '! Haute', medium: '- Moyenne', low: '+ Basse' }[priority]);
 const getNextPriority = (priority: TaskPriority): TaskPriority => ({ high: 'medium', medium: 'low', low: 'high' }[priority]);
 const getNextPriorityLabel = (priority: TaskPriority) => `Changer en priorité ${getPriorityLabel(getNextPriority(priority)).toLowerCase()}`;
-const cyclePriority = (task: Task) => tasksStore.updateTask({ ...task, priority: getNextPriority(task.priority) });
+const cyclePriority = (task: Task) => {const priority=getNextPriority(task.priority);return execute(task,{type:'update-entity',commandId:commandId(),entityId:task.id,patch:{priority}},`Priorité ${getPriorityLabel(priority).toLowerCase()}.`)};
 
 const formatDate = (date: string) => new Date(date).toLocaleDateString('fr-FR');
 const formatDuration = (minutes?: number) => {
@@ -175,6 +173,6 @@ const formatDuration = (minutes?: number) => {
   return `${hours} h ${mins} min`;
 };
 
-const openNewTaskModal = () => new TaskModal(app).open();
-const editTask = (task: Task) => new TaskModal(app, task).open();
+const openNewTaskModal = () => new TaskModal(app, uiContext).open();
+const editTask = (task: Task) => new TaskModal(app, uiContext, task).open();
 </script>

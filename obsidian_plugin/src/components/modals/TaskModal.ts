@@ -2,15 +2,18 @@ import { App, Modal } from 'obsidian';
 import { createApp, type App as VueApp } from 'vue';
 import TaskModalContent from './TaskModalContent.vue';
 import type { Task } from '../../types/tasks';
-import { pinia } from '../../stores';
+import { PATH_COMMAND_PORT_KEY } from '../../application/path-command-port';
+import type { DreamGlowsUiContext } from '../../application/ui-context';
 
 export class TaskModal extends Modal {
     private vueApp: VueApp | null = null;
     private task?: Task;
     private initialGoalId?: string;
+    private context: DreamGlowsUiContext;
 
-    constructor(app: App, task?: Task, initialGoalId?: string) {
+    constructor(app: App, context: DreamGlowsUiContext, task?: Task, initialGoalId?: string) {
         super(app);
+        this.context = context;
         this.task = task;
         this.initialGoalId = initialGoalId;
         console.log('TaskModal: Constructor called');
@@ -30,7 +33,8 @@ export class TaskModal extends Modal {
             initialGoalId: this.initialGoalId
         });
         
-        this.vueApp.use(pinia);
+        this.vueApp.use(this.context.pinia);
+        this.vueApp.provide(PATH_COMMAND_PORT_KEY, this.context.pathCommands);
         
         // Fournir la fonction closeModal via provide/inject
         this.vueApp.provide('closeModal', () => this.close());

@@ -19,3 +19,12 @@ test('plugin entry point exposes no legacy loadPluginData bypass', async () => {
   const main = await readFile(new URL('main.ts', source), 'utf8');
   assert.doesNotMatch(main, /loadPluginData\s*\(/);
 });
+
+test('modal hosts receive the shared Pinia and canonical command context', async () => {
+  for (const name of ['GoalModal.ts', 'TaskModal.ts']) {
+    const modal = await readFile(new URL(`components/modals/${name}`, source), 'utf8');
+    assert.doesNotMatch(modal, /from ['"]\.\.\/\.\.\/stores['"]/);
+    assert.match(modal, /this\.vueApp\.use\(this\.context\.pinia\)/);
+    assert.match(modal, /provide\(PATH_COMMAND_PORT_KEY, this\.context\.pathCommands\)/);
+  }
+});

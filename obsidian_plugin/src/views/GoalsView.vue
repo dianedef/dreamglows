@@ -85,6 +85,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 import GoalTree, { type GoalTreeRow } from '@/components/GoalTree.vue';
 import { useGoalsStore } from '@/stores/goalsStore';
 import { useTasksStore } from '@/stores/tasksStore';
+import { useDreamGlowsUiContext } from '@/application/ui-context';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { GoalModal } from '@/components/modals/GoalModal';
 import { TaskModal } from '@/components/modals/TaskModal';
@@ -94,6 +95,7 @@ import type { Task } from '@/types/tasks';
 const props = defineProps<{ contentFiles: any[]; app: any }>();
 const goalsStore = useGoalsStore();
 const tasksStore = useTasksStore();
+const uiContext = useDreamGlowsUiContext();
 const settingsStore = useSettingsStore();
 const selectedRow = ref<GoalTreeRow | null>(null);
 const mainWidth = ref(55);
@@ -141,13 +143,13 @@ const selectRow = (row: GoalTreeRow) => {
 };
 const editRow = (row: GoalTreeRow) => {
   row.type === 'goal'
-    ? new GoalModal(props.app, row.source as Goal).open()
-    : new TaskModal(props.app, row.source as Task).open();
+    ? new GoalModal(props.app, uiContext, row.source as Goal).open()
+    : new TaskModal(props.app, uiContext, row.source as Task).open();
 };
-const openNewGoalModal = () => new GoalModal(props.app).open();
+const openNewGoalModal = () => new GoalModal(props.app, uiContext).open();
 const createTaskForGoal = () => {
   if (!selectedRow.value || selectedRow.value.type !== 'goal') return;
-  new TaskModal(props.app, undefined, selectedRow.value.id).open();
+  new TaskModal(props.app, uiContext, undefined, selectedRow.value.id).open();
 };
 
 const resizeBy = (delta: number) => {
