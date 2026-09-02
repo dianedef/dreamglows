@@ -4,8 +4,8 @@ packages:
   - 'windows_app'
   - 'android_app'
 allowBuilds:
-  '@parcel/watcher': set this to true or false
-  esbuild: set this to true or false
-  spawn-sync: set this to true or false
-  unrs-resolver: set this to true or false
-  vue-demi: set this to true or false
+  '@parcel/watcher': true
+  esbuild: true
+  spawn-sync: true
+  unrs-resolver: true
+  vue-demi: true

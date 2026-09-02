@@ -24,7 +24,9 @@ import type { Task } from './types/tasks';
 import type { DreamGlowsSettings } from './types/settings';
 import { DEFAULT_SETTINGS } from './types/settings';
 import { v4 as uuidv4 } from 'uuid';
+import './styles/dreamglows-tokens.css';
 import './styles/goals/task-modal-content.css';
+import './styles/goals/goals-modal.css';
 
 const VIEW_TYPE_DREAMGLOWS = 'dreamglows-view';
 

@@ -20,9 +20,10 @@ export class GoalModal extends Modal {
         
         // Nettoyer le contenu existant
         contentEl.empty();
+        this.modalEl.addClass('dreamglows-goal-modal-shell');
         
         // Créer le conteneur pour le contenu Vue
-        const container = contentEl.createDiv('dreamglows-modal-content');
+        const container = contentEl.createDiv('dreamglows-goal-modal-root');
         console.log('GoalModal: Container created');
 
         // Créer l'application Vue
@@ -65,4 +66,4 @@ export class GoalModal extends Modal {
             console.log('GoalModal: Native modal cleanup complete');
         }
     }
-} 
+}

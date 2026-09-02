@@ -3,7 +3,6 @@ import listViewStyles from './planning/list-view.css?inline';
 import weekViewStyles from './planning/week-view.css?inline';
 import dailyViewStyles from './daily-view.css?inline';
 import goalsViewStyles from './goals/goals-view.css?inline';
-import goalsModalStyles from './goals/goals-modal.css?inline';
 import taskListStyles from './goals/task-list.css?inline';
 import dayViewStyles from './day-view.css?inline';
 import timeNavStyles from './time-nav.css?inline';
@@ -19,7 +18,6 @@ export function registerStyles(viewType: string) {
         /* Styles de base */
         ${planningStyles}
         ${goalsViewStyles}
-        ${goalsModalStyles}
         ${taskListStyles}
         ${dayViewStyles}
         ${timeNavStyles}

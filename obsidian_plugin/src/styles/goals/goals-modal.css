@@ -1,72 +1,44 @@
-.dreamglows-modal-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+.modal.dreamglows-goal-modal-shell {
+  width: min(var(--dg-goal-modal-width), calc(100vw - var(--dg-modal-viewport-gutter)));
+  max-width: var(--dg-goal-modal-width); max-height: var(--dg-modal-max-height); padding: 0;
+  border: 1px solid var(--dg-color-border); border-radius: var(--dg-radius-modal); overflow: hidden;
+  background: var(--dg-color-surface); box-shadow: var(--dg-shadow-modal);
 }
-
-.dreamglows-modal-content {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 1rem;
+.dreamglows-goal-modal-shell .modal-content { padding: 0; overflow: hidden; }
+.dreamglows-goal-modal-shell .modal-close-button { z-index: var(--dg-layer-modal-control); top: var(--dg-space-2); right: var(--dg-space-2); }
+.dreamglows-goal-modal-root { height: var(--dg-size-full); }
+.dreamglows-goal-modal { display: flex; flex-direction: column; max-height: var(--dg-modal-max-height); color: var(--dg-color-text); }
+.dreamglows-goal-modal__header { padding: var(--dg-space-4) var(--dg-space-close-clearance) var(--dg-space-3) var(--dg-space-4); border-bottom: 1px solid var(--dg-color-border); }
+.dreamglows-goal-modal__eyebrow { margin: 0 0 var(--dg-space-1); color: var(--dg-color-accent); font-size: var(--dg-font-eyebrow); font-weight: var(--dg-font-weight-strong); letter-spacing: var(--dg-letter-spacing-eyebrow); text-transform: uppercase; }
+.dreamglows-goal-modal__header h2 { margin: 0; font-size: var(--dg-font-title); line-height: var(--dg-line-height-tight); }
+.dreamglows-goal-modal__header > p:last-child { margin: var(--dg-space-1) 0 0; color: var(--dg-color-text-muted); }
+.dreamglows-goal-modal__body { display: grid; gap: var(--dg-space-3); padding: var(--dg-space-4); overflow-y: auto; }
+.dreamglows-goal-modal__section { display: grid; gap: var(--dg-space-3); padding: var(--dg-space-3); border: 1px solid var(--dg-color-border); border-radius: var(--dg-radius-section); background: var(--dg-color-surface-subtle); }
+.dreamglows-goal-modal__section-heading h3 { margin: 0; font-size: var(--dg-font-section); }
+.dreamglows-goal-modal__section-heading p { margin: var(--dg-space-1) 0 0; color: var(--dg-color-text-muted); font-size: var(--dg-font-eyebrow); }
+.dreamglows-goal-modal__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--dg-space-3); }
+.dreamglows-goal-field { display: flex; min-width: 0; flex-direction: column; gap: var(--dg-space-1); }
+.dreamglows-goal-field label { font-size: var(--dg-font-label); font-weight: var(--dg-font-weight-strong); }
+.dreamglows-goal-field label span { color: var(--dg-color-text-muted); font-weight: var(--dg-font-weight-regular); }
+.dreamglows-goal-modal-shell :is(input, select, textarea) { width: var(--dg-size-full); max-width: none; border: 1px solid var(--dg-color-border); border-radius: var(--dg-radius-control); background: var(--dg-color-surface); color: var(--dg-color-text); box-shadow: none; }
+.dreamglows-goal-modal-shell :is(input, select) { min-height: var(--dg-control-height); }
+.dreamglows-goal-modal-shell textarea { min-height: var(--dg-control-textarea-height); padding: var(--dg-space-2); resize: vertical; }
+.dreamglows-goal-modal-shell :is(input, select, textarea):focus-visible { border-color: var(--dg-color-accent); outline: var(--dg-focus-width) solid var(--dg-color-accent); outline-offset: var(--dg-focus-offset); }
+.dreamglows-goal-tags { display: flex; flex-wrap: wrap; gap: var(--dg-space-1); }
+.dreamglows-goal-tag { display: inline-flex; align-items: center; gap: var(--dg-space-1); padding: var(--dg-tag-padding-block) var(--dg-space-1) var(--dg-tag-padding-block) var(--dg-space-2); border-radius: var(--dg-radius-pill); background: var(--dg-color-interactive-muted); font-size: var(--dg-font-eyebrow); }
+.dreamglows-goal-tag button { display: inline-grid; width: var(--dg-tag-remove-size); height: var(--dg-tag-remove-size); min-width: 0; padding: 0; place-items: center; border: 0; border-radius: var(--dg-radius-pill); background: transparent; color: var(--dg-color-text-muted); box-shadow: none; }
+.dreamglows-goal-tag button:hover { background: var(--dg-color-border); color: var(--dg-color-text); }
+.dreamglows-goal-modal__actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--dg-space-2); padding: var(--dg-space-3) var(--dg-space-4); border-top: 1px solid var(--dg-color-border); background: var(--dg-color-surface); }
+.dreamglows-goal-modal__actions button { min-height: var(--dg-control-height); padding-inline: var(--dg-space-3); font-weight: var(--dg-font-weight-strong); }
+.dreamglows-goal-modal__delete { margin-right: auto; color: var(--dg-color-danger); }
+/* CSS custom properties cannot currently drive media-query conditions. Keep this shared 45rem breakpoint synchronized with the token authority. */
+@media (max-width: 45rem) {
+  .modal.dreamglows-goal-modal-shell { width: calc(100vw - var(--dg-modal-narrow-gutter)); max-height: var(--dg-modal-narrow-max-height); }
+  .dreamglows-goal-modal { max-height: var(--dg-modal-narrow-max-height); }
+  .dreamglows-goal-modal__header, .dreamglows-goal-modal__body { padding: var(--dg-space-3); }
+  .dreamglows-goal-modal__header { padding-right: var(--dg-space-close-clearance); }
+  .dreamglows-goal-modal__grid { grid-template-columns: 1fr; }
+  .dreamglows-goal-modal__actions { align-items: stretch; flex-direction: column-reverse; padding: var(--dg-space-3); }
+  .dreamglows-goal-modal__actions button { width: var(--dg-size-full); }
+  .dreamglows-goal-modal__delete { margin-right: 0; }
 }
-
-.dreamglows-setting-item {
-    border-top: 0;
-    padding: 1rem 0;
-}
-
-.dreamglows-setting-item:not(:last-child) {
-    border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.dreamglows-setting-item-info {
-    flex: 1;
-}
-
-.dreamglows-setting-item-name {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-.dreamglows-setting-item-description {
-    color: var(--text-muted);
-    font-size: 0.8em;
-    margin-top: 0.25rem;
-}
-
-.dreamglows-setting-item-control {
-    flex: 2;
-}
-
-.dreamglows-setting-item-control-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.dreamglows-tag-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-}
-
-.dreamglows-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    background: var(--interactive-accent);
-    color: var(--text-on-accent);
-    border-radius: 4px;
-    font-size: 0.9em;
-}
-
-.dreamglows-modal-button-container {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    padding: 1rem;
-    border-top: 1px solid var(--background-modifier-border);
-} 
-

@@ -1,449 +1,113 @@
 <template>
-  <form @submit.prevent="handleSubmit">
-    <div class="dreamglows-modal-container">
-      <div class="dreamglows-modal-content">
-        <div class="dreamglows-setting-item">
-          <div class="dreamglows-setting-item-info">
-            <div class="dreamglows-setting-item-name">Titre</div>
-            <div class="dreamglows-setting-item-description">Le titre de votre objectif</div>
-          </div>
-          <div class="dreamglows-setting-item-control">
-            <input 
-              type="text" 
-              class="text-input-reset"
-              v-model="formData.title" 
-              required
-              placeholder="Titre de l'objectif"
-            >
-          </div>
-        </div>
+  <form class="dreamglows-goal-modal" aria-labelledby="dreamglows-goal-modal-title" @submit.prevent="handleSubmit">
+    <header class="dreamglows-goal-modal__header">
+      <p class="dreamglows-goal-modal__eyebrow">DreamGlows · Objectif</p>
+      <h2 id="dreamglows-goal-modal-title">{{ isEditing ? 'Modifier l’objectif' : 'Nouvel objectif' }}</h2>
+      <p>Définissez une direction claire, puis rendez sa progression mesurable.</p>
+    </header>
 
-        <div class="dreamglows-setting-item">
-          <div class="dreamglows-setting-item-info">
-            <div class="dreamglows-setting-item-name">Description</div>
-            <div class="dreamglows-setting-item-description">Une description détaillée de votre objectif</div>
-          </div>
-          <div class="dreamglows-setting-item-control">
-            <textarea 
-              class="text-input-reset"
-              v-model="formData.description" 
-              placeholder="Description détaillée"
-              rows="3"
-            ></textarea>
-          </div>
+    <div class="dreamglows-goal-modal__body">
+      <section class="dreamglows-goal-modal__section" aria-labelledby="goal-vision-title">
+        <div class="dreamglows-goal-modal__section-heading">
+          <h3 id="goal-vision-title">Vision</h3>
+          <p>Le résultat que vous voulez atteindre.</p>
         </div>
-
-        <div class="dreamglows-setting-item">
-          <div class="dreamglows-setting-item-info">
-            <div class="dreamglows-setting-item-name">Dates</div>
-            <div class="dreamglows-setting-item-description">Définissez la période de votre objectif</div>
-          </div>
-          <div class="dreamglows-setting-item-control">
-            <div class="dreamglows-setting-item-control-grid">
-              <div>
-                <div class="dreamglows-setting-item-name">Début</div>
-                <input 
-                  type="date" 
-                  class="text-input-reset"
-                  v-model="formData.startDate" 
-                  required
-                >
-              </div>
-              <div>
-                <div class="dreamglows-setting-item-name">Échéance</div>
-                <input 
-                  type="date" 
-                  class="text-input-reset"
-                  v-model="formData.dueDate"
-                >
-              </div>
-            </div>
-          </div>
+        <div class="dreamglows-goal-field">
+          <label for="goal-title">Titre <span aria-hidden="true">*</span></label>
+          <input id="goal-title" v-model="formData.title" type="text" placeholder="Ex. Courir mon premier semi-marathon" required autofocus />
         </div>
-
-        <div class="dreamglows-setting-item">
-          <div class="dreamglows-setting-item-info">
-            <div class="dreamglows-setting-item-name">Priorité et Statut</div>
-            <div class="dreamglows-setting-item-description">Définissez l'importance et l'état de votre objectif</div>
-          </div>
-          <div class="dreamglows-setting-item-control">
-            <div class="dreamglows-setting-item-control-grid">
-              <div>
-                <select v-model="formData.priority" required class="dropdown">
-                  <option value="high">Haute</option>
-                  <option value="medium">Moyenne</option>
-                  <option value="low">Basse</option>
-                </select>
-              </div>
-              <div>
-                <select v-model="formData.status" required class="dropdown">
-                  <option value="todo">À faire</option>
-                  <option value="in-progress">En cours</option>
-                  <option value="done">Terminé</option>
-                </select>
-              </div>
-            </div>
-          </div>
+        <div class="dreamglows-goal-field">
+          <label for="goal-description">Description</label>
+          <textarea id="goal-description" v-model="formData.description" rows="3" placeholder="Pourquoi cet objectif compte-t-il pour vous ?"></textarea>
         </div>
+      </section>
 
-        <div class="dreamglows-setting-item">
-          <div class="dreamglows-setting-item-info">
-            <div class="dreamglows-setting-item-name">Catégorie</div>
-            <div class="dreamglows-setting-item-description">Groupez vos objectifs par catégorie</div>
-          </div>
-          <div class="dreamglows-setting-item-control">
-            <div class="dreamglows-category-input">
-              <select 
-                v-model="formData.category" 
-                class="dropdown"
-                @change="handleCategoryChange"
-              >
-                <option value="">-- Sélectionner une catégorie --</option>
-                <option v-for="category in categories" :key="category" :value="category">
-                  {{ category }}
-                </option>
-                <option value="new">+ Nouvelle catégorie</option>
-              </select>
-              <input 
-                v-if="showNewCategoryInput"
-                type="text" 
-                class="text-input-reset"
-                v-model="newCategory"
-                placeholder="Nom de la nouvelle catégorie"
-                @keydown.enter.prevent="addNewCategory"
-                @blur="addNewCategory"
-              >
-            </div>
-          </div>
+      <section class="dreamglows-goal-modal__section" aria-labelledby="goal-frame-title">
+        <div class="dreamglows-goal-modal__section-heading">
+          <h3 id="goal-frame-title">Cadre</h3>
+          <p>Les dates et l’état de votre engagement.</p>
         </div>
-
-        <div class="dreamglows-setting-item">
-          <div class="dreamglows-setting-item-info">
-            <div class="dreamglows-setting-item-name">Tags</div>
-            <div class="dreamglows-setting-item-description">Ajoutez des tags pour mieux organiser vos objectifs</div>
-          </div>
-          <div class="dreamglows-setting-item-control">
-            <div class="dreamglows-tag-input">
-              <div class="search-input-container">
-                <input 
-                  type="text" 
-                  class="text-input-reset"
-                  v-model="tagInput"
-                  @keydown.enter.prevent="addTag"
-                  placeholder="Ajouter un tag (Entrée pour valider)"
-                  list="existing-tags"
-                >
-                <datalist id="existing-tags">
-                  <option v-for="tag in existingTags" :key="tag" :value="tag" />
-                </datalist>
-              </div>
-              <div class="dreamglows-tag-container">
-                <div 
-                  v-for="tag in formData.tags" 
-                  :key="tag" 
-                  class="dreamglows-tag"
-                >
-                  {{ tag }}
-                  <span @click="removeTag(tag)" class="clickable-icon">×</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="dreamglows-goal-modal__grid dreamglows-goal-modal__grid--dates">
+          <div class="dreamglows-goal-field"><label for="goal-start-date">Date de début <span aria-hidden="true">*</span></label><input id="goal-start-date" v-model="formData.startDate" type="date" required /></div>
+          <div class="dreamglows-goal-field"><label for="goal-due-date">Échéance <span>(optionnelle)</span></label><input id="goal-due-date" v-model="formData.dueDate" type="date" /></div>
         </div>
-
-        <div class="dreamglows-setting-item">
-          <div class="dreamglows-setting-item-info">
-            <div class="dreamglows-setting-item-name">Métriques</div>
-            <div class="dreamglows-setting-item-description">Définissez des métriques pour suivre votre progression</div>
-          </div>
-          <div class="dreamglows-setting-item-control">
-            <div class="dreamglows-setting-item-control-grid">
-              <div>
-                <div class="dreamglows-setting-item-name">Objectif</div>
-                <input 
-                  type="number" 
-                  class="text-input-reset"
-                  v-model="formData.metrics.target"
-                  placeholder="Valeur cible"
-                >
-              </div>
-              <div>
-                <div class="dreamglows-setting-item-name">Unité</div>
-                <input 
-                  type="text" 
-                  class="text-input-reset"
-                  v-model="formData.metrics.unit"
-                  placeholder="ex: heures, km, etc."
-                >
-              </div>
-            </div>
-          </div>
+        <div class="dreamglows-goal-modal__grid">
+          <div class="dreamglows-goal-field"><label for="goal-priority">Priorité</label><select id="goal-priority" v-model="formData.priority" required><option value="high">Haute</option><option value="medium">Moyenne</option><option value="low">Basse</option></select></div>
+          <div class="dreamglows-goal-field"><label for="goal-status">Statut</label><select id="goal-status" v-model="formData.status" required><option value="todo">À faire</option><option value="in-progress">En cours</option><option value="done">Terminé</option></select></div>
         </div>
+      </section>
 
-        <div class="dreamglows-setting-item">
-          <div class="dreamglows-setting-item-info">
-            <div class="dreamglows-setting-item-name">Récurrence</div>
-            <div class="dreamglows-setting-item-description">Définissez si cet objectif est récurrent</div>
-          </div>
-          <div class="dreamglows-setting-item-control">
-            <div class="dreamglows-setting-item-control-grid">
-              <div>
-                <select v-model="formData.recurring.frequency" class="dropdown">
-                  <option value="">Non récurrent</option>
-                  <option value="daily">Quotidien</option>
-                  <option value="weekly">Hebdomadaire</option>
-                  <option value="monthly">Mensuel</option>
-                  <option value="yearly">Annuel</option>
-                </select>
-              </div>
-              <div v-if="formData.recurring.frequency">
-                <div class="dreamglows-setting-item-name">Date de fin</div>
-                <input 
-                  type="date" 
-                  class="text-input-reset"
-                  v-model="formData.recurring.endDate"
-                >
-              </div>
-            </div>
-          </div>
+      <section class="dreamglows-goal-modal__section" aria-labelledby="goal-organization-title">
+        <div class="dreamglows-goal-modal__section-heading">
+          <h3 id="goal-organization-title">Organisation</h3>
+          <p>Retrouvez et regroupez facilement cet objectif.</p>
         </div>
-      </div>
+        <div class="dreamglows-goal-field">
+          <label for="goal-category">Catégorie</label>
+          <select id="goal-category" v-model="formData.category" @change="handleCategoryChange"><option value="">Aucune catégorie</option><option v-for="category in categories" :key="category" :value="category">{{ category }}</option><option value="new">+ Nouvelle catégorie</option></select>
+          <input v-if="showNewCategoryInput" v-model="newCategory" type="text" aria-label="Nom de la nouvelle catégorie" placeholder="Nom de la nouvelle catégorie" @keydown.enter.prevent="addNewCategory" @blur="addNewCategory" />
+        </div>
+        <div class="dreamglows-goal-field">
+          <label for="goal-tag">Tags</label>
+          <input id="goal-tag" v-model="tagInput" type="text" list="existing-tags" placeholder="Saisir un tag puis Entrée" @keydown.enter.prevent="addTag" />
+          <datalist id="existing-tags"><option v-for="tag in existingTags" :key="tag" :value="tag" /></datalist>
+          <div v-if="formData.tags?.length" class="dreamglows-goal-tags" aria-label="Tags ajoutés"><span v-for="tag in formData.tags" :key="tag" class="dreamglows-goal-tag">#{{ tag }}<button type="button" :aria-label="`Retirer le tag ${tag}`" @click="removeTag(tag)">×</button></span></div>
+        </div>
+      </section>
 
-      <div class="dreamglows-modal-button-container">
-        <button class="mod-warning" type="button" @click="cancel">
-          Annuler
-        </button>
-        <button 
-          v-if="isEditing" 
-          type="button" 
-          class="mod-error" 
-          @click="handleDelete"
-        >
-          Supprimer
-        </button>
-        <button type="submit" class="mod-cta">
-          {{ isEditing ? 'Mettre à jour' : 'Créer' }}
-        </button>
-      </div>
+      <section class="dreamglows-goal-modal__section" aria-labelledby="goal-progress-title">
+        <div class="dreamglows-goal-modal__section-heading">
+          <h3 id="goal-progress-title">Mesure et rythme</h3>
+          <p>Facultatif — ajoutez un repère concret ou une récurrence.</p>
+        </div>
+        <div class="dreamglows-goal-modal__grid">
+          <div class="dreamglows-goal-field"><label for="goal-target">Valeur cible</label><input id="goal-target" v-model="formData.metrics.target" type="number" placeholder="Ex. 21" /></div>
+          <div class="dreamglows-goal-field"><label for="goal-unit">Unité</label><input id="goal-unit" v-model="formData.metrics.unit" type="text" placeholder="Ex. kilomètres" /></div>
+        </div>
+        <div class="dreamglows-goal-modal__grid">
+          <div class="dreamglows-goal-field"><label for="goal-frequency">Récurrence</label><select id="goal-frequency" v-model="formData.recurring.frequency"><option value="">Non récurrent</option><option value="daily">Quotidienne</option><option value="weekly">Hebdomadaire</option><option value="monthly">Mensuelle</option><option value="yearly">Annuelle</option></select></div>
+          <div v-if="formData.recurring.frequency" class="dreamglows-goal-field"><label for="goal-recurring-end">Fin de la récurrence</label><input id="goal-recurring-end" v-model="formData.recurring.endDate" type="date" /></div>
+        </div>
+      </section>
     </div>
+
+    <footer class="dreamglows-goal-modal__actions">
+      <button v-if="isEditing" type="button" class="dreamglows-goal-modal__delete" @click="handleDelete">Supprimer</button>
+      <button type="button" @click="cancel">Annuler</button>
+      <button type="submit" class="mod-cta">{{ isEditing ? 'Enregistrer les modifications' : 'Créer l’objectif' }}</button>
+    </footer>
   </form>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, inject } from 'vue';
+import { ref, computed, inject } from 'vue';
 import { useGoalsStore } from '@/stores/goalsStore';
 import type { Goal, GoalStatus, GoalPriority, GoalFrequency } from '@/types/goals';
 import { Notice } from 'obsidian';
 import { v4 as uuidv4 } from 'uuid';
 
-const props = defineProps<{
-  editingGoal?: Goal;
-}>();
-
+const props = defineProps<{ editingGoal?: Goal }>();
 const goalsStore = useGoalsStore();
 const closeModal = inject('closeModal') as () => void;
-
 const isEditing = computed(() => !!props.editingGoal);
 const showNewCategoryInput = ref(false);
 const newCategory = ref('');
 const tagInput = ref('');
-
-// État initial du formulaire
 const defaultFormData: Goal = {
-  id: uuidv4(),
-  title: '',
-  description: '',
-  category: '',
-  startDate: new Date().toISOString().split('T')[0],
-  status: 'todo' as GoalStatus,
-  priority: 'medium' as GoalPriority,
-  tasks: [],
-  subGoalIds: [],
-  progress: 0,
-  tags: [],
-  metrics: {
-    target: 0,
-    current: 0,
-    unit: ''
-  },
-  recurring: {
-    frequency: '' as GoalFrequency,
-    endDate: undefined
-  }
+  id: uuidv4(), title: '', description: '', category: '', startDate: new Date().toISOString().split('T')[0], status: 'todo' as GoalStatus, priority: 'medium' as GoalPriority, tasks: [], subGoalIds: [], progress: 0, tags: [],
+  metrics: { target: 0, current: 0, unit: '' }, recurring: { frequency: '' as GoalFrequency, endDate: undefined }
 };
-
-// Initialiser le formulaire avec les données d'édition ou les valeurs par défaut
 const formData = ref<Goal>(props.editingGoal ? { ...props.editingGoal } : { ...defaultFormData });
-
-// Récupérer toutes les catégories existantes
-const categories = computed(() => {
-  return [...new Set(goalsStore.goals.map(g => g.category).filter(Boolean))];
-});
-
-// Récupérer tous les tags existants
-const existingTags = computed(() => {
-  const allTags = goalsStore.goals.flatMap(g => g.tags || []);
-  return [...new Set(allTags)];
-});
-
-const handleCategoryChange = () => {
-  if (formData.value.category === 'new') {
-    showNewCategoryInput.value = true;
-    formData.value.category = '';
-  }
-};
-
-const addNewCategory = () => {
-  if (newCategory.value.trim()) {
-    formData.value.category = newCategory.value.trim();
-    newCategory.value = '';
-  }
-  showNewCategoryInput.value = false;
-};
-
-const addTag = () => {
-  const tag = tagInput.value.trim();
-  if (tag && !formData.value.tags?.includes(tag)) {
-    if (!formData.value.tags) {
-      formData.value.tags = [];
-    }
-    formData.value.tags.push(tag);
-  }
-  tagInput.value = '';
-};
-
-const removeTag = (tag: string) => {
-  if (formData.value.tags) {
-    formData.value.tags = formData.value.tags.filter(t => t !== tag);
-  }
-};
-
+const categories = computed(() => [...new Set(goalsStore.goals.map(goal => goal.category).filter(Boolean))]);
+const existingTags = computed(() => [...new Set(goalsStore.goals.flatMap(goal => goal.tags || []))]);
+const handleCategoryChange = () => { if (formData.value.category === 'new') { showNewCategoryInput.value = true; formData.value.category = ''; } };
+const addNewCategory = () => { if (newCategory.value.trim()) { formData.value.category = newCategory.value.trim(); newCategory.value = ''; } showNewCategoryInput.value = false; };
+const addTag = () => { const tag = tagInput.value.trim(); if (tag && !formData.value.tags?.includes(tag)) { if (!formData.value.tags) formData.value.tags = []; formData.value.tags.push(tag); } tagInput.value = ''; };
+const removeTag = (tag: string) => { if (formData.value.tags) formData.value.tags = formData.value.tags.filter(item => item !== tag); };
 const handleSubmit = async () => {
-  try {
-    if (isEditing.value) {
-      await goalsStore.updateGoal(formData.value);
-      new Notice('Objectif mis à jour avec succès');
-    } else {
-      await goalsStore.createGoal(formData.value);
-      new Notice('Objectif créé avec succès');
-    }
-    closeModal();
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde de l\'objectif:', error);
-    new Notice('Erreur lors de la sauvegarde de l\'objectif');
-  }
+  try { if (isEditing.value) { await goalsStore.updateGoal(formData.value); new Notice('Objectif mis à jour avec succès'); } else { await goalsStore.createGoal(formData.value); new Notice('Objectif créé avec succès'); } closeModal(); }
+  catch (error) { console.error('Erreur lors de la sauvegarde de l’objectif:', error); new Notice('Erreur lors de la sauvegarde de l’objectif'); }
 };
-
-const handleDelete = async () => {
-  if (formData.value.id) {
-    try {
-      await goalsStore.deleteGoal(formData.value.id);
-      new Notice('Objectif supprimé avec succès');
-      closeModal();
-    } catch (error) {
-      console.error('Erreur lors de la suppression de l\'objectif:', error);
-      new Notice('Erreur lors de la suppression de l\'objectif');
-    }
-  }
-};
-
-const cancel = () => {
-  closeModal();
-};
+const handleDelete = async () => { if (!formData.value.id) return; try { await goalsStore.deleteGoal(formData.value.id); new Notice('Objectif supprimé avec succès'); closeModal(); } catch (error) { console.error('Erreur lors de la suppression de l’objectif:', error); new Notice('Erreur lors de la suppression de l’objectif'); } };
+const cancel = () => closeModal();
 </script>
-
-<style scoped>
-.dreamglows-modal-container {
-  padding: 1rem;
-}
-
-.dreamglows-modal-content {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.dreamglows-setting-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.dreamglows-setting-item-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.dreamglows-setting-item-name {
-  font-weight: bold;
-  margin-bottom: 0.25rem;
-}
-
-.dreamglows-setting-item-description {
-  color: var(--text-muted);
-  font-size: 0.8rem;
-}
-
-.dreamglows-setting-item-control {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.dreamglows-setting-item-control-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.dreamglows-category-input {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.dreamglows-tag-input {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.dreamglows-tag-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.dreamglows-tag {
-  background-color: var(--background-modifier-hover);
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.clickable-icon {
-  cursor: pointer;
-  opacity: 0.7;
-}
-
-.clickable-icon:hover {
-  opacity: 1;
-}
-
-.dreamglows-modal-button-container {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-
-.text-input-reset {
-  width: 100%;
-}
-
-.dropdown {
-  width: 100%;
-}
-</style> 

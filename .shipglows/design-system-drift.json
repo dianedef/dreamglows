@@ -4,8 +4,15 @@
       "classification": "accepted-exception",
       "paths": ["obsidian_plugin/src/styles/goals/task-modal-content.css"],
       "kinds": ["hardcoded CSS dimension"],
-      "pattern": "(?:46rem|88vh|0\\.75rem|2\\.5rem|700px|94vh|100%)",
-      "reason": "Task-modal viewport geometry and its responsive breakpoint are component-level layout constraints; colors, typography, spacing, radii, and interaction states remain governed by Obsidian theme variables or local semantic tokens."
+      "pattern": "45rem",
+      "reason": "CSS custom properties cannot drive media-query conditions, so the shared modal breakpoint is repeated here and documented beside its use; all other visual values resolve through the canonical DreamGlows token source."
+    },
+    {
+      "classification": "accepted-exception",
+      "paths": ["obsidian_plugin/src/styles/goals/goals-modal.css"],
+      "kinds": ["hardcoded CSS dimension"],
+      "pattern": "45rem",
+      "reason": "CSS custom properties cannot drive media-query conditions, so the shared modal breakpoint is repeated here and documented beside its use; all other visual values resolve through the canonical DreamGlows token source."
     },
     {
       "classification": "accepted-exception",
