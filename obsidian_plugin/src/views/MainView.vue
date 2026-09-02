@@ -11,27 +11,16 @@
             </div>
         </header>
 
-        <div class="dreamglows-header">
-            <div class="dreamglows-view-switch">
-                <button 
-                    :class="{ active: ['day', 'planning'].includes(activeTab) }"
-                    class="dreamglows-switch"
-                    @click="setActiveTab(['day', 'planning'].includes(activeTab) ? (activeTab === 'day' ? 'planning' : 'day') : 'day')"
-                >
-                    <span>🗓</span>
-                    <span>{{ activeTab === 'planning' ? 'Planning' : 'Aujourd\'hui' }}</span>
-                </button>
-                <button 
-                    :class="{ active: ['goals', 'stats', 'profile'].includes(activeTab) }"
-                    class="dreamglows-switch"
-                    @click="setActiveTab(['goals', 'stats', 'profile'].includes(activeTab) ? (activeTab === 'goals' ? 'stats' : activeTab === 'stats' ? 'profile' : 'goals') : 'goals')"
-                >
-                    <span>🎯</span>
-                    <span>{{ activeTab === 'profile' ? 'Profil' : activeTab === 'stats' ? 'Statistiques' : 'Objectifs' }}</span>
-                </button>
-            </div>
+        <CheminShell :scope="currentScope" @update:scope="setPathScope">
+            <template #tools>
+                <button type="button" class="dreamglows-switch" :class="{ active: activeTab === 'stats' }" @click="setActiveTab('stats')">Statistiques</button>
+                <button type="button" class="dreamglows-switch" :class="{ active: activeTab === 'profile' }" @click="setActiveTab('profile')">Profil</button>
+            </template>
+        </CheminShell>
 
-            <TimeNavigation 
+        <div class="dreamglows-header" v-if="activeTab === 'day'">
+
+            <TimeNavigation
                 v-if="['day', 'planning'].includes(activeTab)"
                 :view="activeTab as 'day' | 'planning'"
                 v-model:date="currentDate"
@@ -39,14 +28,14 @@
             />
         </div>
 
-        <section class="dreamglows-glass-panel">
+        <section v-if="activeTab === 'day'" class="dreamglows-glass-panel">
             <div class="dreamglows-panel-title">
                 <span>{{ activeTab === 'day' ? 'Mode journalier' : activeTab === 'planning' ? 'Mode planning' : activeTab === 'goals' ? 'Vue objectifs' : activeTab === 'stats' ? 'Vue progression' : 'Vue profil' }}</span>
                 <span class="dreamglows-pill">{{ activeTabLabel }}</span>
             </div>
         </section>
 
-        <section class="dreamglows-command-center">
+        <section v-if="activeTab === 'day'" class="dreamglows-command-center">
             <article class="dreamglows-command-card">
                 <p class="dreamglows-card-kicker">Statut opérationnel</p>
                 <h2 class="dreamglows-card-title">Centre de contrôle</h2>
@@ -64,7 +53,7 @@
             </article>
         </section>
 
-        <section class="dreamglows-command-grid">
+        <section v-if="activeTab === 'day'" class="dreamglows-command-grid">
             <article
                 v-for="metric in commandMetrics"
                 :key="metric.label"
@@ -75,10 +64,7 @@
                 <p class="dreamglows-card-text">{{ metric.subtitle }}</p>
                 <div v-if="metric.progress !== undefined" class="dreamglows-kpi-progress">
                     <span class="dreamglows-progress-track">
-                        <span
-                            class="dreamglows-progress-fill"
-                            :style="{ width: `${Math.min(100, Math.max(0, (metric.progress / (metric.max || 1)) * 100))}%` }"
-                        ></span>
+                        <span class="dreamglows-progress-fill" :style="{ width: `${Math.min(100, Math.max(0, (metric.progress / (metric.max || 1)) * 100))}%` }"></span>
                     </span>
                 </div>
             </article>
@@ -96,28 +82,43 @@
             </article>
         </section>
 
-        <component 
-            :is="currentComponent" 
-            :contentFiles="contentFiles"
-            :app="app"
-            :currentDate="currentDate"
-        />
+        <section
+            v-if="currentScope"
+            :id="`dreamglows-chemin-panel-${currentScope}`"
+            role="tabpanel"
+            tabindex="0"
+            :aria-labelledby="`dreamglows-chemin-tab-${currentScope}`"
+            :data-dg-view="currentScope"
+        >
+            <component
+                :is="currentComponent"
+                :contentFiles="contentFiles"
+                :app="app"
+                :currentDate="currentDate"
+                @update:currentDate="currentDate = $event"
+            />
+        </section>
+        <component v-else :is="currentComponent" :contentFiles="contentFiles" :app="app" />
+        <p class="sr-only" aria-live="polite">Vue {{ activeTabLabel }} ouverte.</p>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, provide, onMounted, onUnmounted } from 'vue';
+import { ref, computed, provide, onMounted, onUnmounted, watch } from 'vue';
 import { App, TFile } from 'obsidian';
 import { DateTime } from 'luxon';
-import GoalsView from './GoalsView.vue';
+import JourneyView from './JourneyView.vue';
 import StatsView from './StatsView.vue';
 import DayView from './DayView.vue';
 import PlanningView from './PlanningView.vue';
 import ProfileView from './ProfileView.vue';
+import HistoryView from './HistoryView.vue';
+import CheminShell from '../components/CheminShell.vue';
 import TimeNavigation from '../components/TimeNavigation.vue';
 import { useSettingsStore } from '../stores/settingsStore';
 import { useGoalsStore } from '../stores/goalsStore';
 import { useTasksStore } from '../stores/tasksStore';
+import { usePathStore, type PathScope } from '../stores/pathStore';
 
 const props = defineProps<{
     contentFiles: TFile[],
@@ -129,63 +130,53 @@ provide('app', props.app);
 const settingsStore = useSettingsStore();
 const goalsStore = useGoalsStore();
 const tasksStore = useTasksStore();
-const activeTab = ref(settingsStore.settings.lastActiveTab);
+const pathStore = usePathStore();
+const validTabs = ['day', 'goals', 'planning', 'history', 'stats', 'profile'] as const;
+const initialTab = validTabs.includes(settingsStore.settings.lastActiveTab as typeof validTabs[number])
+    ? settingsStore.settings.lastActiveTab
+    : 'day';
+const activeTab = ref(initialTab);
 
-// Ajout de l'état global de la date
 const currentDate = ref(DateTime.now());
 provide('currentDate', currentDate);
 
+const scopeToTab: Record<PathScope, string> = { today: 'day', week: 'planning', journey: 'goals', history: 'history' };
+const tabToScope: Partial<Record<string, PathScope>> = { day: 'today', planning: 'week', goals: 'journey', history: 'history' };
+const currentScope = computed(() => tabToScope[activeTab.value] ?? null);
+pathStore.setScope(tabToScope[activeTab.value] ?? 'today');
+pathStore.setReferenceDate(currentDate.value.toFormat('yyyy-LL-dd') as any);
+
+watch(currentDate, (value) => pathStore.setReferenceDate(value.toFormat('yyyy-LL-dd') as any));
+
+const setPathScope = (scope: PathScope) => {
+    pathStore.setScope(scope);
+    setActiveTab(scopeToTab[scope]);
+};
+
 const setActiveTab = (tab: string) => {
-    try {
-        if (!['day', 'goals', 'planning', 'stats', 'profile'].includes(tab)) {
-            console.error('Tab invalide:', tab);
-            return;
-        }
-
-        console.log('Changement d\'onglet:', {
-            ancien: activeTab.value,
-            nouveau: tab,
-            settings: settingsStore.settings
-        });
-
-        activeTab.value = tab;
-        settingsStore.updateSettings({ lastActiveTab: tab });
-    } catch (error) {
-        console.error('Erreur lors du changement d\'onglet:', error);
+    if (!validTabs.includes(tab as typeof validTabs[number])) {
+        console.error('Tab invalide:', tab);
+        return;
     }
+    activeTab.value = tab;
+    const scope = tabToScope[tab];
+    if (scope) pathStore.setScope(scope);
+    settingsStore.updateSettings({ lastActiveTab: tab });
 };
 
 const handleViewChange = ((event: CustomEvent) => {
-    try {
-        const newTab = event.detail;
-        if (!['day', 'goals', 'planning', 'stats', 'profile'].includes(newTab)) {
-            console.error('Tab invalide dans l\'événement:', newTab);
-            return;
-        }
-
-        console.log('Changement de vue:', {
-            ancien: activeTab.value,
-            nouveau: newTab,
-            settings: settingsStore.settings
-        });
-
-        activeTab.value = newTab;
-    } catch (error) {
-        console.error('Erreur lors du changement de vue:', error);
+    const newTab = event.detail;
+    if (!validTabs.includes(newTab as typeof validTabs[number])) {
+        console.error("Tab invalide dans l'evenement:", newTab);
+        return;
     }
+    activeTab.value = newTab;
+    const scope = tabToScope[newTab];
+    if (scope) pathStore.setScope(scope);
 }) as EventListener;
 
-// Écouter l'événement de changement de vue
 onMounted(() => {
-    try {
-        window.addEventListener('view-change', handleViewChange);
-        console.log('MainView monté avec:', {
-            tab: activeTab.value,
-            settings: settingsStore.settings
-        });
-    } catch (error) {
-        console.error('Erreur lors du montage:', error);
-    }
+    window.addEventListener('view-change', handleViewChange);
 });
 
 onUnmounted(() => {
@@ -197,9 +188,11 @@ const currentComponent = computed(() => {
         case 'day':
             return DayView;
         case 'goals':
-            return GoalsView;
+            return JourneyView;
         case 'planning':
             return PlanningView;
+        case 'history':
+            return HistoryView;
         case 'stats':
             return StatsView;
         case 'profile':
@@ -213,24 +206,22 @@ const activeTabLabel = computed(() => {
     if (['day', 'planning'].includes(activeTab.value)) {
         return activeTab.value === 'planning' ? 'Planning interactif' : 'Journal du jour';
     }
+    if (activeTab.value === 'history') return 'Histoire du chemin';
     if (['goals', 'stats', 'profile'].includes(activeTab.value)) {
         return activeTab.value === 'goals' ? 'Objectifs actifs' : activeTab.value === 'stats' ? 'Rapports visuels' : 'Données personnelles';
     }
     return 'Accueil';
 });
 
-type TimelineState = {
-    time: string;
-    text: string;
-    state: 'ok' | 'info' | 'warn';
-};
+type TimelineState = { time: string; text: string; state: 'ok' | 'info' | 'warn'; };
+type MetricState = { label: string; value: string; subtitle: string; progress?: number; max?: number; };
 
-type MetricState = {
-    label: string;
-    value: string;
-    subtitle: string;
-    progress?: number;
-    max?: number;
+const formatDuration = (minutes = 0) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins} min`;
+    if (mins === 0) return `${hours} h`;
+    return `${hours} h ${mins} min`;
 };
 
 const commandMetrics = computed(() => {
@@ -244,38 +235,35 @@ const commandMetrics = computed(() => {
     const urgentTasks = tasks.filter((task) => task.priority === 'high' && task.status !== 'done').length;
     const highPriorityTasks = tasks.filter((task) => task.priority === 'high').length;
 
-    const completionRate = goals.length > 0
-        ? Math.round((doneGoals / goals.length) * 100)
-        : 0;
+    const completionRate = goals.length > 0 ? Math.round((doneGoals / goals.length) * 100) : 0;
 
     const today = currentDate.value.toFormat('yyyy-LL-dd');
     const todayTasks = tasks.filter((task) => {
         const taskDate = DateTime.fromISO(task.startDate, { setZone: true });
-        if (!taskDate.isValid) {
-            return false;
-        }
-        return taskDate.toFormat('yyyy-LL-dd') === today && task.status !== 'done';
+        if (!taskDate.isValid) return false;
+        return taskDate.toFormat('yyyy-LL-dd') === today;
     });
 
-    const cadenceGoal = Math.round(
-        goals.length > 0 ? (doneGoals / goals.length) * 100 : 0
-    );
-    const priorityGoal = Math.max(
-        0,
-        Math.round((highPriorityTasks > 0 ? (1 - urgentTasks / highPriorityTasks) * 100 : 0))
-    );
-    const avgGoalProgress = goals.length > 0
-        ? goals.reduce((sum, goal) => sum + (typeof goal.progress === 'number' ? goal.progress : 0), 0) / goals.length
-        : 0;
+    const todayPlanned = todayTasks.reduce((sum, task) => sum + (task.plannedMinutes || 0), 0);
+    const todayActual = todayTasks.reduce((sum, task) => sum + (task.actualMinutes || 0), 0);
+
+    const cadenceGoal = Math.round(goals.length > 0 ? (doneGoals / goals.length) * 100 : 0);
+    const priorityGoal = Math.max(0, Math.round((highPriorityTasks > 0 ? (1 - urgentTasks / highPriorityTasks) * 100 : 0)));
+    const avgGoalProgress = goals.length > 0 ? goals.reduce((sum, goal) => sum + (typeof goal.progress === 'number' ? goal.progress : 0), 0) / goals.length : 0;
     const chargeValue = todayTasks.length + doneTasks + inProgressTasks;
 
     const metrics: MetricState[] = [
         {
             label: 'Cadence',
             value: `${todayTasks.length}/${tasks.length}`,
-            subtitle: isPlanning ? 'Tâches aujourd’hui sur total planifié' : 'Convergence quotidienne',
+            subtitle: isPlanning ? "Tâches planifiées aujourd'hui sur le total" : 'Convergence quotidienne',
             progress: cadenceGoal,
             max: 100
+        },
+        {
+            label: 'Temps',
+            value: `${formatDuration(todayActual)} / ${formatDuration(todayPlanned)}`,
+            subtitle: `${todayTasks.length} tâches du jour`
         },
         {
             label: 'Priorité',
@@ -294,7 +282,7 @@ const commandMetrics = computed(() => {
         {
             label: 'Charge',
             value: `${chargeValue} tâche${chargeValue > 1 ? 's' : ''}`,
-            subtitle: `${doneTasks} réalisées · ${inProgressTasks} en cours · ${todayTasks.length} en attente`
+            subtitle: `${doneTasks} réalisées · ${inProgressTasks} en cours · ${todayTasks.filter((task) => task.status === 'todo').length} en attente`
         }
     ];
 
@@ -302,10 +290,10 @@ const commandMetrics = computed(() => {
         metrics.push({
             label: 'Soutenabilité',
             value: `${doneTasks} / ${tasks.length}`,
-            subtitle: 'Progrès global de cette journée',
+            subtitle: 'Progression globale de la journée',
             progress: tasks.length > 0 ? (doneTasks / tasks.length) * 100 : 0,
             max: 100
-        } as MetricState);
+        });
         metrics.splice(0, 1);
     }
 
@@ -319,9 +307,7 @@ const liveTimeline = computed(() => {
 
     const addEvent = (time: string | Date, text: string, state: TimelineState['state']) => {
         const dt = typeof time === 'string' ? DateTime.fromISO(time, { setZone: true }) : DateTime.fromJSDate(time);
-        if (!dt.isValid) {
-            return;
-        }
+        if (!dt.isValid) return;
         events.push({ time: dt.toFormat('HH:mm'), text, state });
     };
 
@@ -342,13 +328,11 @@ const liveTimeline = computed(() => {
         addEvent(task.createdAt, `Tâche créée : ${task.title}`, 'info');
     });
 
-    goalsStore.goals
-        .slice(0, 4)
-        .forEach((goal) => {
-            if (goal.status === 'done' || (goal as any).status === 'completed') {
-                addEvent((goal as any).updatedAt || goal.startDate.toISOString(), `Objectif terminé : ${goal.title}`, 'ok');
-            }
-        });
+    goalsStore.goals.slice(0, 4).forEach((goal) => {
+        if (goal.status === 'done' || (goal as any).status === 'completed') {
+            addEvent((goal as any).updatedAt || goal.startDate.toISOString(), `Objectif terminé : ${goal.title}`, 'ok');
+        }
+    });
 
     events.sort((a, b) => {
         const aTime = DateTime.fromFormat(a.time, 'HH:mm');

@@ -44,6 +44,7 @@ export type PathEventType =
     | 'planned-period-changed'
     | 'entity-completed'
     | 'entity-reopened'
+    | 'entity-reparented'
     | 'evidence-recorded'
     | 'reflection-recorded';
 
@@ -56,6 +57,8 @@ export interface PathEvent {
     previousPlanned?: PlannedPeriod;
     nextPlanned?: PlannedPeriod;
     relatedEntityId?: string;
+    previousParentId?: string;
+    nextParentId?: string;
     extensions: JsonObject;
 }
 

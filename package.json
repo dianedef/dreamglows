@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
+    "website",
     "obsidian_plugin",
     "chrome_extension",
     "windows_app",
@@ -11,6 +12,8 @@
   "scripts": {
     "dev": "pnpm -r --if-present dev",
     "build": "pnpm -r --if-present build",
+    "dev:website": "pnpm --filter dreamglows-website dev",
+    "build:website": "pnpm --filter dreamglows-website build",
     "dev:chrome-extension": "pnpm --filter dreamglows-extension dev",
     "build:chrome-extension": "pnpm --filter dreamglows-extension build",
     "dev:obsidian-plugin": "pnpm --filter obsidian-dreamglows dev",

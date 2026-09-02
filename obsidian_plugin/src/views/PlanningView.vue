@@ -1,5 +1,9 @@
 <template>
     <div class="dreamglows-planning-view">
+        <PathActionsPanel scope="week" />
+        <section class="dreamglows-week-notes" aria-labelledby="dreamglows-week-notes-title">
+        <h2 id="dreamglows-week-notes-title">Notes de la semaine</h2>
+        <p class="dreamglows-week-notes__hint">Ces notes et leurs cases restent du contenu Obsidian, distinct des actions Chemin.</p>
         <div class="dreamglows-toolbar">
             <div class="dreamglows-toolbar-left">
                 <NotesGenerator :notesGenerator="getDreamGlowsPlugin(props.app)?.notesGenerator" />
@@ -126,6 +130,7 @@
         <div v-else class="loading">
             Chargement...
         </div>
+        </section>
     </div>
 </template>
 
@@ -142,6 +147,8 @@ import { DateTime } from 'luxon';
 import type { WeekNotes } from '../services/TimeManagementService';
 import type { Note, Task, TaskPriority, TaskStatus } from '../types';
 import { registerStyles, unregisterStyles } from '../styles/RegisterStyles';
+import PathActionsPanel from '../components/PathActionsPanel.vue';
+import { usePathStore } from '../stores/pathStore';
 
 type DreamGlowsFrontmatter = Record<string, any>;
 
@@ -149,18 +156,20 @@ const props = defineProps<{
     contentFiles: TFile[],
     app: any
 }>();
+const emit = defineEmits<{ 'update:currentDate': [date: DateTime] }>();
 
 const searchQuery = ref('');
 const statusFilter = ref('');
 const notes = ref<Note[]>([]);
 const expandedNotes = ref<string[]>([]);
 const settingsStore = useSettingsStore();
+const pathStore = usePathStore();
 const sortBy = ref('title');
 const folderFilter = ref('');
 const sortDirection = ref<'asc' | 'desc'>('asc');
 const newTaskLabels = ref<{ [key: string]: string }>({});
 const viewType = ref('list');
-const currentDate = ref(DateTime.now());
+const currentDate = ref(DateTime.fromISO(pathStore.referenceDate));
 const currentWeek = ref<WeekViewData | null>(null);
 const weekViewData = ref<WeekNotes | null>(null);
 const weekViewRef = ref<InstanceType<typeof WeekViewNotes> | null>(null);
@@ -590,11 +599,15 @@ const loadCurrentWeek = async () => {
 
 const previousWeek = async () => {
     currentDate.value = currentDate.value.minus({ weeks: 1 });
+    pathStore.setReferenceDate(currentDate.value.toFormat('yyyy-MM-dd') as any);
+    emit('update:currentDate', currentDate.value);
     await loadCurrentWeek();
 };
 
 const nextWeek = async () => {
     currentDate.value = currentDate.value.plus({ weeks: 1 });
+    pathStore.setReferenceDate(currentDate.value.toFormat('yyyy-MM-dd') as any);
+    emit('update:currentDate', currentDate.value);
     await loadCurrentWeek();
 };
 
@@ -667,6 +680,10 @@ interface WeekViewData {
     background: var(--background-secondary);
     border-bottom: 1px solid var(--background-modifier-border);
 }
+
+.dreamglows-week-notes { margin-top: 1rem; }
+.dreamglows-week-notes > h2 { margin: 0 1rem .25rem; }
+.dreamglows-week-notes__hint { margin: 0 1rem .75rem; color: var(--text-muted); }
 
 .dreamglows-toolbar-left,
 .dreamglows-toolbar-right {

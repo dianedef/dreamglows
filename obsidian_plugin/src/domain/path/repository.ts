@@ -59,7 +59,7 @@ const unsafeKeys = new Set(['__proto__', 'prototype', 'constructor']);
 const entityTypes = new Set(['dream', 'goal', 'milestone', 'action', 'habit', 'focus-session', 'evidence', 'reflection']);
 const statuses = new Set(['todo', 'in-progress', 'done', 'cancelled']);
 const priorities = new Set(['low', 'medium', 'high']);
-const eventTypes = new Set(['entity-created', 'planned-period-changed', 'entity-completed', 'entity-reopened', 'evidence-recorded', 'reflection-recorded']);
+const eventTypes = new Set(['entity-created', 'planned-period-changed', 'entity-completed', 'entity-reopened', 'entity-reparented', 'evidence-recorded', 'reflection-recorded']);
 
 function isObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -135,6 +135,8 @@ function validateEvent(value: unknown, path: string): asserts value is PathEvent
     if (value.previousPlanned !== undefined) validatePeriod(value.previousPlanned, `${path}.previousPlanned`);
     if (value.nextPlanned !== undefined) validatePeriod(value.nextPlanned, `${path}.nextPlanned`);
     if (value.relatedEntityId !== undefined) requireString(value.relatedEntityId, `${path}.relatedEntityId`);
+    if (value.previousParentId !== undefined) requireString(value.previousParentId, `${path}.previousParentId`);
+    if (value.nextParentId !== undefined) requireString(value.nextParentId, `${path}.nextParentId`);
     if (!isObject(value.extensions)) throw new TypeError(`${path}.extensions must be an object`);
 }
 

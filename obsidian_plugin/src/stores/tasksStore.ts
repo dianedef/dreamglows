@@ -8,6 +8,39 @@ interface TasksState {
     error: string | null;
 }
 
+const toMinutesFromTimes = (startTime?: string, dueTime?: string): number | undefined => {
+    if (!startTime || !dueTime) {
+        return undefined;
+    }
+
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [dueHour, dueMinute] = dueTime.split(':').map(Number);
+
+    if (
+        Number.isNaN(startHour) ||
+        Number.isNaN(startMinute) ||
+        Number.isNaN(dueHour) ||
+        Number.isNaN(dueMinute)
+    ) {
+        return undefined;
+    }
+
+    const start = startHour * 60 + startMinute;
+    const due = dueHour * 60 + dueMinute;
+    const diff = due - start;
+
+    return diff > 0 ? diff : undefined;
+};
+
+const normalizePlannedMinutes = (taskData: Partial<Task>): number | undefined => {
+    if (taskData.plannedMinutes !== undefined) {
+        const parsed = Number(taskData.plannedMinutes);
+        return Number.isFinite(parsed) ? parsed : undefined;
+    }
+
+    return toMinutesFromTimes(taskData.startTime, taskData.dueTime);
+};
+
 export const useTasksStore = defineStore('tasks', {
     state: (): TasksState => ({
         tasks: [],
@@ -36,6 +69,10 @@ export const useTasksStore = defineStore('tasks', {
                     description: taskData.description || '',
                     startDate: taskData.startDate || new Date().toISOString(),
                     dueDate: taskData.dueDate,
+                    startTime: taskData.startTime || undefined,
+                    dueTime: taskData.dueTime || undefined,
+                    plannedMinutes: normalizePlannedMinutes(taskData),
+                    actualMinutes: taskData.actualMinutes ? Number(taskData.actualMinutes) : undefined,
                     priority: taskData.priority || 'medium',
                     status: taskData.status || 'todo',
                     goalId: taskData.goalId,
@@ -68,22 +105,27 @@ export const useTasksStore = defineStore('tasks', {
                 const index = this.tasks.findIndex(task => task.id === taskData.id);
                 if (index !== -1) {
                     const previousTask = this.tasks[index];
-                    const updatedTask = {
+                    const mergedTask = {
+                        ...previousTask,
                         ...taskData,
                         updatedAt: new Date().toISOString()
                     };
+                    const normalizedTask: Task = {
+                        ...mergedTask,
+                        plannedMinutes: normalizePlannedMinutes(mergedTask)
+                    };
                     this.tasks = [
                         ...this.tasks.slice(0, index),
-                        updatedTask,
+                        normalizedTask,
                         ...this.tasks.slice(index + 1)
                     ];
-                    if (previousTask.status !== 'done' && updatedTask.status === 'done') {
+                    if (previousTask.status !== 'done' && normalizedTask.status === 'done') {
                         const progressionStore = useProgressionStore();
-                        progressionStore.rewardTaskCompletion(updatedTask.id);
+                        progressionStore.rewardTaskCompletion(normalizedTask.id);
                     }
                     this.setError(null);
                     console.log('TasksStore: Task updated');
-                    return updatedTask;
+                    return normalizedTask;
                 }
                 throw new Error('Tâche non trouvée');
             } catch (error) {

@@ -17,7 +17,13 @@ const unsafe = new Set(['__proto__', 'prototype', 'constructor']);
 const common = ['id', 'title', 'status', 'startDate', 'createdAt', 'updatedAt', 'completedAt'];
 const knownGoal = new Set([...common, 'description', 'category', 'progress', 'priority', 'tags', 'dueDate', 'endDate', 'timeframe', 'parentGoalId', 'childGoals', 'subGoalIds', 'tasks', 'metrics']);
 const knownTask = new Set([...common, 'description', 'priority', 'tags', 'dueDate', 'goalId', 'notes', 'linkToOptimizer', 'linkToGenerator']);
-const settingKeys = new Set(['lastActiveTab', 'folderStructure', 'monthLanguage', 'notesPath', 'timelineStartHour', 'timelineEndHour', 'defaultTasks']);
+const settingKeys = new Set([
+    'defaultTasks', 'rituals', 'projectFolders', 'frequencyColors',
+    'openAIKey', 'openRouterKey', 'lastActiveTab', 'recentGoals',
+    'notesPath', 'folderStructure', 'monthLanguage', 'notesFormat',
+    'customNotesFormat', 'noteTemplate', 'lastMainWidth',
+    'timelineStartHour', 'timelineEndHour', 'timeFormat', 'gameProgression',
+]);
 const knownStatuses = new Set(['todo', 'in-progress', 'in_progress', 'done', 'completed', 'cancelled', 'canceled']);
 const object = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 const strings = (value: unknown): string[] => Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : [];

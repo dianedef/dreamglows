@@ -68,6 +68,17 @@
       </div>
     </div>
 
+    <section class="dreamglows-today-workspace">
+      <h2>Espace aujourd'hui</h2>
+      <div class="dreamglows-today-workspace-card">
+        <div class="dreamglows-card-title">Charge de la journée</div>
+        <p>Charge prevue: {{ formatDuration(todayPlannedMinutes) }} · Charge reelle: {{ formatDuration(todayActualMinutes) }}</p>
+      </div>
+      <PathActionsPanel scope="today" />
+    </section>
+
+    <FocusSessionPanel />
+
     <!-- Trackers d'habitudes -->
     <div class="dreamglows-habits-section">
       <div class="dreamglows-habits-background">
@@ -215,6 +226,9 @@ import { useHabitsStore } from '@/stores/habitsStore';
 import { useGoalsStore } from '@/stores/goalsStore';
 import { useTasksStore } from '@/stores/tasksStore';
 import { useProgressionStore } from '@/stores/progressionStore';
+import FocusSessionPanel from '@/components/FocusSessionPanel.vue';
+import PathActionsPanel from '@/components/PathActionsPanel.vue';
+import { usePathStore } from '@/stores/pathStore';
 import { getMoodEmoji, getLoveEmoji, getEnergyEmoji, type MoodLevel, type LoveLevel, type EnergyLevel } from '@/stores/habitsStore';
 import type { Habit } from '@/types/habits';
 import type { Task, TaskStatus } from '@/types/tasks';
@@ -280,6 +294,7 @@ const habitsStore = useHabitsStore();
 const goalsStore = useGoalsStore();
 const tasksStore = useTasksStore();
 const progressionStore = useProgressionStore();
+const pathStore = usePathStore();
 
 const dayNotes = ref('');
 const currentNote = ref<DayNote | null>(null);
@@ -356,6 +371,25 @@ const nextTask = computed(() => {
   return tasks[0];
 });
 
+const todayTaskItems = computed(() => {
+  const ids = new Set((pathStore.todayProjection?.items ?? []).filter(item => item.entity.type === 'action').map(item => item.id));
+  return tasksStore.getTasks
+    .filter((task: Task) => ids.has(task.id))
+    .sort((a: Task, b: Task) => {
+      const aTime = a.startTime || '99:99';
+      const bTime = b.startTime || '99:99';
+      return aTime.localeCompare(bTime);
+    });
+});
+
+const todayPlannedMinutes = computed(() => {
+  return todayTaskItems.value.reduce((sum, task) => sum + (task.plannedMinutes || 0), 0);
+});
+
+const todayActualMinutes = computed(() => {
+  return todayTaskItems.value.reduce((sum, task) => sum + (task.actualMinutes || 0), 0);
+});
+
 // Computed properties pour la semaine courante
 const currentWeekDays = computed(() => {
   return dateService.getCurrentWeekDays(props.currentDate);
@@ -395,6 +429,18 @@ const formatDate = (date: string) => {
     day: 'numeric',
     month: 'long'
   });
+};
+
+const formatDuration = (minutes: number) => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) {
+    return `${mins} min`;
+  }
+  if (mins === 0) {
+    return `${hours} h`;
+  }
+  return `${hours} h ${mins} min`;
 };
 
 const isHabitCompleted = (habitId: string, date?: string): boolean => {

@@ -7,6 +7,10 @@ export interface Task {
     description?: string;
     startDate: string;
     dueDate?: string;
+    startTime?: string;
+    dueTime?: string;
+    plannedMinutes?: number;
+    actualMinutes?: number;
     priority: TaskPriority;
     status: TaskStatus;
     goalId?: string;

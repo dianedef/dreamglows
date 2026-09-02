@@ -18,6 +18,20 @@
       "classification": "accepted-exception",
       "paths": ["obsidian_plugin/styles.css"],
       "reason": "Generated release artifact. Visual literals are reviewed in their source stylesheets; scanning the compiled bundle would duplicate source findings and surface pre-existing unrelated styles."
+    },
+    {
+      "classification": "brand-data",
+      "paths": ["website/src/layouts/BaseLayout.astro"],
+      "kinds": ["hardcoded color"],
+      "pattern": "theme-color",
+      "reason": "Browser theme metadata requires a literal and mirrors the canonical --dg-color-ink token."
+    },
+    {
+      "classification": "accepted-exception",
+      "paths": ["website/src/styles/global.css"],
+      "kinds": ["hardcoded CSS dimension"],
+      "pattern": "@media",
+      "reason": "CSS custom properties cannot be used in media-query conditions; these are the declared web breakpoints."
     }
   ]
 }

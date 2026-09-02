@@ -6,6 +6,20 @@ obsidian_plugin/style.css
 # Local tooling caches
 .flox
 shipglows_data
+!shipglows_data/
+shipglows_data/*
+!shipglows_data/business/
+shipglows_data/business/*
+!shipglows_data/business/dreamglows-capability-map.md
+!shipglows_data/technical/
+shipglows_data/technical/*
+!shipglows_data/technical/README.md
+!shipglows_data/technical/code-docs-map.md
+!shipglows_data/editorial/
+shipglows_data/editorial/*
+!shipglows_data/editorial/README.md
+!shipglows_data/editorial/content-map.md
+!shipglows_data/editorial/ROADMAP.md
 
 # Workspaces and build artifacts
 **/dist

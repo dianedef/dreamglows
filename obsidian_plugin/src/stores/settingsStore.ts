@@ -30,7 +30,7 @@ export const useSettingsStore = defineStore('settings', {
                 });
                 
                 // Valider lastActiveTab
-                if (newSettings.lastActiveTab && !['day', 'goals', 'planning', 'stats'].includes(newSettings.lastActiveTab)) {
+                if (newSettings.lastActiveTab && !['day', 'goals', 'planning', 'history', 'stats', 'profile'].includes(newSettings.lastActiveTab)) {
                     console.error('Tab invalide dans les nouveaux paramètres:', newSettings.lastActiveTab);
                     return;
                 }

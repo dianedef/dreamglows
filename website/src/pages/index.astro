@@ -1,0 +1,111 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { siteCopy } from '../data/copy';
+
+const title = 'DreamGlows — Avance vers ce qui compte';
+const description = 'Transforme un rêve impalpable en un chemin clair, semé d’actions compréhensibles.';
+---
+
+<BaseLayout {title} {description}>
+  <header class="site-header wrap">
+    <a class="brand" href="#top" aria-label="DreamGlows, accueil">
+      <span class="brand-mark" aria-hidden="true"></span>
+      {siteCopy.brand}
+    </a>
+    <nav aria-label="Navigation principale">
+      <ul>
+        {siteCopy.navigation.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+    </nav>
+    <a class="button button-small button-ghost" href={siteCopy.hero.primaryAction.href}>Essayer sur Obsidian</a>
+  </header>
+
+  <main id="contenu">
+    <section class="hero wrap" id="top">
+      <div class="hero-copy">
+        <p class="eyebrow"><span aria-hidden="true"></span>{siteCopy.hero.eyebrow}</p>
+        <h1>{siteCopy.hero.title}</h1>
+        <p class="lead">{siteCopy.hero.lead}</p>
+        <div class="actions">
+          <a class="button button-primary" href={siteCopy.hero.primaryAction.href}>{siteCopy.hero.primaryAction.label}<span aria-hidden="true">↗</span></a>
+          <a class="button button-text" href={siteCopy.hero.secondaryAction.href}>{siteCopy.hero.secondaryAction.label}<span aria-hidden="true">↓</span></a>
+        </div>
+      </div>
+
+      <div class="path-card" aria-label="Aperçu du parcours DreamGlows">
+        <p class="path-label">Trajectoire active</p>
+        <div class="path-heading">
+          <span class="path-icon" aria-hidden="true">✦</span>
+          <div><strong>Lancer mon projet de cœur</strong><span>Progression globale</span></div>
+          <b>68%</b>
+        </div>
+        <div class="progress" aria-hidden="true"><span></span></div>
+        <ol>
+          <li class="complete"><span>1</span><div><strong>Clarifier la vision</strong><small>Étape accomplie</small></div><b>✓</b></li>
+          <li class="active"><span>2</span><div><strong>Construire la première version</strong><small>3 tâches sur 5</small></div><b>En cours</b></li>
+          <li><span>3</span><div><strong>Partager avec les premiers utilisateurs</strong><small>Prochaine étape</small></div></li>
+        </ol>
+        <div class="next-action"><span>Prochaine action</span><strong>Finaliser la page de présentation</strong><small>Reliée à ton objectif</small></div>
+      </div>
+    </section>
+
+    <section class="tension section wrap">
+      <div><p class="eyebrow">{siteCopy.tension.eyebrow}</p><h2>{siteCopy.tension.title}</h2></div>
+      <p class="section-copy">{siteCopy.tension.body}</p>
+    </section>
+
+    <section class="method section" id="methode">
+      <div class="wrap">
+        <p class="eyebrow">La méthode DreamGlows</p>
+        <div class="section-heading"><h2>Ton pourquoi donne le cap.<br />Chaque action trace le chemin.</h2><p>Le rêve dit ce qui compte. DreamGlows t’aide à construire comment y aller.</p></div>
+        <ol class="method-grid">
+          {siteCopy.method.map((item) => (
+            <li><span>{item.number}</span><h3>{item.title}</h3><p>{item.body}</p></li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <section class="product section wrap" id="produit">
+      <div class="product-copy">
+        <p class="eyebrow">{siteCopy.product.eyebrow}</p>
+        <h2>{siteCopy.product.title}</h2>
+        <p class="section-copy">{siteCopy.product.body}</p>
+      </div>
+      <div class="feature-stack">
+        {siteCopy.product.features.map((feature, index) => (
+          <article><span>0{index + 1}</span><div><h3>{feature.title}</h3><p>{feature.body}</p></div></article>
+        ))}
+      </div>
+    </section>
+
+    <section class="surfaces section" id="surfaces">
+      <div class="wrap">
+        <p class="eyebrow">{siteCopy.surfaces.eyebrow}</p>
+        <div class="section-heading"><h2>{siteCopy.surfaces.title}</h2><p>{siteCopy.surfaces.body}</p></div>
+        <div class="surface-grid">
+          {siteCopy.surfaces.items.map((surface, index) => (
+            <article class:list={{ available: index === 0 }}>
+              <div><span class="surface-dot" aria-hidden="true"></span><small>{surface.status}</small></div>
+              <h3>{surface.name}</h3><p>{surface.detail}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="closing section wrap">
+      <div class="closing-glow" aria-hidden="true"></div>
+      <p class="eyebrow">{siteCopy.closing.eyebrow}</p>
+      <h2>{siteCopy.closing.title}</h2>
+      <p>{siteCopy.closing.body}</p>
+      <a class="button button-primary" href={siteCopy.closing.action.href}>{siteCopy.closing.action.label}<span aria-hidden="true">↗</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer wrap">
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>{siteCopy.brand}</a>
+    <p>Transforme tes rêves en progrès visible.</p>
+    <a href="https://github.com/dianedef/dreamglows">GitHub <span aria-hidden="true">↗</span></a>
+  </footer>
+</BaseLayout>

@@ -7,6 +7,8 @@ import { useSettingsStore } from './stores/settingsStore';
 import { useGoalsStore } from './stores/goalsStore';
 import { useTasksStore } from './stores/tasksStore';
 import { useProgressionStore } from './stores/progressionStore';
+import { useFocusSessionsStore } from './stores/focusSessionsStore';
+import { usePathStore } from './stores/pathStore';
 import { DreamGlowsSettingsTab } from './services/SettingsTabService';
 import { NotesGeneratorService } from './services/NotesGeneratorService';
 import { TimeManagementService } from './services/TimeManagementService';
@@ -22,20 +24,24 @@ import { StorageService } from './services/StorageService';
 import type { Goal } from './types/goals';
 import type { Task } from './types/tasks';
 import type { DreamGlowsSettings } from './types/settings';
+import type { FocusSession } from './types/focusSessions';
 import { DEFAULT_SETTINGS } from './types/settings';
+import { PathRepository } from './domain/path/repository';
+import { ObsidianPathRepositoryAdapter } from './domain/path/obsidian-adapter';
+import { PathPersistenceCoordinator } from './domain/path/persistence-coordinator';
+import {
+    mergeLegacyStoreSnapshot,
+    projectLegacyStoreSnapshot,
+    type LegacyStoreSnapshot
+} from './domain/path/legacy-store-bridge';
+import type { JsonObject, ZonedInstant } from './domain/path/model';
+import { createPathCommandPort, type PathCommandPort } from './domain/path/command-port';
 import { v4 as uuidv4 } from 'uuid';
 import './styles/dreamglows-tokens.css';
 import './styles/goals/task-modal-content.css';
 import './styles/goals/goals-modal.css';
 
 const VIEW_TYPE_DREAMGLOWS = 'dreamglows-view';
-
-interface DefaultTask {
-    label: string;
-    isCompleted: boolean;
-    linkToOptimizer: boolean;
-    linkToGenerator: boolean;
-}
 
 export default class DreamGlows extends Plugin implements IDreamGlows {
     // Services
@@ -55,6 +61,12 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
     private goalsStore!: ReturnType<typeof useGoalsStore>;
     private tasksStore!: ReturnType<typeof useTasksStore>;
     private progressionStore!: ReturnType<typeof useProgressionStore>;
+    private focusSessionsStore!: ReturnType<typeof useFocusSessionsStore>;
+    private pathStore!: ReturnType<typeof usePathStore>;
+    private pathPersistence!: PathPersistenceCoordinator;
+    private initialStoreSnapshot!: LegacyStoreSnapshot;
+    pathCommands!: PathCommandPort;
+    private syncingCanonicalToLegacy = false;
 
     // Vue
     private view: DreamGlowsView | null = null;
@@ -71,11 +83,11 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
         try {
             console.log('Initialisation de DreamGlows...');
             
-            // 1. Initialiser les settings (requis pour tout le reste)
+            // 1. Charger une seule fois la source persistée canonique.
+            await this.initializePathPersistence();
+
+            // 2. Initialiser les settings (requis pour tout le reste)
             await this.initializeSettings();
-            
-            // 2. Initialiser le fichier de données
-            await this.initializeDataFile();
             
             // 3. Initialiser les services de base
             await this.initializeBaseServices();
@@ -97,66 +109,30 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
         }
     }
 
-    private async initializeSettings() {
-        console.log('Initialisation des settings...');
-        try {
-            const loadedData = await this.loadData();
-            this.settings = this.validateSettings(loadedData);
-            console.log('Settings initialisés:', this.settings);
-        } catch (error) {
-            console.error('Erreur lors de l\'initialisation des settings:', error);
-            this.settings = { ...DEFAULT_SETTINGS };
-            console.log('Utilisation des settings par défaut');
+    private async initializePathPersistence() {
+        const repository = new PathRepository(new ObsidianPathRepositoryAdapter(this));
+        this.pathPersistence = new PathPersistenceCoordinator(repository);
+        const loaded = await this.pathPersistence.load();
+        this.initialStoreSnapshot = projectLegacyStoreSnapshot(loaded.document);
+
+        // A successful legacy read is checkpointed once as a canonical document.
+        // Corrupt or unreadable input throws before this point and is never replaced.
+        if (loaded.migrated) {
+            await this.pathPersistence.update(current =>
+                mergeLegacyStoreSnapshot(current, this.initialStoreSnapshot));
         }
+        this.pathCommands = createPathCommandPort({
+            updateDocument: updater => this.pathPersistence.update(updater),
+            afterPersist: document => this.syncCanonicalState(document),
+            now: () => new Date().toISOString() as ZonedInstant,
+            createId: () => uuidv4()
+        });
     }
 
-    private async initializeDataFile() {
-        try {
-            const dataPath = '.obsidian/plugins/obs-dreamglows/data.json';
-            const exists = await this.app.vault.adapter.exists(dataPath);
-            
-            if (!exists) {
-                console.log('Création du fichier de données initial');
-                await this.saveData({
-                    goals: [],
-                    tasks: [],
-                    ...DEFAULT_SETTINGS
-                });
-            } else {
-                // Charger les données existantes
-                const existingData = await this.loadData();
-                console.log('Données existantes:', existingData);
-                
-                // S'assurer que la structure est complète
-                const updatedData = {
-                    ...existingData,
-                    goals: existingData.goals || [],
-                    tasks: existingData.tasks || [],
-                    // Convertir les defaultTasks en tâches réelles si nécessaire
-                    ...(existingData.defaultTasks && !existingData.tasks ? {
-                        tasks: (existingData.defaultTasks as DefaultTask[]).map(dt => ({
-                            id: uuidv4(),
-                            title: dt.label,
-                            description: '',
-                            startDate: new Date().toISOString(),
-                            priority: 'medium',
-                            status: dt.isCompleted ? 'done' : 'todo',
-                            tags: [],
-                            createdAt: new Date().toISOString(),
-                            updatedAt: new Date().toISOString(),
-                            linkToOptimizer: dt.linkToOptimizer,
-                            linkToGenerator: dt.linkToGenerator
-                        }))
-                    } : {})
-                };
-                
-                console.log('Structure mise à jour:', updatedData);
-                await this.saveData(updatedData);
-            }
-        } catch (error) {
-            console.error('Erreur lors de l\'initialisation du fichier de données:', error);
-            throw new Error('Échec de l\'initialisation du fichier de données');
-        }
+    private async initializeSettings() {
+        console.log('Initialisation des settings...');
+        this.settings = this.validateSettings(this.initialStoreSnapshot.settings);
+        console.log('Settings initialisés:', this.settings);
     }
 
     private async initializeBaseServices() {
@@ -216,16 +192,21 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
             this.goalsStore = useGoalsStore(this._pinia);
             this.tasksStore = useTasksStore(this._pinia);
             this.progressionStore = useProgressionStore(this._pinia);
+            this.focusSessionsStore = useFocusSessionsStore(this._pinia);
+            this.pathStore = usePathStore(this._pinia);
         
         // Charger les données initiales
-            const data = await this.loadPluginData();
+            const data = this.initialStoreSnapshot;
             console.log('Données chargées:', data);
             
             // Mettre à jour les stores en utilisant les actions
             this.settingsStore.$patch({ settings: this.settings });
-            await this.goalsStore.setGoals(data.goals);
-            await this.tasksStore.setTasks(data.tasks);
+            await this.goalsStore.setGoals(data.goals as unknown as Goal[]);
+            await this.tasksStore.setTasks(data.tasks as unknown as Task[]);
             this.progressionStore.hydrate(this.settings.gameProgression);
+            this.focusSessionsStore.hydrate(data.focusSessions);
+            const currentPathDocument = this.pathPersistence.document;
+            if (currentPathDocument) this.pathStore.hydrate(currentPathDocument);
             
             // Configurer les watchers
             this.setupStoreWatchers();
@@ -248,12 +229,19 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
 
         // Watcher pour les goals et les tâches
         this.goalsStore.$subscribe(async () => {
+            if (this.syncingCanonicalToLegacy) return;
             console.log('🎯 Sauvegarde automatique des données');
             await this.savePluginData(this.goalsStore.goals, this.tasksStore.tasks);
         });
 
         this.tasksStore.$subscribe(async () => {
+            if (this.syncingCanonicalToLegacy) return;
             console.log('📝 Sauvegarde automatique des données');
+            await this.savePluginData(this.goalsStore.goals, this.tasksStore.tasks);
+        });
+
+        this.focusSessionsStore.$subscribe(async () => {
+            if (this.syncingCanonicalToLegacy) return;
             await this.savePluginData(this.goalsStore.goals, this.tasksStore.tasks);
         });
     }
@@ -324,25 +312,43 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
 
     // Méthodes utilitaires existantes
     async loadPluginData() {
+        const current = this.pathPersistence.document;
+        if (!current) throw new Error('Chemin repository has not been loaded');
+        return projectLegacyStoreSnapshot(current);
+    }
+
+    private currentStoreSnapshot(): LegacyStoreSnapshot {
+        const json = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+        return {
+            goals: json(this.goalsStore.goals) as unknown as JsonObject[],
+            tasks: json(this.tasksStore.tasks) as unknown as JsonObject[],
+            focusSessions: json(this.focusSessionsStore.sessions) as unknown as JsonObject[],
+            settings: json(this.settings) as unknown as JsonObject
+        };
+    }
+
+    private async persistCurrentState() {
+        const saved = await this.pathPersistence.update(current =>
+            mergeLegacyStoreSnapshot(current, this.currentStoreSnapshot()));
+        this.pathStore.hydrate(saved);
+    }
+
+    private async syncCanonicalState(document: import('./domain/path/repository').PathRepositoryDocument) {
+        const snapshot = projectLegacyStoreSnapshot(document);
+        this.pathStore.hydrate(document);
+        this.syncingCanonicalToLegacy = true;
         try {
-            const data = await this.loadData();
-            return {
-                goals: data?.goals || [],
-                tasks: data?.tasks || []
-            };
-        } catch (error) {
-            console.error('Erreur lors du chargement des données:', error);
-            return { goals: [], tasks: [] };
+            await this.goalsStore.setGoals(snapshot.goals as unknown as Goal[]);
+            await this.tasksStore.setTasks(snapshot.tasks as unknown as Task[]);
+            this.focusSessionsStore.hydrate(snapshot.focusSessions);
+        } finally {
+            this.syncingCanonicalToLegacy = false;
         }
     }
 
-    async savePluginData(goals: Goal[], tasks: Task[]) {
+    async savePluginData(_goals: Goal[], _tasks: Task[]) {
         try {
-            await this.saveData({
-                ...this.settings,
-                goals,
-                tasks
-            });
+            await this.persistCurrentState();
         } catch (error) {
             console.error('Erreur lors de la sauvegarde des données:', error);
             new Notice('Erreur lors de la sauvegarde des données');
@@ -353,7 +359,8 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
         console.log('Sauvegarde des settings:', this.settings);
         try {
             const validatedSettings = this.validateSettings(this.settings);
-            await this.saveData(validatedSettings);
+            this.settings = validatedSettings;
+            await this.persistCurrentState();
             console.log('Settings sauvegardés avec succès');
         } catch (error) {
             console.error('Erreur lors de la sauvegarde des settings:', error);
@@ -381,7 +388,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
 
         if (loadedData) {
             // Valider lastActiveTab
-            if (loadedData.lastActiveTab && ['day', 'goals', 'planning', 'stats', 'profile'].includes(loadedData.lastActiveTab)) {
+            if (loadedData.lastActiveTab && ['day', 'goals', 'planning', 'history', 'stats', 'profile'].includes(loadedData.lastActiveTab)) {
                 settings.lastActiveTab = loadedData.lastActiveTab;
             }
 

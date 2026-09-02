@@ -10,6 +10,7 @@ Le même langage produit s’applique à toutes les surfaces du projet.
 
 ## Portée produit (mono-repo)
 
+- `website/` : site éditorial Astro et référence du discours produit.
 - `obsidian_plugin/` : surface Obsidian (plugin opérationnel).
 - `chrome_extension/` : surface navigateur Chrome (alignement actif).
 - `windows_app/` : surface Windows (alignement actif).
@@ -41,6 +42,7 @@ Depuis la racine :
 - `pnpm install --lockfile-only`
 - `pnpm dev` : lance les scripts `dev` disponibles dans les packages.
 - `pnpm build` : lance les scripts `build` disponibles dans les packages.
+- `pnpm dev:website` / `pnpm build:website` : uniquement le site Astro.
 - `pnpm dev:obsidian-plugin` / `pnpm build:obsidian-plugin` : uniquement le plugin Obsidian.
 
 ## Installation BRAT (Obsidian)
