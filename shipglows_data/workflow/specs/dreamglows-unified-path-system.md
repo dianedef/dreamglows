@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.6.0"
+artifact_version: "1.7.0"
 project: DreamGlows
 created: "2026-09-02"
 updated: "2026-09-02"
@@ -32,7 +32,7 @@ evidence:
   - "Operator approved the unified Chemin implementation plan on 2026-09-02."
   - "Repository investigation found duplicate Goal and Task schemas, competing persistence paths, an unconsumed TimelineService, and temporal views derived from file creation dates."
   - "GoalTree, GoalsView detail, DayView, PlanningView, EventService, progression history, and the installed vis-timeline package provide reusable foundations."
-next_step: "Replace dashboard legacy history and metrics with canonical selectors, then retire parity-proven duplicate writers and views."
+next_step: "Retire the proven duplicate StorageService writer and dead legacy timeline/view paths, then isolate long-range statistics behind a canonical selector."
 ---
 
 # Spec: DreamGlows unified path system
@@ -281,6 +281,7 @@ None for the safety baseline and canonical vertical slice. The four product scop
 | 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Replaced the legacy-computed Journey surface with the canonical hierarchy projection, one shared selection, an accessible keyboard tree, reusable canonical detail/history, and persisted reparenting with rollback feedback; kept the semantic tree authoritative and deferred the optional graphical adapter. | implemented and host-proven empty-state; 78/78 tests | Populate and consolidate History, then retire parity-proven legacy calculations. |
 | 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Added a pure History view-model and upgraded History with weekly navigation, Paris-day grouping, structured before/after facts, related evidence/reflections, shared selection, and the reusable detail panel. | implemented and host-proven empty-state; 83/83 tests | Replace dashboard pseudo-history, then remove only proven dead legacy writers/views. |
 | 2026-09-02 UTC | sg-docs | GPT-5.6 Codex | Aligned the Obsidian README, tracker, technical navigation, canonical Path architecture, verification evidence, and tracked specification with delivered behavior while preserving the unproven cross-platform boundary. | documentation updated and governance-validated | Replace dashboard pseudo-history and metrics with canonical projections. |
+| 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Replaced dashboard Goal/Task calculations and synthetic activity with a pure canonical selector for Today counts, portfolio status, active priorities, and Paris-day durable events; added an honest empty state and accessible event semantics. | implemented and host-proven empty-state; 88/88 tests | Retire only proven duplicate writers/views, then design canonical long-range statistics. |
 
 ## Current Chantier Flow
 
@@ -288,8 +289,8 @@ None for the safety baseline and canonical vertical slice. The four product scop
 - Investigation: complete; data, UI, accessibility, migration, and test surfaces mapped.
 - Specification: complete and adversarially reviewed.
 - Readiness: ready; no material product, data, security, platform, or proof decision remains for task 1.
-- Implementation: in progress; the Task-10 History surface now passes 83/83 tests, including the prior 12,000-level Journey corpus and presentation-ready durable event facts, plus production bundling.
-- Verification: canonical Today/Week/Journey/History empty states and tab activation are host-proven; populated composition and rollback remain unit/integration-proven because the Lab cannot yet seed plugin data.
+- Implementation: in progress; the canonical dashboard and prior Chemin surfaces now pass 88/88 tests, including Paris-day boundaries, honest zero state, the 12,000-level Journey corpus, and durable event facts.
+- Verification: canonical dashboard/Today/Week/Journey/History empty states and tab activation are host-proven; populated composition and rollback remain unit/integration-proven because the Lab cannot yet seed plugin data.
 - Delivery: implementation checkpoint `465d337` is present on `origin/main`; the overall chantier remains open.
 
-  Next step: replace the dashboard pseudo-history and metrics with canonical projections, then begin parity-led dead-code/writer removal.
+  Next step: retire the proven duplicate StorageService writer and dead legacy timeline/view paths, then isolate long-range statistics behind a canonical selector.

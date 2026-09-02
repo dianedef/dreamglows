@@ -1,7 +1,7 @@
 ---
 artifact: technical_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: DreamGlows
 created: "2026-09-02"
 updated: "2026-09-02"
@@ -29,6 +29,7 @@ evidence:
   - "Commit 465d337 contains the canonical implementation and generated Obsidian artifact."
   - "The focused Node suite passed 83/83 tests on 2026-09-02."
   - "Production build and disposable Obsidian Lab checks passed for Today, Week, Journey, and History without host diagnostics."
+  - "The canonical dashboard selector passed 5 focused tests and the full 88-test suite; its empty state loaded in the disposable Obsidian Lab without diagnostics."
 next_review: "2026-10-02"
 next_step: "Canonicalize dashboard projections, then remove duplicate legacy writers only after parity proof."
 ---
@@ -46,7 +47,7 @@ Chemin is the single business source for planning, acting, reviewing, and preser
 | Domain | `src/domain/path/model.ts`, `legacy-v0.ts` | Versioned JSON-safe envelope; stable identities; unknown legacy data preserved in extensions; ambiguous input diagnosed rather than guessed |
 | Persistence | `repository.ts`, `persistence-coordinator.ts`, `obsidian-adapter.ts` | One full-document repository, FIFO writes, optimistic revisions, explicit corruption/write failures |
 | Commands | `commands.ts`, `command-port.ts`, `application/path-command-port.ts` | Idempotent commands; one durable event per accepted transition; exact-intent replay; persistence before UI synchronization |
-| Read model | `projections.ts`, `stores/pathStore.ts` | Today, Week, Journey, and History share filters, reference date, selection, timezone rules, and canonical entity identity |
+| Read model | `projections.ts`, `dashboard-view-model.ts`, `stores/pathStore.ts` | Today, Week, Journey, History, and dashboard summaries share filters, reference date, timezone rules, durable events, and canonical entity identity |
 | Presentation | `CheminShell.vue`, `PathActionsPanel.vue`, `PathJourneyTree.vue`, `PathDetailPanel.vue`, Path views | Accessible list/tree and form actions remain complete without a graphical timeline dependency |
 | Compatibility | `legacy-store-bridge.ts` | Canonical state mirrors into legacy Goal/Task stores temporarily; legacy edits merge through the coordinator until their editors migrate |
 
@@ -62,7 +63,7 @@ Chemin is the single business source for planning, acting, reviewing, and preser
 
 ## Current compatibility boundary
 
-The plugin still contains legacy Goal/Task consumers for modals, Focus Session, dashboard metrics, and some daily presentation. Store subscriptions therefore remain active. `StorageService` and the dashboard pseudo-history are not canonical and must not become new business write/read paths.
+The plugin still contains legacy Goal/Task consumers for modals, Focus Session, and some daily presentation. Store subscriptions therefore remain active. Dashboard facts and portfolio counters are canonical; `StorageService` remains outside the Chemin source of truth and must not become a new business write/read path.
 
 ## Verification
 

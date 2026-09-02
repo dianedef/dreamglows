@@ -53,7 +53,7 @@
             </article>
         </section>
 
-        <section v-if="activeTab === 'day'" class="dreamglows-command-grid">
+        <section v-if="activeTab === 'day' && dashboard" class="dreamglows-command-grid" data-dg-dashboard-canonical>
             <article
                 v-for="metric in commandMetrics"
                 :key="metric.label"
@@ -63,24 +63,26 @@
                 <p class="dreamglows-kpi-value">{{ metric.value }}</p>
                 <p class="dreamglows-card-text">{{ metric.subtitle }}</p>
                 <div v-if="metric.progress !== undefined" class="dreamglows-kpi-progress">
-                    <span class="dreamglows-progress-track">
+                    <span class="dreamglows-progress-track" role="progressbar" :aria-label="metric.label" aria-valuemin="0" :aria-valuemax="metric.max || 100" :aria-valuenow="Math.round(metric.progress)">
                         <span class="dreamglows-progress-fill" :style="{ width: `${Math.min(100, Math.max(0, (metric.progress / (metric.max || 1)) * 100))}%` }"></span>
                     </span>
                 </div>
             </article>
 
             <article class="dreamglows-command-card dreamglows-timeline-card">
-                <p class="dreamglows-card-kicker">Flux opérationnel</p>
-                <p class="dreamglows-card-title">Timeline rapide</p>
-                <ul class="dreamglows-timeline-list">
-                    <li v-for="item in liveTimeline" :key="item.time" class="dreamglows-timeline-item">
-                        <span class="dreamglows-timeline-time">{{ item.time }}</span>
-                        <span :class="['dreamglows-dot', `dreamglows-dot-${item.state}`]"></span>
+                <p class="dreamglows-card-kicker">Faits du jour</p>
+                <h2 id="dreamglows-dashboard-history" class="dreamglows-card-title">Histoire récente</h2>
+                <ul v-if="liveTimeline.length" class="dreamglows-timeline-list" aria-labelledby="dreamglows-dashboard-history">
+                    <li v-for="item in liveTimeline" :key="item.id" class="dreamglows-timeline-item">
+                        <time class="dreamglows-timeline-time" :datetime="item.occurredAt">{{ item.time }}</time>
+                        <span :class="['dreamglows-dot', `dreamglows-dot-${item.state}`]" aria-hidden="true"></span>
                         <span class="dreamglows-timeline-text">{{ item.text }}</span>
                     </li>
                 </ul>
+                <div v-else class="dreamglows-timeline-empty" role="status"><strong>Aucun fait enregistré pour cette journée.</strong><p>Les réalisations, preuves et réflexions apparaîtront ici.</p><button type="button" @click="setPathScope('history')">Ouvrir l'Histoire</button></div>
             </article>
         </section>
+        <p v-else-if="activeTab === 'day'" role="status">Chargement du chemin…</p>
 
         <section
             v-if="currentScope"
@@ -116,9 +118,9 @@ import HistoryView from './HistoryView.vue';
 import CheminShell from '../components/CheminShell.vue';
 import TimeNavigation from '../components/TimeNavigation.vue';
 import { useSettingsStore } from '../stores/settingsStore';
-import { useGoalsStore } from '../stores/goalsStore';
-import { useTasksStore } from '../stores/tasksStore';
 import { usePathStore, type PathScope } from '../stores/pathStore';
+import { dashboardViewModel } from '../domain/path/dashboard-view-model';
+import type { PathEventType } from '../domain/path/model';
 
 const props = defineProps<{
     contentFiles: TFile[],
@@ -128,8 +130,6 @@ const props = defineProps<{
 provide('app', props.app);
 
 const settingsStore = useSettingsStore();
-const goalsStore = useGoalsStore();
-const tasksStore = useTasksStore();
 const pathStore = usePathStore();
 const validTabs = ['day', 'goals', 'planning', 'history', 'stats', 'profile'] as const;
 const initialTab = validTabs.includes(settingsStore.settings.lastActiveTab as typeof validTabs[number])
@@ -213,140 +213,23 @@ const activeTabLabel = computed(() => {
     return 'Accueil';
 });
 
-type TimelineState = { time: string; text: string; state: 'ok' | 'info' | 'warn'; };
 type MetricState = { label: string; value: string; subtitle: string; progress?: number; max?: number; };
 
-const formatDuration = (minutes = 0) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hours === 0) return `${mins} min`;
-    if (mins === 0) return `${hours} h`;
-    return `${hours} h ${mins} min`;
-};
+const dashboard = computed(() => pathStore.document && pathStore.todayProjection && pathStore.historyProjection
+    ? dashboardViewModel(pathStore.document.envelope, pathStore.todayProjection, pathStore.historyProjection, pathStore.referenceDate)
+    : undefined);
 
 const commandMetrics = computed(() => {
-    const isPlanning = activeTab.value === 'planning';
-    const goals = goalsStore.goals || [];
-    const tasks = tasksStore.tasks || [];
-
-    const doneGoals = goals.filter((goal) => goal.status === 'done' || (goal as any).status === 'completed').length;
-    const doneTasks = tasks.filter((task) => task.status === 'done').length;
-    const inProgressTasks = tasks.filter((task) => task.status === 'in-progress').length;
-    const urgentTasks = tasks.filter((task) => task.priority === 'high' && task.status !== 'done').length;
-    const highPriorityTasks = tasks.filter((task) => task.priority === 'high').length;
-
-    const completionRate = goals.length > 0 ? Math.round((doneGoals / goals.length) * 100) : 0;
-
-    const today = currentDate.value.toFormat('yyyy-LL-dd');
-    const todayTasks = tasks.filter((task) => {
-        const taskDate = DateTime.fromISO(task.startDate, { setZone: true });
-        if (!taskDate.isValid) return false;
-        return taskDate.toFormat('yyyy-LL-dd') === today;
-    });
-
-    const todayPlanned = todayTasks.reduce((sum, task) => sum + (task.plannedMinutes || 0), 0);
-    const todayActual = todayTasks.reduce((sum, task) => sum + (task.actualMinutes || 0), 0);
-
-    const cadenceGoal = Math.round(goals.length > 0 ? (doneGoals / goals.length) * 100 : 0);
-    const priorityGoal = Math.max(0, Math.round((highPriorityTasks > 0 ? (1 - urgentTasks / highPriorityTasks) * 100 : 0)));
-    const avgGoalProgress = goals.length > 0 ? goals.reduce((sum, goal) => sum + (typeof goal.progress === 'number' ? goal.progress : 0), 0) / goals.length : 0;
-    const chargeValue = todayTasks.length + doneTasks + inProgressTasks;
-
-    const metrics: MetricState[] = [
-        {
-            label: 'Cadence',
-            value: `${todayTasks.length}/${tasks.length}`,
-            subtitle: isPlanning ? "Tâches planifiées aujourd'hui sur le total" : 'Convergence quotidienne',
-            progress: cadenceGoal,
-            max: 100
-        },
-        {
-            label: 'Temps',
-            value: `${formatDuration(todayActual)} / ${formatDuration(todayPlanned)}`,
-            subtitle: `${todayTasks.length} tâches du jour`
-        },
-        {
-            label: 'Priorité',
-            value: `${urgentTasks} urgente${urgentTasks > 1 ? 's' : ''} en attente`,
-            subtitle: highPriorityTasks > 0 ? 'Répartition des tâches critiques' : 'Aucune tâche critique',
-            progress: priorityGoal,
-            max: 100
-        },
-        {
-            label: 'Performance',
-            value: `${completionRate}%`,
-            subtitle: `${doneGoals} objectif${doneGoals > 1 ? 's' : ''} terminé${doneGoals > 1 ? 's' : ''} / ${goals.length}`,
-            progress: avgGoalProgress,
-            max: 100
-        },
-        {
-            label: 'Charge',
-            value: `${chargeValue} tâche${chargeValue > 1 ? 's' : ''}`,
-            subtitle: `${doneTasks} réalisées · ${inProgressTasks} en cours · ${todayTasks.filter((task) => task.status === 'todo').length} en attente`
-        }
-    ];
-
-    if (isPlanning) {
-        metrics.push({
-            label: 'Soutenabilité',
-            value: `${doneTasks} / ${tasks.length}`,
-            subtitle: 'Progression globale de la journée',
-            progress: tasks.length > 0 ? (doneTasks / tasks.length) * 100 : 0,
-            max: 100
-        });
-        metrics.splice(0, 1);
-    }
-
-    return metrics;
+    const value = dashboard.value;
+    if (!value) return [];
+    return [
+        { label:'Actions du jour', value:String(value.todayActions.total), subtitle:`${value.todayActions.done} terminées · ${value.todayActions.inProgress} en cours · ${value.todayActions.todo} à faire`, ...(value.todayActions.completionPercent === null ? {} : { progress:value.todayActions.completionPercent,max:100 }) },
+        { label:'Actions actives', value:String(value.currentActions.todo + value.currentActions.inProgress), subtitle:`${value.currentActions.done} accomplies sur ${value.currentActions.total}` },
+        { label:'Priorités', value:`${value.activeHighPriority} haute${value.activeHighPriority === 1 ? '' : 's'}`, subtitle:value.activeHighPriority ? 'Objectifs et actions prioritaires encore actifs' : 'Aucune priorité haute en attente' },
+        { label:'Objectifs', value:`${value.currentGoals.done}/${value.currentGoals.total}`, subtitle:'Objectifs accomplis', progress:value.currentGoals.total ? value.currentGoals.done/value.currentGoals.total*100 : 0, max:100 },
+    ] satisfies MetricState[];
 });
 
-const liveTimeline = computed(() => {
-    const now = DateTime.now();
-    const events = [] as TimelineState[];
-    const currentTab = activeTab.value;
-
-    const addEvent = (time: string | Date, text: string, state: TimelineState['state']) => {
-        const dt = typeof time === 'string' ? DateTime.fromISO(time, { setZone: true }) : DateTime.fromJSDate(time);
-        if (!dt.isValid) return;
-        events.push({ time: dt.toFormat('HH:mm'), text, state });
-    };
-
-    const inOrderDate = DateTime.now().toFormat('yyyy-LL-dd');
-    const todayTasks = tasksStore.tasks
-        .filter((task) => task.startDate.startsWith(inOrderDate) || task.createdAt.startsWith(inOrderDate))
-        .slice(0, 8);
-
-    todayTasks.forEach((task) => {
-        if (task.status === 'done') {
-            addEvent(task.updatedAt || task.createdAt, `Tâche terminée : ${task.title}`, 'ok');
-            return;
-        }
-        if (task.status === 'in-progress') {
-            addEvent(task.updatedAt || task.createdAt, `Tâche en cours : ${task.title}`, 'warn');
-            return;
-        }
-        addEvent(task.createdAt, `Tâche créée : ${task.title}`, 'info');
-    });
-
-    goalsStore.goals.slice(0, 4).forEach((goal) => {
-        if (goal.status === 'done' || (goal as any).status === 'completed') {
-            addEvent((goal as any).updatedAt || goal.startDate.toISOString(), `Objectif terminé : ${goal.title}`, 'ok');
-        }
-    });
-
-    events.sort((a, b) => {
-        const aTime = DateTime.fromFormat(a.time, 'HH:mm');
-        const bTime = DateTime.fromFormat(b.time, 'HH:mm');
-        return bTime.toMillis() - aTime.toMillis();
-    });
-
-    if (events.length === 0) {
-        return [
-            { time: now.minus({ minutes: 30 }).toFormat('HH:mm'), text: `Mode actif : ${currentTab}`, state: currentTab === 'stats' ? 'warn' : 'ok' },
-            { time: now.toFormat('HH:mm'), text: 'Pilotage en cours', state: 'info' }
-        ];
-    }
-
-    return events.slice(0, 8);
-});
+const eventLabels:Record<PathEventType,string>={'entity-created':'Création','planned-period-changed':'Planification ajustée','entity-completed':'Terminée','entity-reopened':'Rouverte','entity-reparented':'Déplacée dans le parcours','evidence-recorded':'Preuve ajoutée','reflection-recorded':'Réflexion ajoutée'};
+const liveTimeline=computed(()=>(dashboard.value?.timeline??[]).slice(0,8).map(item=>({id:item.id,occurredAt:item.event.occurredAt,time:new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'}).format(new Date(item.event.occurredAt)),text:`${eventLabels[item.event.type]} : ${item.entity.title}`,state:(item.event.type==='entity-completed'||item.event.type==='evidence-recorded'?'ok':item.event.type==='entity-reopened'?'warn':'info') as 'ok'|'warn'|'info'})));
 </script>

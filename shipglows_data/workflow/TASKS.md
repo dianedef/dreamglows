@@ -16,7 +16,7 @@
 
 🟠 [DreamGlows] task: Livrer la synchronisation multiplateforme et le miroir durable vers Obsidian | status: todo | area: sync | id: cross-platform-sync-obsidian-mirror | depends_on: open-domain-model,portable-round-trip | acceptance: Fonctionnement hors ligne, reprise, historique, suppressions et absence de perte silencieuse prouvés
 
-🟠 [DreamGlows] task: Harmoniser le parcours rêve → pourquoi → chemin → prochaine action | status: in progress | area: product-core | id: shared-core-journey | depends_on: open-domain-model | status_note: Aujourd'hui, Semaine, Parcours et Histoire partagent désormais le modèle, la sélection et les commandes dans Obsidian; dashboard, statistiques et autres surfaces restent à aligner | acceptance: Le même sens, le même chemin et le même progrès sont compris sur chaque surface livrée
+🟠 [DreamGlows] task: Harmoniser le parcours rêve → pourquoi → chemin → prochaine action | status: in progress | area: product-core | id: shared-core-journey | depends_on: open-domain-model | status_note: Aujourd'hui, Semaine, Parcours, Histoire et le tableau de bord partagent désormais les entités, dates et événements canoniques dans Obsidian; statistiques et autres surfaces restent à aligner | acceptance: Le même sens, le même chemin et le même progrès sont compris sur chaque surface livrée
 
 🟡 [DreamGlows] task: Livrer Windows comme première surface grand public hors Obsidian | status: todo | area: windows | id: first-mainstream-client | depends_on: shared-core-journey,cross-platform-sync-obsidian-mirror | status_note: Windows-first confirmé par l’opératrice le 2026-09-02; Android suivra comme compagnon quotidien | acceptance: Vue d’ensemble, planification, revue et prochaine action forment un parcours cohérent sans exiger Obsidian
 
