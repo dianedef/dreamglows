@@ -1,12 +1,9 @@
 import { defineStore } from 'pinia';
-import { v4 as uuidv4 } from 'uuid';
-import type { FocusMode, FocusSession, FocusSessionStatus } from '@/types/focusSessions';
+import type { FocusSession, FocusSessionStatus } from '@/types/focusSessions';
 
 interface FocusSessionsState {
     sessions: FocusSession[];
 }
-
-const now = () => new Date().toISOString();
 
 export const useFocusSessionsStore = defineStore('focusSessions', {
     state: (): FocusSessionsState => ({ sessions: [] }),
@@ -43,47 +40,6 @@ export const useFocusSessionsStore = defineStore('focusSessions', {
                     ? { ...session, status: 'interrupted' as FocusSessionStatus, endedAt: latest.startedAt, updatedAt: latest.startedAt }
                     : session);
             }
-        },
-
-        start(taskId: string, goalId?: string, mode: FocusMode = 'focus'): FocusSession {
-            const current = this.activeSession;
-            if (current) {
-                this.interrupt(current.id);
-            }
-
-            const timestamp = now();
-            const session: FocusSession = {
-                id: uuidv4(),
-                taskId,
-                goalId,
-                mode,
-                status: 'active',
-                startedAt: timestamp,
-                createdAt: timestamp,
-                updatedAt: timestamp
-            };
-            this.sessions.push(session);
-            return session;
-        },
-
-        finish(id: string, status: Exclude<FocusSessionStatus, 'active'>, handoffNote?: string, nextAction?: string) {
-            const index = this.sessions.findIndex((session) => session.id === id);
-            if (index < 0) return;
-            const endedAt = now();
-            const existing = this.sessions[index];
-            this.sessions[index] = {
-                ...existing,
-                status,
-                endedAt,
-                durationMinutes: Math.max(0, Math.round((Date.parse(endedAt) - Date.parse(existing.startedAt)) / 60000)),
-                handoffNote: handoffNote?.trim() || undefined,
-                nextAction: nextAction?.trim() || undefined,
-                updatedAt: endedAt
-            };
-        },
-
-        interrupt(id: string, handoffNote?: string, nextAction?: string) {
-            this.finish(id, 'interrupted', handoffNote, nextAction);
         }
     }
 });

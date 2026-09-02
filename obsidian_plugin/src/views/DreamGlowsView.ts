@@ -3,15 +3,12 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import MainView from './MainView.vue';
 import { registerStyles } from '@/styles/RegisterStyles';
-import type { Goal } from '@/types/goals';
-import type { Task } from '@/types/tasks';
 import type { PathCommandPort } from '@/domain/path/command-port';
 import { PATH_COMMAND_PORT_KEY } from '@/application/path-command-port';
 import { DREAMGLOWS_UI_CONTEXT_KEY } from '@/application/ui-context';
 import type { PathEntityEditor } from '@/application/path-entity-editor';
 
 export interface IDreamGlows extends Plugin {
-    savePluginData(goals: Goal[], tasks: Task[]): Promise<void>;
     generateNotes(): Promise<void>;
     readonly pinia: ReturnType<typeof createPinia>;
     readonly pathCommands: PathCommandPort;

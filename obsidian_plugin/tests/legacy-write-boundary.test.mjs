@@ -37,3 +37,33 @@ test('goal and task forms do not mutate legacy stores', async () => {
     assert.match(modal, /entityEditor\.(?:saveGoal|saveAction)/);
   }
 });
+
+test('runtime components cannot mutate legacy path stores', async () => {
+  const components = [
+    'components/FocusSessionPanel.vue',
+    'components/TaskList.vue',
+    'components/modals/GoalModalContent.vue',
+    'components/modals/TaskModalContent.vue',
+    'views/DayView.vue',
+    'views/GoalsView.vue',
+    'views/JourneyView.vue',
+  ];
+  const forbidden = /\.(?:addGoal|createGoal|updateGoal|deleteGoal|addTask|updateTask|deleteTask|addTaskToGoal|removeTaskFromGoal|start|finish|interrupt)\s*\(/;
+  for (const name of components) {
+    const component = await readFile(new URL(name, source), 'utf8');
+    assert.doesNotMatch(component, forbidden, `${name} must use canonical path commands`);
+  }
+});
+
+test('plugin entry point has no legacy path-store persistence subscriptions', async () => {
+  const main = await readFile(new URL('main.ts', source), 'utf8');
+  assert.doesNotMatch(main, /(?:goalsStore|tasksStore|focusSessionsStore)\.\$subscribe/);
+  assert.doesNotMatch(main, /savePluginData|currentStoreSnapshot|persistCurrentState/);
+});
+
+test('compatibility stores expose hydration and selection only, never business writers', async () => {
+  for (const name of ['goalsStore.ts', 'tasksStore.ts', 'focusSessionsStore.ts']) {
+    const store = await readFile(new URL(`stores/${name}`, source), 'utf8');
+    assert.doesNotMatch(store, /\b(?:addGoal|createGoal|updateGoal|deleteGoal|addTask|updateTask|deleteTask|start|finish|interrupt)\s*\(/);
+  }
+});

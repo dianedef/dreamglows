@@ -56,7 +56,7 @@ Reproduire le loop produit d’Orbit-style (focus quotidien + progression gamifi
   - quand une habitude est cochée `true` pour une date.
 
 ### 3.3 Persistance
-- `gameProgression` inclus dans les données persistées via `DreamGlows.savePluginData`.
+- `gameProgression` est conservé dans l'enveloppe versionnée et les réglages sont mis à jour via le dépôt canonique.
 - `validateSettings` doit hydrater `gameProgression` de manière robuste depuis `data.json`.
 - Toute modification de progression met à jour les settings persistés.
 
@@ -78,7 +78,7 @@ Reproduire le loop produit d’Orbit-style (focus quotidien + progression gamifi
   - intégration du store progression,
   - chargeur de progression dans `initializeStores`,
   - validateur settings incluant `gameProgression`.
-- `savePluginData` persisté avec settings + goals/tasks.
+- Le dépôt canonique persiste l'enveloppe complète ; aucune souscription aux stores Goal/Task/Focus ne peut la reconstruire.
 - `stores/tasksStore.ts`
   - récompense sur création en `done` et transition vers `done`.
 - `stores/goalsStore.ts`

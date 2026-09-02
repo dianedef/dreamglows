@@ -20,12 +20,16 @@ export interface HistoryRow {
 
 const labels: Record<PathEventType, string> = {
     'entity-created': 'Création',
+    'entity-updated': 'Élément modifié',
+    'entity-deleted': 'Élément archivé',
     'planned-period-changed': 'Planification ajustée',
     'entity-completed': 'Étape accomplie',
     'entity-reopened': 'Étape rouverte',
     'entity-reparented': 'Chemin réorganisé',
     'evidence-recorded': 'Preuve ajoutée',
     'reflection-recorded': 'Réflexion ajoutée',
+    'focus-session-started': 'Session Focus démarrée',
+    'focus-session-ended': 'Session Focus terminée',
 };
 
 function periodLabel(period: PlannedPeriod | undefined): string {
@@ -45,6 +49,12 @@ function changesFor(event: PathEvent, target: PathEntity, related: PathEntity | 
     if (event.type === 'entity-created') {
         return [{ field: 'entity', label: 'Élément', after: target.title }];
     }
+    if (event.type === 'entity-updated') {
+        return [{ field: 'entity', label: 'Élément', after: target.title }];
+    }
+    if (event.type === 'entity-deleted') {
+        return [{ field: 'status', label: 'État', after: 'Archivé' }];
+    }
     if (event.type === 'planned-period-changed') {
         return [{ field: 'planned', label: 'Période prévue', before: periodLabel(event.previousPlanned), after: periodLabel(event.nextPlanned) }];
     }
@@ -61,6 +71,12 @@ function changesFor(event: PathEvent, target: PathEntity, related: PathEntity | 
             before: entityLabel(entities, event.previousParentId),
             after: entityLabel(entities, event.nextParentId),
         }];
+    }
+    if (event.type === 'focus-session-started') {
+        return [{ field: 'status', label: 'Session', after: 'En cours' }];
+    }
+    if (event.type === 'focus-session-ended') {
+        return [{ field: 'status', label: 'Session', before: 'En cours', after: target.status === 'completed' ? 'Terminée' : 'Interrompue' }];
     }
     const field = event.type === 'evidence-recorded' ? 'evidence' : 'reflection';
     return [{

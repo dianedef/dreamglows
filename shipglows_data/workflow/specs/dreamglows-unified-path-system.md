@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.12.0"
+artifact_version: "1.13.0"
 project: DreamGlows
 created: "2026-09-02"
 updated: "2026-09-02"
@@ -32,7 +32,7 @@ evidence:
   - "Operator approved the unified Chemin implementation plan on 2026-09-02."
   - "Repository investigation found duplicate Goal and Task schemas, competing persistence paths, an unconsumed TimelineService, and temporal views derived from file creation dates."
   - "GoalTree, GoalsView detail, DayView, PlanningView, EventService, progression history, and the installed vis-timeline package provide reusable foundations."
-next_step: "Migrate FocusSessionPanel to canonical start/end commands, then audit remaining legacy writers before bridge removal."
+next_step: "Migrate remaining GoalTree/form-option readers to canonical selectors, then complete populated accessibility and isolated-host proof before removing the one-way compatibility projection."
 ---
 
 # Spec: DreamGlows unified path system
@@ -196,18 +196,18 @@ Create a single product surface named Chemin backed by a library-independent dom
 
 ## Acceptance Criteria
 
-- [ ] A canonical versioned envelope preserves settings and every business collection across independent changes and reload.
-- [ ] Every known current/legacy Goal and Task shape migrates without silent loss; unknown fields remain recoverable and diagnostics identify ambiguity.
-- [ ] Migration is idempotent and recoverable from an untouched original source.
-- [ ] One action can be created, scheduled, shown in Today/Week/Journey, completed, shown in History, and reloaded with identical identity and facts.
-- [ ] Rescheduling changes planned time only and creates a durable event without rewriting actual completion history.
+- [x] A canonical versioned envelope preserves settings and every business collection across independent changes and reload.
+- [x] Every known current/legacy Goal and Task shape migrates without silent loss; unknown fields remain recoverable and diagnostics identify ambiguity.
+- [x] Migration is idempotent and recoverable from an untouched original source.
+- [x] One action can be created, scheduled, shown in Today/Week/Journey, completed, shown in History, and reloaded with identical identity and facts.
+- [x] Rescheduling changes planned time only and creates a durable event without rewriting actual completion history.
 - [ ] Today, Week, Journey, History, GoalTree, detail, and dashboard preview consume shared selectors rather than independent temporal calculations.
-- [ ] Unscheduled actions remain visible and can be planned without drag.
+- [x] Unscheduled actions remain visible and can be planned without drag.
 - [ ] Every essential pointer interaction has a keyboard/form equivalent and visible focus/feedback.
 - [ ] The graphical timeline can fail or be disabled without removing access to data or commands.
-- [ ] Production build and isolated Obsidian artifact, host-load, interaction, diagnostics, and cleanup checks pass.
-- [ ] Existing unrelated working-tree changes and personal Obsidian data remain untouched.
-- [ ] Product, technical, tracker, and changelog documentation accurately reflect only proven milestones.
+- [x] Production build and isolated Obsidian artifact, host-load, interaction, diagnostics, and cleanup checks pass.
+- [x] Existing unrelated working-tree changes and personal Obsidian data remain untouched.
+- [x] Product, technical, tracker, and changelog documentation accurately reflect only proven milestones.
 
 ## Test Strategy
 
@@ -287,6 +287,7 @@ None for the safety baseline and canonical vertical slice. The four product scop
 | 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Added canonical entity creation, whitelisted editorial updates, recoverable tombstones without implicit cascade, and atomic Focus start/end commands with dedicated durable events and exact-intent replay through the persistence port. | domain/port implemented and host-compatible; 101/101 tests | Inject the shared UI context into modal hosts and migrate active writers surface by surface. |
 | 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Replaced modal singleton Pinia use with the plugin-owned Pinia/command context and migrated TaskList completion, reopen, and priority mutations to the canonical port with pending/error feedback; added a static boundary regression test. | implemented; 102/102 tests and build pass; host command executes but modal DOM capture remains unavailable in the disposable Lab | Add atomic modal save operations before migrating multi-field forms. |
 | 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Added an atomic entity editor that composes create/update/planning/parent/status changes into one repository update, migrated Goal and Task forms plus recoverable archive, preserved compatibility extensions, and fixed nested modal context injection found by the Lab. | implemented; 107/107 tests, build, and host command diagnostics pass | Migrate FocusSessionPanel to canonical lifecycle commands. |
+| 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Migrated Focus lifecycle writes, removed all runtime legacy-store persistence subscriptions and business mutation actions, deleted proven dead modal/service paths, fixed Goal option projection, completed all event labels, and added the complete create-to-history reload slice. | implemented; 114/114 tests, production build, isolated artifact/host/interaction/diagnostics/cleanup pass | Migrate remaining legacy readers and accessibility evidence. |
 
 ## Current Chantier Flow
 
@@ -294,8 +295,8 @@ None for the safety baseline and canonical vertical slice. The four product scop
 - Investigation: complete; data, UI, accessibility, migration, and test surfaces mapped.
 - Specification: complete and adversarially reviewed.
 - Readiness: ready; no material product, data, security, platform, or proof decision remains for task 1.
-- Implementation: in progress; atomic Goal/Action forms and prior Chemin surfaces now pass 107/107 tests alongside recoverable deletion, exact replay, long-range statistics, a no-secondary-writer boundary, and durable event facts.
-- Verification: canonical dashboard/Today/Week/Journey/History empty states and tab activation are host-proven; populated composition and rollback remain unit/integration-proven because the Lab cannot yet seed plugin data.
+- Implementation: in progress; Goal/Action forms and Focus lifecycle now write only through canonical operations, compatibility stores are one-way read projections, and 114/114 tests cover recoverable deletion, exact replay, complete event labeling, long-range statistics, the no-secondary-writer boundary, and the full create-to-history reload slice.
+- Verification: production build and isolated artifact, host load, create-task interaction, diagnostics, and cleanup pass; populated composition and rollback remain unit/integration-proven because the Lab cannot yet seed plugin data.
 - Delivery: implementation checkpoint `465d337` is present on `origin/main`; the overall chantier remains open.
 
-  Next step: migrate FocusSessionPanel to canonical start/end commands, then audit remaining legacy writers before bridge removal.
+  Next step: migrate GoalTree/form-option readers to canonical selectors, then complete populated accessibility and isolated-host proof before removing the one-way compatibility projection.

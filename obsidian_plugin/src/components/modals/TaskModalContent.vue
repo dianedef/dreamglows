@@ -49,7 +49,7 @@
           <label for="task-goal">Objectif lié (optionnel)</label>
           <select id="task-goal" v-model="taskData.goalId">
             <option value="">Aucun objectif</option>
-            <option v-for="goal in goalsStore.getGoals" :key="goal.id" :value="goal.id">{{ goal.title }}</option>
+            <option v-for="goal in goalsStore.goals" :key="goal.id" :value="goal.id">{{ goal.title }}</option>
           </select>
         </div>
         <div class="dreamglows-modal-field">

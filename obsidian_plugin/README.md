@@ -52,9 +52,10 @@ Chaque release BRAT contient les assets suivants :
 - Une enveloppe Chemin versionnée constitue la source de vérité du plugin.
 - Les écritures sont sérialisées, révisionnées et rejouables par identifiant de commande.
 - Les formulaires Objectif/Action appliquent ensemble leurs changements de texte, dates, parent et statut, ou n'en appliquent aucun en cas d'échec.
+- Les sessions Focus démarrent et se terminent par les mêmes commandes durables, avec reprise sûre après un échec de sauvegarde.
 - Aucun service de notes ou de métriques ne peut écrire directement le document global du plugin.
 - Les anciennes formes Goal/Task sont décodées de façon permissive : les ambiguïtés sont diagnostiquées et les champs inconnus restent récupérables.
-- Un pont temporaire maintient les écrans legacy pendant leur migration ; il ne remplace pas l'enveloppe canonique.
+- Une projection temporaire et unidirectionnelle maintient quelques lecteurs legacy pendant leur migration ; elle ne peut plus réécrire l'enveloppe canonique.
 
 ## État actuel
 
@@ -62,5 +63,5 @@ Le plugin Obsidian est la première surface active du projet. Le socle Chemin et
 
 ## Feuille de route de base
 
-- Migrer les éditeurs et Focus Session avant de retirer le pont de compatibilité.
+- Migrer les derniers lecteurs GoalTree et options de formulaire vers les sélecteurs Chemin, puis retirer la projection de compatibilité.
 - Étendre la continuité d’expérience sur les autres surfaces.

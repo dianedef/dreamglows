@@ -74,3 +74,18 @@ test('missing related and parent entities remain explicit rather than disappeari
   assert.equal(rows[0].changes[0].after, 'Entité indisponible (gone)');
   assert.deepEqual(rows[1].changes, [{ field: 'parent', label: 'Parent', before: 'Entité indisponible (gone)', after: 'Racine du chemin' }]);
 });
+
+test('editorial, archive and Focus events always have explicit history labels', () => {
+  const session = entity('focus', 'focus-session', { status: 'completed' });
+  const events = [
+    event('updated', 'entity-updated', { entityId: session.id }),
+    event('deleted', 'entity-deleted', { entityId: session.id }),
+    event('focus-started', 'focus-session-started', { entityId: session.id }),
+    event('focus-ended', 'focus-session-ended', { entityId: session.id }),
+  ];
+  const projection = { range: { start: '2026-09-01', end: '2026-09-07' }, entities: [session], unscheduled: [], invalidTemporal: [], items: events.map(value => ({ id: value.id, event: value, entity: session })) };
+  const envelope = { schemaVersion: 1, revision: 4, entities: [session], events, extensions: {} };
+  const rows = historyViewRows(projection, envelope);
+  assert.deepEqual(rows.map(row => row.label), ['Élément modifié', 'Élément archivé', 'Session Focus démarrée', 'Session Focus terminée']);
+  assert.deepEqual(rows.at(-1).changes, [{ field: 'status', label: 'Session', before: 'En cours', after: 'Terminée' }]);
+});

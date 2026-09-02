@@ -2,7 +2,6 @@ import { Plugin, WorkspaceLeaf, TFile, Notice, ItemView, App } from 'obsidian';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { registerStyles, unregisterStyles } from './styles/RegisterStyles';
-import { MetadataService } from './services/MetadataService';
 import { useSettingsStore } from './stores/settingsStore';
 import { useGoalsStore } from './stores/goalsStore';
 import { useTasksStore } from './stores/tasksStore';
@@ -11,16 +10,11 @@ import { useFocusSessionsStore } from './stores/focusSessionsStore';
 import { usePathStore } from './stores/pathStore';
 import { DreamGlowsSettingsTab } from './services/SettingsTabService';
 import { NotesGeneratorService } from './services/NotesGeneratorService';
-import { TimeManagementService } from './services/TimeManagementService';
 import { GoalModal } from './components/modals/GoalModal';
 import { TaskModal } from './components/modals/TaskModal';
 import { DreamGlowsView, IDreamGlows } from './views/DreamGlowsView';
 import { DateService } from './services/DateService';
 import { ValidationService } from './services/ValidationService';
-import { FormatterService } from './services/FormatterService';
-import { ParserService } from './services/ParserService';
-import { EventService } from './services/EventService';
-import { StorageService } from './services/StorageService';
 import type { Goal } from './types/goals';
 import type { Task } from './types/tasks';
 import type { DreamGlowsSettings } from './types/settings';
@@ -48,13 +42,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
     // Services
     private dateService!: DateService;
     private validationService!: ValidationService;
-    private formatterService!: FormatterService;
-    private parserService!: ParserService;
-    private eventService!: EventService;
-    private storageService!: StorageService;
-    private metadataService!: MetadataService;
     private notesGenerator!: NotesGeneratorService;
-    private timeManager!: TimeManagementService;
 
     // Stores
     private _pinia!: ReturnType<typeof createPinia>;
@@ -68,7 +56,6 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
     private initialStoreSnapshot!: LegacyStoreSnapshot;
     pathCommands!: PathCommandPort;
     entityEditor!: PathEntityEditor;
-    private syncingCanonicalToLegacy = false;
 
     // Vue
     private view: DreamGlowsView | null = null;
@@ -143,7 +130,6 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
         try {
             // Services sans dépendances
             this.dateService = new DateService(this.settings.monthLanguage, this.settings.notesPath);
-            this.eventService = new EventService();
             this.validationService = new ValidationService(this.dateService, this.settings);
             
             console.log('Services de base initialisés');
@@ -157,26 +143,12 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
         console.log('Initialisation des services dépendants...');
         try {
             // Services avec dépendances
-            this.formatterService = new FormatterService(this.validationService);
-            this.parserService = new ParserService(this.validationService, this.dateService);
-            this.storageService = new StorageService(
-                this.app,
-                this.dateService,
-                this.validationService,
-                this.formatterService,
-                this.parserService,
-                this.eventService
-            );
-            this.metadataService = new MetadataService(this.app.vault, this.app.metadataCache);
             this.notesGenerator = new NotesGeneratorService(
                 this.app,
                 this.settings,
                 this.dateService,
-                this.validationService,
-                this.storageService
+                this.validationService
             );
-            this.timeManager = new TimeManagementService(this.app, this.settings);
-            
             console.log('Services dépendants initialisés');
         } catch (error) {
             console.error('Erreur lors de l\'initialisation des services dépendants:', error);
@@ -230,23 +202,6 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
             }
         });
 
-        // Watcher pour les goals et les tâches
-        this.goalsStore.$subscribe(async () => {
-            if (this.syncingCanonicalToLegacy) return;
-            console.log('🎯 Sauvegarde automatique des données');
-            await this.savePluginData(this.goalsStore.goals, this.tasksStore.tasks);
-        });
-
-        this.tasksStore.$subscribe(async () => {
-            if (this.syncingCanonicalToLegacy) return;
-            console.log('📝 Sauvegarde automatique des données');
-            await this.savePluginData(this.goalsStore.goals, this.tasksStore.tasks);
-        });
-
-        this.focusSessionsStore.$subscribe(async () => {
-            if (this.syncingCanonicalToLegacy) return;
-            await this.savePluginData(this.goalsStore.goals, this.tasksStore.tasks);
-        });
     }
 
     private async initializeUI() {
@@ -313,42 +268,12 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
         }
     }
 
-    private currentStoreSnapshot(): LegacyStoreSnapshot {
-        const json = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
-        return {
-            goals: json(this.goalsStore.goals) as unknown as JsonObject[],
-            tasks: json(this.tasksStore.tasks) as unknown as JsonObject[],
-            focusSessions: json(this.focusSessionsStore.sessions) as unknown as JsonObject[],
-            settings: json(this.settings) as unknown as JsonObject
-        };
-    }
-
-    private async persistCurrentState() {
-        const saved = await this.pathPersistence.update(current =>
-            mergeLegacyStoreSnapshot(current, this.currentStoreSnapshot()));
-        this.pathStore.hydrate(saved);
-    }
-
     private async syncCanonicalState(document: import('./domain/path/repository').PathRepositoryDocument) {
         const snapshot = projectLegacyStoreSnapshot(document);
         this.pathStore.hydrate(document);
-        this.syncingCanonicalToLegacy = true;
-        try {
-            await this.goalsStore.setGoals(snapshot.goals as unknown as Goal[]);
-            await this.tasksStore.setTasks(snapshot.tasks as unknown as Task[]);
-            this.focusSessionsStore.hydrate(snapshot.focusSessions);
-        } finally {
-            this.syncingCanonicalToLegacy = false;
-        }
-    }
-
-    async savePluginData(_goals: Goal[], _tasks: Task[]) {
-        try {
-            await this.persistCurrentState();
-        } catch (error) {
-            console.error('Erreur lors de la sauvegarde des données:', error);
-            new Notice('Erreur lors de la sauvegarde des données');
-        }
+        await this.goalsStore.setGoals(snapshot.goals as unknown as Goal[]);
+        await this.tasksStore.setTasks(snapshot.tasks as unknown as Task[]);
+        this.focusSessionsStore.hydrate(snapshot.focusSessions);
     }
 
     async saveSettings() {
@@ -356,7 +281,12 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
         try {
             const validatedSettings = this.validateSettings(this.settings);
             this.settings = validatedSettings;
-            await this.persistCurrentState();
+            const jsonSettings = JSON.parse(JSON.stringify(validatedSettings)) as JsonObject;
+            const saved = await this.pathPersistence.update(current => ({
+                ...current,
+                settings: jsonSettings,
+            }));
+            this.pathStore.hydrate(saved);
             console.log('Settings sauvegardés avec succès');
         } catch (error) {
             console.error('Erreur lors de la sauvegarde des settings:', error);

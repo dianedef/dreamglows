@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Changed
 - La vue Objectifs privilégie désormais l’arbre de pilotage et reste utilisable sur les écrans étroits.
 - La modale de tâche adopte une mise en page bornée et responsive, une hiérarchie claire, des libellés accessibles et des actions explicites.
+- Les formulaires Objectif/Action et le cycle Focus écrivent désormais exclusivement dans le Chemin canonique, avec sauvegardes atomiques ou rejouables et erreurs visibles.
+- Les anciens stores Goal/Task/Focus sont devenus des projections en lecture seule et ne peuvent plus réécrire les données métier.
 
 ### Fixed
 - Compatibilité du build avec Vite 8 pour les types Vue importés et les feuilles de styles injectées.

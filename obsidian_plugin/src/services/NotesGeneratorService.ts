@@ -2,7 +2,6 @@ import { App, Notice } from 'obsidian';
 import type { DreamGlowsSettings } from '../types/settings';
 import { DateService } from './DateService';
 import { ValidationService } from './ValidationService';
-import { StorageService } from './StorageService';
 import { DateError, NotesGenerationError, NotesErrorCode } from '../types/errors';
 import { DateTime } from 'luxon';
 import { ProgressTracker } from '../types/progress';
@@ -15,7 +14,7 @@ export class NotesGeneratorService {
         private settings: DreamGlowsSettings,
         private dateService: DateService,
         private validationService: ValidationService,
-        private storageService: StorageService
+        _legacyStorageService?: unknown
     ) {}
 
     async generateNotes(progress?: ProgressTracker): Promise<void> {

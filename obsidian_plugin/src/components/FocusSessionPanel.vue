@@ -6,9 +6,9 @@
       <p v-if="activeGoal" class="dreamglows-focus-context">🎯 {{ activeGoal.title }}</p>
       <p class="dreamglows-focus-duration">{{ elapsedLabel }}</p>
       <div class="dreamglows-focus-actions">
-        <button @click="finishSession('completed')">Terminer la session</button>
-        <button @click="isSwitching = !isSwitching">Changer de tâche</button>
-        <button class="mod-cta" @click="finishSession('interrupted')">Faire une pause</button>
+        <button :disabled="submitting" @click="finishSession('completed')">Terminer la session</button>
+        <button :disabled="submitting" @click="isSwitching = !isSwitching">Changer de tâche</button>
+        <button class="mod-cta" :disabled="submitting" @click="finishSession('interrupted')">Faire une pause</button>
       </div>
       <label>
         Où j'en étais (facultatif)
@@ -21,7 +21,7 @@
       <ul v-if="isSwitching" class="dreamglows-focus-task-list">
         <li v-for="task in availableTasks" :key="task.id">
           <span>{{ task.title }}</span>
-          <button class="mod-cta" @click="switchSession(task)">Basculer</button>
+          <button class="mod-cta" :disabled="submitting" @click="switchSession(task)">Basculer</button>
         </li>
       </ul>
     </template>
@@ -36,16 +36,19 @@
       <ul class="dreamglows-focus-task-list">
         <li v-for="task in availableTasks" :key="task.id">
           <span>{{ task.title }}</span>
-          <button class="mod-cta" @click="startSession(task)">Commencer</button>
+          <button class="mod-cta" :disabled="submitting" @click="startSession(task)">Commencer</button>
         </li>
         <li v-if="!availableTasks.length">Aucune tâche à faire pour le moment.</li>
       </ul>
     </template>
+    <p v-if="feedback" class="dreamglows-focus-feedback" :class="{ 'is-error': feedback.error }" role="alert">{{ feedback.text }}</p>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { v4 as uuidv4 } from 'uuid';
+import { usePathCommandPort } from '@/application/path-command-port';
 import { useFocusSessionsStore } from '@/stores/focusSessionsStore';
 import { useGoalsStore } from '@/stores/goalsStore';
 import { useTasksStore } from '@/stores/tasksStore';
@@ -55,10 +58,15 @@ import type { Task } from '@/types/tasks';
 const focusSessionsStore = useFocusSessionsStore();
 const tasksStore = useTasksStore();
 const goalsStore = useGoalsStore();
+const pathCommands = usePathCommandPort();
 const selectedMode = ref<FocusMode>('focus');
 const handoffNote = ref('');
 const nextAction = ref('');
 const isSwitching = ref(false);
+const submitting = ref(false);
+const feedback = ref<{ error: boolean; text: string }>();
+const startOperation = ref<{ commandId: string; sessionId: string; taskId: string; mode: FocusMode }>();
+const endOperation = ref<{ commandId: string; sessionId: string; outcome: 'completed' | 'interrupted'; handoffNote: string; nextAction: string }>();
 const tick = ref(Date.now());
 let intervalId: number | undefined;
 
@@ -81,27 +89,85 @@ const elapsedLabel = computed(() => {
 
 const modeLabel = (mode: FocusMode) => modes.find((item) => item.value === mode)?.label || 'Focus';
 
-const startSession = async (task: Task) => {
-  focusSessionsStore.start(task.id, task.goalId, selectedMode.value);
-  if (task.status === 'todo') await tasksStore.updateTask({ ...task, status: 'in-progress' });
+const startSession = async (task: Task): Promise<boolean> => {
+  const operation = startOperation.value?.taskId === task.id && startOperation.value.mode === selectedMode.value
+    ? startOperation.value
+    : { commandId: uuidv4(), sessionId: uuidv4(), taskId: task.id, mode: selectedMode.value };
+  startOperation.value = operation;
+  submitting.value = true;
+  feedback.value = undefined;
+  try {
+    const result = await pathCommands.execute({
+      type: 'start-focus-session',
+      commandId: operation.commandId,
+      input: { id: operation.sessionId, actionId: task.id, mode: operation.mode }
+    });
+    if (!result.accepted) {
+      startOperation.value = undefined;
+      feedback.value = { error: true, text: `Démarrage refusé : ${result.reason}.` };
+      return false;
+    }
+    startOperation.value = undefined;
+    feedback.value = { error: false, text: 'Session de focus démarrée.' };
+    return true;
+  } catch {
+    feedback.value = { error: true, text: 'La sauvegarde a échoué ; aucune nouvelle session n’a été démarrée.' };
+    return false;
+  } finally {
+    submitting.value = false;
+  }
 };
 
 const switchSession = async (task: Task) => {
   if (activeSession.value) {
-    focusSessionsStore.interrupt(activeSession.value.id, handoffNote.value, nextAction.value);
+    const ended = await finishSession('interrupted', false);
+    if (!ended) return;
   }
-  handoffNote.value = '';
-  nextAction.value = '';
-  isSwitching.value = false;
-  await startSession(task);
+  if (await startSession(task)) {
+    handoffNote.value = '';
+    nextAction.value = '';
+    isSwitching.value = false;
+  }
 };
 
-const finishSession = (status: 'completed' | 'interrupted') => {
-  if (!activeSession.value) return;
-  focusSessionsStore.finish(activeSession.value.id, status, handoffNote.value, nextAction.value);
-  handoffNote.value = '';
-  nextAction.value = '';
-  isSwitching.value = false;
+const finishSession = async (outcome: 'completed' | 'interrupted', reset = true): Promise<boolean> => {
+  const session = activeSession.value;
+  if (!session) return false;
+  const operation = endOperation.value?.sessionId === session.id
+      && endOperation.value.outcome === outcome
+      && endOperation.value.handoffNote === handoffNote.value
+      && endOperation.value.nextAction === nextAction.value
+    ? endOperation.value
+    : { commandId: uuidv4(), sessionId: session.id, outcome, handoffNote: handoffNote.value, nextAction: nextAction.value };
+  endOperation.value = operation;
+  submitting.value = true;
+  feedback.value = undefined;
+  try {
+    const result = await pathCommands.execute({
+      type: 'end-focus-session',
+      commandId: operation.commandId,
+      entityId: session.id,
+      input: { outcome, handoffNote: operation.handoffNote, nextAction: operation.nextAction }
+    });
+    if (!result.accepted) {
+      endOperation.value = undefined;
+      feedback.value = { error: true, text: `Fin de session refusée : ${result.reason}.` };
+      return false;
+    }
+    endOperation.value = undefined;
+    if (reset) {
+      handoffNote.value = '';
+      nextAction.value = '';
+      isSwitching.value = false;
+      feedback.value = { error: false, text: outcome === 'completed' ? 'Session terminée.' : 'Session mise en pause.' };
+    }
+    return true;
+  } catch {
+    feedback.value = { error: true, text: 'La sauvegarde a échoué ; la session en cours est conservée.' };
+    return false;
+  } finally {
+    submitting.value = false;
+  }
 };
 
 onMounted(() => { intervalId = window.setInterval(() => { tick.value = Date.now(); }, 30_000); });
@@ -118,4 +184,6 @@ onUnmounted(() => { if (intervalId !== undefined) window.clearInterval(intervalI
 .dreamglows-focus-task-list { list-style: none; padding: 0; margin: .75rem 0 0; }
 .dreamglows-focus-task-list li { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .5rem 0; border-top: 1px solid var(--background-modifier-border); }
 .dreamglows-focus-panel label { display: grid; gap: .35rem; color: var(--text-muted); font-size: .9rem; }
+.dreamglows-focus-feedback { margin: .75rem 0 0; color: var(--text-success); }
+.dreamglows-focus-feedback.is-error { color: var(--text-error); }
 </style>
