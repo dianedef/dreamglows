@@ -1,7 +1,7 @@
 ---
 artifact: technical_context
 metadata_schema_version: "1.0"
-artifact_version: "1.1.0"
+artifact_version: "1.2.0"
 project: DreamGlows
 created: "2026-09-02"
 updated: "2026-09-02"
@@ -30,6 +30,7 @@ evidence:
   - "The focused Node suite passed 83/83 tests on 2026-09-02."
   - "Production build and disposable Obsidian Lab checks passed for Today, Week, Journey, and History without host diagnostics."
   - "The canonical dashboard selector passed 5 focused tests and the full 88-test suite; its empty state loaded in the disposable Obsidian Lab without diagnostics."
+  - "The direct StorageService plugin-data writer and unreferenced parallel timeline/view paths were removed; 91/91 tests and a fresh disposable host proof passed."
 next_review: "2026-10-02"
 next_step: "Canonicalize dashboard projections, then remove duplicate legacy writers only after parity proof."
 ---
@@ -63,7 +64,7 @@ Chemin is the single business source for planning, acting, reviewing, and preser
 
 ## Current compatibility boundary
 
-The plugin still contains legacy Goal/Task consumers for modals, Focus Session, and some daily presentation. Store subscriptions therefore remain active. Dashboard facts and portfolio counters are canonical; `StorageService` remains outside the Chemin source of truth and must not become a new business write/read path.
+The plugin still contains legacy Goal/Task consumers for modals, Focus Session, and some daily presentation. Store subscriptions therefore remain active. Dashboard facts and portfolio counters are canonical. `StorageService` may read and format daily notes, but can no longer write plugin `data.json`; only the canonical repository owns that document.
 
 ## Verification
 

@@ -17,7 +17,6 @@ export interface DailyMood {
 
 export class StorageService {
     private app: App;
-    private dataFile: string = '.obsidian/plugins/obs-dreamglows/data.json';
     private dateService: DateService;
     private validationService: ValidationService;
     private formatterService: FormatterService;
@@ -173,6 +172,7 @@ export class StorageService {
             // Valider le goal
             this.validationService.validateGoal(goal);
 
+            let isUpdate = false;
             // Sauvegarder dans la note de sa dueDate
             if (goal.dueDate) {
                 const dateStr = DateTime.fromISO(goal.dueDate).toFormat('yyyy-MM-dd');
@@ -182,6 +182,7 @@ export class StorageService {
                 if (dailyNote) {
                     // Mettre à jour la note existante
                     const parsed = this.parserService.parseDailyNote(content, dateStr);
+                    isUpdate = parsed.goals.some((g: Goal) => g.id === goal.id);
                     const updatedGoals = parsed.goals.filter((g: Goal) => g.id !== goal.id);
                     updatedGoals.push(goal);
                     
@@ -201,18 +202,8 @@ export class StorageService {
                 }
             }
 
-            // Sauvegarder dans data.json
-            const data = await this.loadFromDataJson();
-            const index = data.goals.findIndex(g => g.id === goal.id);
-            if (index >= 0) {
-                data.goals[index] = goal;
-            } else {
-                data.goals.push(goal);
-            }
-            await this.saveToDataJson(data);
-
             // Émettre l'événement approprié
-            const eventType = index >= 0 ? 'goal:updated' : 'goal:created';
+            const eventType = isUpdate ? 'goal:updated' : 'goal:created';
             this.eventService.emit(eventType, goal);
 
         } catch (error) {
@@ -228,6 +219,7 @@ export class StorageService {
             // Valider la tâche
             this.validationService.validateTask(task);
 
+            let isUpdate = false;
             // Sauvegarder dans la note de startDate
             if (task.startDate) {
                 const dateStr = DateTime.fromISO(task.startDate).toFormat('yyyy-MM-dd');
@@ -237,6 +229,7 @@ export class StorageService {
                 if (dailyNote) {
                     // Mettre à jour la note existante
                     const parsed = this.parserService.parseDailyNote(content, dateStr);
+                    isUpdate = parsed.tasksToStart.some((t: Task) => t.id === task.id);
                     const updatedTasksToStart = parsed.tasksToStart.filter((t: Task) => t.id !== task.id);
                     updatedTasksToStart.push(task);
                     
@@ -265,6 +258,7 @@ export class StorageService {
                 if (dailyNote) {
                     // Mettre à jour la note existante
                     const parsed = this.parserService.parseDailyNote(content, dateStr);
+                    isUpdate = isUpdate || parsed.tasksToEnd.some((t: Task) => t.id === task.id);
                     const updatedTasksToEnd = parsed.tasksToEnd.filter((t: Task) => t.id !== task.id);
                     updatedTasksToEnd.push(task);
                     
@@ -284,56 +278,12 @@ export class StorageService {
                 }
             }
 
-            // Sauvegarder dans data.json
-            const data = await this.loadFromDataJson();
-            const index = data.tasks.findIndex(t => t.id === task.id);
-            if (index >= 0) {
-                data.tasks[index] = task;
-            } else {
-                data.tasks.push(task);
-            }
-            await this.saveToDataJson(data);
-
             // Émettre l'événement approprié
-            const eventType = index >= 0 ? 'task:updated' : 'task:created';
+            const eventType = isUpdate ? 'task:updated' : 'task:created';
             this.eventService.emit(eventType, task);
 
         } catch (error) {
             throw new StorageError('Erreur lors de la sauvegarde de la tâche', error as Error);
-        }
-    }
-
-    /**
-     * Charge les données depuis data.json
-     */
-    private async loadFromDataJson(): Promise<DataStore> {
-        try {
-            const exists = await this.app.vault.adapter.exists(this.dataFile);
-            if (!exists) {
-                return { goals: [], tasks: [] };
-            }
-            const content = await this.app.vault.adapter.read(this.dataFile);
-            const data = JSON.parse(content);
-            return {
-                goals: this.validationService.validateGoalsList(data.goals),
-                tasks: this.validationService.validateTasksList(data.tasks)
-            };
-        } catch (error) {
-            throw new StorageError('Erreur lors de la lecture de data.json', error as Error);
-        }
-    }
-
-    /**
-     * Sauvegarde les données dans data.json
-     */
-    private async saveToDataJson(data: DataStore): Promise<void> {
-        try {
-            await this.app.vault.adapter.write(
-                this.dataFile,
-                JSON.stringify(data, null, 2)
-            );
-        } catch (error) {
-            throw new StorageError('Erreur lors de la sauvegarde dans data.json', error as Error);
         }
     }
 

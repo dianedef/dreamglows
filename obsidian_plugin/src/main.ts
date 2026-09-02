@@ -310,13 +310,6 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
         }
     }
 
-    // Méthodes utilitaires existantes
-    async loadPluginData() {
-        const current = this.pathPersistence.document;
-        if (!current) throw new Error('Chemin repository has not been loaded');
-        return projectLegacyStoreSnapshot(current);
-    }
-
     private currentStoreSnapshot(): LegacyStoreSnapshot {
         const json = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
         return {
