@@ -32,6 +32,7 @@ export interface PathEntity {
     parentId?: string;
     planned?: PlannedPeriod;
     completedAt?: ZonedInstant;
+    deletedAt?: ZonedInstant;
     occurredAt?: ZonedInstant;
     createdAt: ZonedInstant;
     updatedAt: ZonedInstant;
@@ -45,6 +46,10 @@ export type PathEventType =
     | 'entity-completed'
     | 'entity-reopened'
     | 'entity-reparented'
+    | 'entity-updated'
+    | 'entity-deleted'
+    | 'focus-session-started'
+    | 'focus-session-ended'
     | 'evidence-recorded'
     | 'reflection-recorded';
 
@@ -59,6 +64,8 @@ export interface PathEvent {
     relatedEntityId?: string;
     previousParentId?: string;
     nextParentId?: string;
+    previousValues?: JsonObject;
+    nextValues?: JsonObject;
     extensions: JsonObject;
 }
 

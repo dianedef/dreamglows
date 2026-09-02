@@ -241,3 +241,26 @@ test('reparent and resize replay require the exact persisted intention', async (
   );
   assert.deepEqual(run.counts(), { writes: 0, after: 0 });
 });
+
+test('edit and focus commands persist exact identities and replay without duplicate writes', async () => {
+  const initial = canonical();
+  initial.envelope.entities.unshift({ ...entity(), id: 'goal-1', type: 'goal' });
+  const run = harness(initial);
+  const create = { type: 'create-entity', commandId: 'create-port', input: { id: 'action-2', type: 'action', title: 'Deux', parentId: 'goal-1' } };
+  assert.equal((await run.port.execute(create)).entityId, 'action-2');
+  assert.equal((await run.port.execute(create)).replayed, true);
+  assert.equal((await run.port.execute({ type: 'update-entity', commandId: 'update-port', entityId: 'action-2', patch: { title: 'Deux bis' } })).accepted, true);
+  assert.equal((await run.port.execute({ type: 'start-focus-session', commandId: 'focus-port', input: { id: 'focus-1', actionId: 'action-2', mode: 'focus' } })).entityId, 'focus-1');
+  assert.equal((await run.port.execute({ type: 'end-focus-session', commandId: 'end-port', entityId: 'focus-1', input: { outcome: 'completed' } })).accepted, true);
+  assert.equal(run.snapshot().envelope.entities.find(item => item.id === 'focus-1').status, 'done');
+  assert.deepEqual(run.counts(), { writes: 4, after: 4 });
+});
+
+test('failed canonical create leaves durable identity absent and permits retry', async () => {
+  const run = harness();
+  const command = { type: 'create-entity', commandId: 'create-fail', input: { id: 'stable-id', type: 'action', title: 'Stable' } };
+  run.failWritesWith(new Error('disk full'));
+  await assert.rejects(() => run.port.execute(command), /disk full/);
+  assert.equal(run.snapshot().envelope.entities.some(item => item.id === 'stable-id'), false);
+  assert.deepEqual(run.counts(), { writes: 0, after: 0 });
+});

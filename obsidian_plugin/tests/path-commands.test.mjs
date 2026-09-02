@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { addEvidence, addReflection, complete, reopen, reparent, resize, reschedule, schedule } from '../src/domain/path/commands.ts';
+import { addEvidence, addReflection, complete, createEntity, deleteEntity, endFocusSession, reopen, reparent, resize, reschedule, schedule, startFocusSession, updateEntity } from '../src/domain/path/commands.ts';
 
 const NOW = '2026-09-02T12:00:00.000Z';
 let commandSequence = 0;
@@ -172,4 +172,37 @@ test('empty command ids and entity/event id collisions are inert', () => {
   assert.equal(result.reason, 'id-collision');
   assert.equal(result.envelope, withEvent);
   assert.equal(withEvent.events.length, 1);
+});
+
+test('canonical create, update and tombstone delete preserve identity and reject cascades', () => {
+  const base = envelope([entity('goal', 'goal')]);
+  const created = createEntity(base, { id: 'action-new', type: 'action', title: 'Nouvelle', parentId: 'goal', extensions: { custom: true } }, deps('create-new'));
+  assert.equal(created.accepted, true); assert.equal(created.event.type, 'entity-created'); assert.equal(created.envelope.events.length, 1);
+  assert.equal(created.entity.id, 'action-new');
+  const updated = updateEntity(created.envelope, 'action-new', { title: 'Renommée', tags: ['x'] }, deps('update-new'));
+  assert.equal(updated.accepted, true);
+  assert.deepEqual(updated.event.previousValues, { title: 'Nouvelle', tags: [] });
+  assert.deepEqual(updated.event.nextValues, { title: 'Renommée', tags: ['x'] });
+  assert.deepEqual(updated.entity.extensions, { custom: true });
+  const cascade = deleteEntity(created.envelope, 'goal', deps('delete-parent'));
+  assert.equal(cascade.accepted, false); assert.equal(cascade.reason, 'has-children'); assert.equal(cascade.envelope, created.envelope);
+  const deleted = deleteEntity(updated.envelope, 'action-new', deps('delete-new'));
+  assert.equal(deleted.accepted, true);
+  assert.equal(deleted.entity.id, 'action-new');
+  assert.equal(deleted.entity.status, 'cancelled');
+  assert.equal(deleted.entity.deletedAt, NOW);
+});
+
+test('focus start and end are explicit single-event transitions', () => {
+  const base = envelope([entity('action')]);
+  const started = startFocusSession(base, { id: 'focus-1', actionId: 'action', mode: 'focus' }, deps('focus-start'));
+  assert.equal(started.accepted, true); assert.equal(started.event.type, 'focus-session-started'); assert.equal(started.envelope.events.length, 1);
+  assert.equal(started.entity.parentId, 'action');
+  const second = startFocusSession(started.envelope, { id: 'focus-2', actionId: 'action', mode: 'creation' }, deps('focus-second'));
+  assert.equal(second.accepted, false); assert.equal(second.reason, 'active-session-exists'); assert.equal(second.envelope, started.envelope);
+  const ended = endFocusSession(started.envelope, 'focus-1', { outcome: 'interrupted', handoffNote: ' Reprendre ', nextAction: 'Étape 2' }, deps('focus-end'));
+  assert.equal(ended.accepted, true);
+  assert.equal(ended.event.type, 'focus-session-ended');
+  assert.equal(ended.entity.status, 'cancelled');
+  assert.equal(ended.entity.extensions.handoffNote, 'Reprendre');
 });

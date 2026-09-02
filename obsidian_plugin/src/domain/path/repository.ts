@@ -59,7 +59,7 @@ const unsafeKeys = new Set(['__proto__', 'prototype', 'constructor']);
 const entityTypes = new Set(['dream', 'goal', 'milestone', 'action', 'habit', 'focus-session', 'evidence', 'reflection']);
 const statuses = new Set(['todo', 'in-progress', 'done', 'cancelled']);
 const priorities = new Set(['low', 'medium', 'high']);
-const eventTypes = new Set(['entity-created', 'planned-period-changed', 'entity-completed', 'entity-reopened', 'entity-reparented', 'evidence-recorded', 'reflection-recorded']);
+const eventTypes = new Set(['entity-created', 'planned-period-changed', 'entity-completed', 'entity-reopened', 'entity-reparented', 'entity-updated', 'entity-deleted', 'focus-session-started', 'focus-session-ended', 'evidence-recorded', 'reflection-recorded']);
 
 function isObject(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -117,7 +117,7 @@ function validateEntity(value: unknown, path: string): asserts value is PathEnti
     if (value.priority !== undefined && (typeof value.priority !== 'string' || !priorities.has(value.priority))) throw new TypeError(`${path}.priority is unsupported`);
     if (value.parentId !== undefined) requireString(value.parentId, `${path}.parentId`);
     if (value.planned !== undefined) validatePeriod(value.planned, `${path}.planned`);
-    for (const key of ['completedAt', 'occurredAt', 'createdAt', 'updatedAt'] as const) if (value[key] !== undefined) requireString(value[key], `${path}.${key}`);
+    for (const key of ['completedAt', 'deletedAt', 'occurredAt', 'createdAt', 'updatedAt'] as const) if (value[key] !== undefined) requireString(value[key], `${path}.${key}`);
     requireString(value.createdAt, `${path}.createdAt`);
     requireString(value.updatedAt, `${path}.updatedAt`);
     requireStringArray(value.tags, `${path}.tags`);
@@ -137,6 +137,8 @@ function validateEvent(value: unknown, path: string): asserts value is PathEvent
     if (value.relatedEntityId !== undefined) requireString(value.relatedEntityId, `${path}.relatedEntityId`);
     if (value.previousParentId !== undefined) requireString(value.previousParentId, `${path}.previousParentId`);
     if (value.nextParentId !== undefined) requireString(value.nextParentId, `${path}.nextParentId`);
+    if (value.previousValues !== undefined && !isObject(value.previousValues)) throw new TypeError(`${path}.previousValues must be an object`);
+    if (value.nextValues !== undefined && !isObject(value.nextValues)) throw new TypeError(`${path}.nextValues must be an object`);
     if (!isObject(value.extensions)) throw new TypeError(`${path}.extensions must be an object`);
 }
 

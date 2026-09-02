@@ -1,4 +1,9 @@
 import {
+    createEntity,
+    deleteEntity,
+    endFocusSession,
+    startFocusSession,
+    updateEntity,
     complete,
     reparent,
     reopen,
@@ -7,11 +12,20 @@ import {
     schedule,
     type PathCommandRejection,
     type PathCommandResult,
+    type CreateEntityInput,
+    type UpdateEntityInput,
+    type StartFocusInput,
+    type EndFocusInput,
 } from './commands.ts';
 import type { PathEvent, PlannedPeriod, ZonedInstant } from './model.ts';
 import type { PathRepositoryDocument } from './repository.ts';
 
 export type PathUiCommand =
+    | { type: 'create-entity'; commandId: string; input: CreateEntityInput }
+    | { type: 'update-entity'; commandId: string; entityId: string; patch: UpdateEntityInput }
+    | { type: 'delete-entity'; commandId: string; entityId: string }
+    | { type: 'start-focus-session'; commandId: string; input: StartFocusInput }
+    | { type: 'end-focus-session'; commandId: string; entityId: string; input: EndFocusInput }
     | { type: 'schedule'; commandId: string; entityId: string; planned: PlannedPeriod }
     | { type: 'reschedule'; commandId: string; entityId: string; planned: PlannedPeriod }
     | { type: 'complete'; commandId: string; entityId: string }
@@ -39,7 +53,12 @@ export interface PathCommandPort {
 }
 
 function matchingReplay(event: PathEvent, command: PathUiCommand): boolean {
-    if (event.entityId !== command.entityId) return false;
+    const entityId = command.type === 'create-entity' || command.type === 'start-focus-session' ? command.input.id : command.entityId;
+    if (event.entityId !== entityId) return false;
+    if (command.type === 'create-entity' || command.type === 'start-focus-session') return event.type === (command.type === 'create-entity' ? 'entity-created' : 'focus-session-started') && JSON.stringify(event.extensions.intent) === JSON.stringify(command.input);
+    if (command.type === 'update-entity') return event.type === 'entity-updated' && JSON.stringify(event.extensions.intent) === JSON.stringify(command.patch);
+    if (command.type === 'delete-entity') return event.type === 'entity-deleted';
+    if (command.type === 'end-focus-session') return event.type === 'focus-session-ended' && JSON.stringify(event.extensions.intent) === JSON.stringify(command.input);
     if (command.type === 'complete') return event.type === 'entity-completed';
     if (command.type === 'reopen') return event.type === 'entity-reopened';
     if (command.type === 'reparent') {
@@ -63,6 +82,11 @@ function applyCommand(
         now: dependencies.now,
         createId: dependencies.createId,
     };
+    if (command.type === 'create-entity') return createEntity(document.envelope, command.input, commandDependencies);
+    if (command.type === 'update-entity') return updateEntity(document.envelope, command.entityId, command.patch, commandDependencies);
+    if (command.type === 'delete-entity') return deleteEntity(document.envelope, command.entityId, commandDependencies);
+    if (command.type === 'start-focus-session') return startFocusSession(document.envelope, command.input, commandDependencies);
+    if (command.type === 'end-focus-session') return endFocusSession(document.envelope, command.entityId, command.input, commandDependencies);
     if (command.type === 'schedule') return schedule(document.envelope, command.entityId, command.planned, commandDependencies);
     if (command.type === 'reschedule') return reschedule(document.envelope, command.entityId, command.planned, commandDependencies);
     if (command.type === 'complete') return complete(document.envelope, command.entityId, commandDependencies);
@@ -84,7 +108,7 @@ export function createPathCommandPort(dependencies: PathCommandPortDependencies)
                         ? {
                             accepted: true,
                             revision: current.envelope.revision,
-                            entityId: command.entityId,
+                            entityId: command.type === 'create-entity' || command.type === 'start-focus-session' ? command.input.id : command.entityId,
                             eventId: prior.id,
                             replayed: true,
                         }
