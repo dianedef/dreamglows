@@ -88,10 +88,10 @@ Deliver the smallest local Windows path that loads, plans, replans, completes, r
 
 - [x] One shared package owns all canonical business behavior.
 - [x] Obsidian tests and build pass against the shared package.
-- [ ] Windows persists and reloads the canonical document atomically.
+- [x] Windows persists and reloads the canonical document atomically.
 - [ ] The same fixture retains identifiers, relations, periods, states, and events in both clients.
 - [ ] The Windows vertical slice covers next action, planning, completion, reopening, history, and restart.
-- [ ] Corrupt input and failed writes preserve recoverable durable state.
+- [x] Corrupt input and failed writes preserve recoverable durable state.
 - [ ] Essential interactions have keyboard or form equivalents.
 - [ ] Convex and client technologies remain outside the domain package.
 
@@ -107,8 +107,8 @@ Deliver the smallest local Windows path that loads, plans, replans, completes, r
 ## Current Chantier Flow
 
 - Specification: ready and approved by the operator.
-- Implementation: batch 1 complete; batch 2 is next.
-- Verification: batch 1 passed package typecheck, package boundary tests, 124 Obsidian tests, and the declared production build.
+- Implementation: batches 1 and 2 complete; batch 3 is next.
+- Verification: shared-core checks, 124 Obsidian tests/build, and Windows local-persistence restart/recovery tests pass.
 - Delivery: pending exact-scope proof.
 
 ## Skill Run History
@@ -116,3 +116,4 @@ Deliver the smallest local Windows path that loads, plans, replans, completes, r
 | Date UTC | Skill | Model | Action | Result | Next step |
 | --- | --- | --- | --- | --- | --- |
 | 2026-09-03 | sg-development | GPT-5 Codex | Formalize approved backend-first Windows adoption and extract the canonical TypeScript core. | Batch 1 passed: core typecheck 2/2 boundary tests, Obsidian 124/124 tests, and production build. | Deliver batch 1 exact-scope, then implement Windows local persistence. |
+| 2026-09-03 | sg-development | GPT-5 Codex | Add Windows-local atomic JSON persistence, durable previous-copy backup, explicit recovery, and restart behavior. | Batch 2 implemented; Windows typecheck and recovery tests pass. | Deliver batch 2 exact-scope, then build the functional journey. |
