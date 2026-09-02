@@ -1,7 +1,7 @@
 ---
 artifact: spec
 metadata_schema_version: "1.0"
-artifact_version: "1.8.0"
+artifact_version: "1.9.0"
 project: DreamGlows
 created: "2026-09-02"
 updated: "2026-09-02"
@@ -32,7 +32,7 @@ evidence:
   - "Operator approved the unified Chemin implementation plan on 2026-09-02."
   - "Repository investigation found duplicate Goal and Task schemas, competing persistence paths, an unconsumed TimelineService, and temporal views derived from file creation dates."
   - "GoalTree, GoalsView detail, DayView, PlanningView, EventService, progression history, and the installed vis-timeline package provide reusable foundations."
-next_step: "Isolate long-range statistics behind a canonical selector before replacing the recursive legacy Stats implementation."
+next_step: "Migrate remaining active legacy editors and Focus Session writes to canonical commands before removing the compatibility bridge."
 ---
 
 # Spec: DreamGlows unified path system
@@ -283,6 +283,7 @@ None for the safety baseline and canonical vertical slice. The four product scop
 | 2026-09-02 UTC | sg-docs | GPT-5.6 Codex | Aligned the Obsidian README, tracker, technical navigation, canonical Path architecture, verification evidence, and tracked specification with delivered behavior while preserving the unproven cross-platform boundary. | documentation updated and governance-validated | Replace dashboard pseudo-history and metrics with canonical projections. |
 | 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Replaced dashboard Goal/Task calculations and synthetic activity with a pure canonical selector for Today counts, portfolio status, active priorities, and Paris-day durable events; added an honest empty state and accessible event semantics. | implemented and host-proven empty-state; 88/88 tests | Retire only proven duplicate writers/views, then design canonical long-range statistics. |
 | 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Removed the direct StorageService plugin-data writer, the unreferenced TimelineService and legacy Vue host, and the unused loadPluginData bypass; added a source-boundary regression test while preserving daily-note behavior and the active compatibility bridge. | implemented and host-proven; 91/91 tests | Build a canonical long-range statistics selector before replacing legacy Stats. |
+| 2026-09-02 UTC | sg-development | GPT-5.6 Codex | Replaced the recursive Chart.js/RxJS Stats implementation with pure inclusive Paris-range statistics, accessible summaries/table, explicit hierarchy diagnostics, and honest separation from wellbeing notes; removed the orphaned metrics service and Chart.js dependency. | implemented and host-proven empty-state; 97/97 tests; bundle reduced ~26% | Migrate remaining active editors and Focus Session writes to canonical commands. |
 
 ## Current Chantier Flow
 
@@ -290,8 +291,8 @@ None for the safety baseline and canonical vertical slice. The four product scop
 - Investigation: complete; data, UI, accessibility, migration, and test surfaces mapped.
 - Specification: complete and adversarially reviewed.
 - Readiness: ready; no material product, data, security, platform, or proof decision remains for task 1.
-- Implementation: in progress; the canonical dashboard and prior Chemin surfaces now pass 91/91 tests, including a mechanical no-secondary-writer boundary, Paris-day boundaries, honest zero state, the 12,000-level Journey corpus, and durable event facts.
+- Implementation: in progress; canonical long-range Stats and prior Chemin surfaces now pass 97/97 tests, including 7/30/90/365-day ranges, a mechanical no-secondary-writer boundary, honest zero state, bounded hierarchy cycles, the 12,000-level Journey corpus, and durable event facts.
 - Verification: canonical dashboard/Today/Week/Journey/History empty states and tab activation are host-proven; populated composition and rollback remain unit/integration-proven because the Lab cannot yet seed plugin data.
 - Delivery: implementation checkpoint `465d337` is present on `origin/main`; the overall chantier remains open.
 
-  Next step: isolate long-range statistics behind a canonical selector before replacing the recursive legacy Stats implementation.
+  Next step: migrate remaining active legacy editors and Focus Session writes to canonical commands before removing the compatibility bridge.

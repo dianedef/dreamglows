@@ -1,7 +1,7 @@
 ---
 artifact: technical_context
 metadata_schema_version: "1.0"
-artifact_version: "1.2.0"
+artifact_version: "1.3.0"
 project: DreamGlows
 created: "2026-09-02"
 updated: "2026-09-02"
@@ -31,6 +31,7 @@ evidence:
   - "Production build and disposable Obsidian Lab checks passed for Today, Week, Journey, and History without host diagnostics."
   - "The canonical dashboard selector passed 5 focused tests and the full 88-test suite; its empty state loaded in the disposable Obsidian Lab without diagnostics."
   - "The direct StorageService plugin-data writer and unreferenced parallel timeline/view paths were removed; 91/91 tests and a fresh disposable host proof passed."
+  - "Canonical 7/30/90/365-day statistics passed 97/97 tests and loaded in the disposable host; removing Chart.js reduced the production bundle from about 5.94 MB to 4.38 MB."
 next_review: "2026-10-02"
 next_step: "Canonicalize dashboard projections, then remove duplicate legacy writers only after parity proof."
 ---
@@ -50,6 +51,7 @@ Chemin is the single business source for planning, acting, reviewing, and preser
 | Commands | `commands.ts`, `command-port.ts`, `application/path-command-port.ts` | Idempotent commands; one durable event per accepted transition; exact-intent replay; persistence before UI synchronization |
 | Read model | `projections.ts`, `dashboard-view-model.ts`, `stores/pathStore.ts` | Today, Week, Journey, History, and dashboard summaries share filters, reference date, timezone rules, durable events, and canonical entity identity |
 | Presentation | `CheminShell.vue`, `PathActionsPanel.vue`, `PathJourneyTree.vue`, `PathDetailPanel.vue`, Path views | Accessible list/tree and form actions remain complete without a graphical timeline dependency |
+| Statistics | `statistics.ts`, `StatsView.vue` | Inclusive Paris civil ranges count durable facts separately from current status; complete and reopen remain distinct; hierarchy cycles and orphans are explicit |
 | Compatibility | `legacy-store-bridge.ts` | Canonical state mirrors into legacy Goal/Task stores temporarily; legacy edits merge through the coordinator until their editors migrate |
 
 ## Invariants
@@ -61,6 +63,7 @@ Chemin is the single business source for planning, acting, reviewing, and preser
 - Journey cycles and orphaned legacy relations remain visible and bounded.
 - The semantic tree/list is authoritative; an optional graphical adapter may enhance it but cannot own data or essential commands.
 - Gamification history and Obsidian note content remain separate sources until an explicit product mapping exists.
+- Long-range statistics never infer accomplishments from current status or planned-period changes.
 
 ## Current compatibility boundary
 

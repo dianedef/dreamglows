@@ -13,8 +13,8 @@
 
         <CheminShell :scope="currentScope" @update:scope="setPathScope">
             <template #tools>
-                <button type="button" class="dreamglows-switch" :class="{ active: activeTab === 'stats' }" @click="setActiveTab('stats')">Statistiques</button>
-                <button type="button" class="dreamglows-switch" :class="{ active: activeTab === 'profile' }" @click="setActiveTab('profile')">Profil</button>
+                <button type="button" class="dreamglows-switch" data-dg-tab="stats" :class="{ active: activeTab === 'stats' }" @click="setActiveTab('stats')">Statistiques</button>
+                <button type="button" class="dreamglows-switch" data-dg-tab="profile" :class="{ active: activeTab === 'profile' }" @click="setActiveTab('profile')">Profil</button>
             </template>
         </CheminShell>
 

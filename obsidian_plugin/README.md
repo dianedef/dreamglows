@@ -24,6 +24,7 @@ DreamGlows dans Obsidian est conçu pour t’aider à atteindre tes rêves par u
   - Une même source alimente Aujourd'hui, Semaine, Parcours et Histoire.
   - Histoire conserve séparément planifications, réalisations, réouvertures, preuves et réflexions.
   - Le tableau de bord résume les actions, objectifs, priorités et faits durables de la date consultée sans fabriquer d'activité.
+  - Statistiques compare les faits Chemin sur 7, 30, 90 ou 365 jours dans un tableau accessible ; les données de bien-être restent séparées dans Aujourd'hui.
 
 - **Habitudes & routines**
   - Associer des habitudes aux objectifs pour maintenir une cadence.
@@ -61,5 +62,4 @@ Le plugin Obsidian est la première surface active du projet. Le socle Chemin et
 ## Feuille de route de base
 
 - Migrer les éditeurs et Focus Session avant de retirer le pont de compatibilité.
-- Ajouter une projection statistique canonique couvrant les périodes longues.
 - Étendre la continuité d’expérience sur les autres surfaces.
