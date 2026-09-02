@@ -20,6 +20,7 @@ export class TaskModal extends Modal {
         console.log('TaskModal: Opening modal');
         const { contentEl } = this;
         contentEl.empty();
+        this.modalEl.addClass('dreamglows-task-modal-shell');
         
         const container = contentEl.createDiv('dreamglows-modal-content');
         console.log('TaskModal: Container created');

@@ -1,0 +1,16 @@
+{
+  "rules": [
+    {
+      "classification": "accepted-exception",
+      "paths": ["obsidian_plugin/src/styles/goals/task-modal-content.css"],
+      "kinds": ["hardcoded CSS dimension"],
+      "pattern": "(?:46rem|88vh|0\\.75rem|2\\.5rem|700px|94vh|100%)",
+      "reason": "Task-modal viewport geometry and its responsive breakpoint are component-level layout constraints; colors, typography, spacing, radii, and interaction states remain governed by Obsidian theme variables or local semantic tokens."
+    },
+    {
+      "classification": "accepted-exception",
+      "paths": ["obsidian_plugin/styles.css"],
+      "reason": "Generated release artifact. Visual literals are reviewed in their source stylesheets; scanning the compiled bundle would duplicate source findings and surface pre-existing unrelated styles."
+    }
+  ]
+}

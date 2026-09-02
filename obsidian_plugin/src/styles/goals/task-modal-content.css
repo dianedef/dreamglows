@@ -1,90 +1,43 @@
-
-.dreamglows-task-modal {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.modal.dreamglows-task-modal-shell {
+  --dg-task-space-1: 0.375rem; --dg-task-space-2: 0.75rem; --dg-task-space-3: 1rem; --dg-task-space-4: 1.5rem;
+  --dg-task-radius: var(--radius-m); --dg-task-control-height: 2.75rem;
+  width: min(46rem, calc(100vw - 2rem)); max-width: 46rem; max-height: 88vh; padding: 0;
+  border: 1px solid var(--background-modifier-border); border-radius: var(--radius-l); overflow: hidden;
+  box-shadow: var(--shadow-l); background: var(--background-primary);
 }
-
-.dreamglows-modal-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.dreamglows-modal-field label {
-  font-weight: 500;
-}
-
-.dreamglows-modal-field input,
-.dreamglows-modal-field select,
-.dreamglows-modal-field textarea {
-  padding: 0.5rem;
-  border-radius: 4px;
-  border: 1px solid var(--background-modifier-border);
-  background-color: var(--background-primary);
-  color: var(--text-normal);
-}
-
-.dreamglows-modal-field textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
-.dreamglows-tags-input {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.dreamglows-tags-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.dreamglows-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 10px;
-  background-color: var(--background-modifier-accent);
-  color: var(--text-muted);
-  font-size: 0.9em;
-}
-
-.dreamglows-tag-remove {
-  border: none;
-  background: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0;
-  font-size: 1.2em;
-  line-height: 1;
-}
-
-.dreamglows-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.dreamglows-modal-save {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
-  border: none;
-  cursor: pointer;
-}
-
-.dreamglows-modal-delete {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  background-color: var(--color-red);
-  color: white;
-  border: none;
-  cursor: pointer;
+.dreamglows-task-modal-shell .modal-content { padding: 0; overflow: hidden; }
+.dreamglows-task-modal-shell .modal-close-button { z-index: 2; top: 0.75rem; right: 0.75rem; }
+.dreamglows-task-modal { display: flex; flex-direction: column; gap: var(--dg-task-space-4); max-height: 88vh; padding: var(--dg-task-space-4); overflow-y: auto; }
+.dreamglows-task-modal__header { padding-right: 2.5rem; }
+.dreamglows-task-modal__eyebrow { margin: 0 0 var(--dg-task-space-1); color: var(--interactive-accent); font-size: var(--font-ui-smaller); font-weight: var(--font-semibold); letter-spacing: .08em; text-transform: uppercase; }
+.dreamglows-task-modal__header h2 { margin: 0; color: var(--text-normal); font-size: var(--font-ui-large); line-height: 1.2; }
+.dreamglows-task-modal__header > p:last-child { margin: var(--dg-task-space-1) 0 0; color: var(--text-muted); }
+.dreamglows-task-modal__section { display: flex; flex-direction: column; gap: var(--dg-task-space-3); padding: var(--dg-task-space-3); border: 1px solid var(--background-modifier-border); border-radius: var(--dg-task-radius); background: var(--background-secondary); }
+.dreamglows-task-modal__section h3 { margin: 0; color: var(--text-normal); font-size: var(--font-ui-medium); }
+.dreamglows-task-modal__date-grid, .dreamglows-task-modal__meta-grid { display: grid; gap: var(--dg-task-space-3); }
+.dreamglows-task-modal__date-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dreamglows-task-modal__meta-grid { grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr)); }
+.dreamglows-modal-field { display: flex; min-width: 0; flex-direction: column; gap: var(--dg-task-space-1); }
+.dreamglows-modal-field label { color: var(--text-normal); font-size: var(--font-ui-small); font-weight: var(--font-semibold); }
+.dreamglows-modal-field label span { color: var(--text-muted); font-weight: var(--font-normal); }
+.dreamglows-task-modal-shell :is(input, select, textarea) { width: 100%; max-width: none; border: 1px solid var(--background-modifier-border); border-radius: var(--radius-s); background: var(--background-primary); color: var(--text-normal); box-shadow: none; }
+.dreamglows-task-modal-shell :is(input, select) { min-height: var(--dg-task-control-height); }
+.dreamglows-task-modal-shell textarea { min-height: 5.25rem; padding: var(--dg-task-space-2); resize: vertical; }
+.dreamglows-task-modal-shell :is(input, select, textarea):focus-visible { border-color: var(--interactive-accent); outline: 2px solid var(--interactive-accent); outline-offset: 1px; }
+.dreamglows-tags-input { display: flex; flex-direction: column; gap: var(--dg-task-space-2); }
+.dreamglows-tags-container { display: flex; flex-wrap: wrap; gap: var(--dg-task-space-1); }
+.dreamglows-tag { display: inline-flex; align-items: center; gap: var(--dg-task-space-1); padding: .25rem .4rem .25rem .6rem; border-radius: 999px; background: var(--background-modifier-hover); color: var(--text-normal); font-size: var(--font-ui-smaller); }
+.dreamglows-tag-remove { display: inline-grid; width: 1.35rem; height: 1.35rem; min-width: 0; padding: 0; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--text-muted); box-shadow: none; }
+.dreamglows-tag-remove:hover { background: var(--background-modifier-border); color: var(--text-normal); }
+.dreamglows-modal-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--dg-task-space-2); padding-top: var(--dg-task-space-1); }
+.dreamglows-modal-actions button { min-height: var(--dg-task-control-height); padding-inline: var(--dg-task-space-3); font-weight: var(--font-semibold); }
+.dreamglows-modal-save { background: var(--interactive-accent); color: var(--text-on-accent); }
+.dreamglows-modal-delete { margin-right: auto; color: var(--text-error); }
+@media (max-width: 700px) {
+  .modal.dreamglows-task-modal-shell { width: calc(100vw - 1rem); max-height: 94vh; }
+  .dreamglows-task-modal { max-height: 94vh; padding: var(--dg-task-space-3); }
+  .dreamglows-task-modal__date-grid, .dreamglows-task-modal__meta-grid { grid-template-columns: 1fr; }
+  .dreamglows-modal-actions { align-items: stretch; flex-direction: column-reverse; }
+  .dreamglows-modal-actions button { width: 100%; }
+  .dreamglows-modal-delete { margin-right: 0; }
 }
