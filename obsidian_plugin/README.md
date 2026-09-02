@@ -30,14 +30,13 @@ DreamGlows dans Obsidian est conçu pour t’aider à atteindre tes rêves par u
 
 1. Ouvrir **Obsidian → Settings → BRAT → Add beta plugin**
 2. Ajouter le dépôt GitHub : `https://github.com/dianedef/dreamglows`
-3. Utiliser le manifeste : `https://raw.githubusercontent.com/dianedef/dreamglows/main/obsidian_plugin/manifest.json`
+3. Sélectionner la dernière release ou figer la version souhaitée
 4. Activer le plugin **DreamGlows**
 
-Le dépôt contient un plugin installé en mode développement avec:
+Chaque release BRAT contient les assets suivants :
 - `manifest.json`
 - `main.js`
 - `styles.css`
-- `versions.json`
 
 ## Structure du plugin
 

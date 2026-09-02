@@ -45,10 +45,10 @@ Depuis la racine :
 
 ## Installation BRAT (Obsidian)
 
-Le dépôt est prêt pour BRAT :
+Les releases GitHub sont prêtes pour BRAT :
 
-- `manifest.json` est conforme au format Obsidian.
-- `main.js` et `versions.json` sont dans `obsidian_plugin/`.
+- chaque release publie `manifest.json`, `main.js` et `styles.css` comme assets ;
+- la version du tag, de la release et du manifeste est identique ;
 - `obsidian_plugin/data.json` n’est pas versionné (données de runtime uniquement).
 
 Pour tester en BRAT :
@@ -56,5 +56,5 @@ Pour tester en BRAT :
 1. Installer le plugin **BRAT** dans Obsidian.
 2. Ouvrir `Settings → BRAT → Add beta plugin`.
 3. Ajouter le repo GitHub : `https://github.com/dianedef/dreamglows`.
-4. Utiliser le manifest direct si demandé : `https://raw.githubusercontent.com/dianedef/dreamglows/main/obsidian_plugin/manifest.json`.
-5. Cocher le plugin `dreamglows` puis activer.
+4. Sélectionner la dernière release ou figer la version souhaitée.
+5. Cocher le plugin `dreamglows` puis l’activer.
