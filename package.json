@@ -7,7 +7,6 @@
     "website",
     "obsidian_plugin",
     "chrome_extension",
-    "windows_app",
     "android_app"
   ],
   "scripts": {

@@ -1,0 +1,29 @@
+{
+  "repositoryVersion": 1,
+  "envelope": {
+    "schemaVersion": 1,
+    "revision": 2,
+    "entities": [
+      {
+        "id": "goal-shared", "type": "goal", "title": "Cap partagé", "description": "",
+        "status": "in-progress", "createdAt": "2026-09-03T08:00:00.000Z", "updatedAt": "2026-09-03T09:00:00.000Z",
+        "tags": [], "extensions": {"futureEntityField": "preserved"}
+      },
+      {
+        "id": "action-shared", "type": "action", "title": "Prochaine étape", "description": "", "status": "todo",
+        "parentId": "goal-shared", "planned": {"start": "2026-09-04"},
+        "createdAt": "2026-09-03T08:30:00.000Z", "updatedAt": "2026-09-03T09:00:00.000Z", "tags": [], "extensions": {}
+      }
+    ],
+    "events": [
+      {
+        "id": "event-shared", "type": "planned-period-changed", "entityId": "action-shared",
+        "occurredAt": "2026-09-03T09:00:00.000Z", "recordedAt": "2026-09-03T09:00:00.000Z",
+        "nextPlanned": {"start": "2026-09-04"}, "extensions": {"commandId": "fixture-plan"}
+      }
+    ],
+    "extensions": {"futureEnvelopeField": true}
+  },
+  "settings": {},
+  "extensions": {"futureRepositoryField": 42}
+}

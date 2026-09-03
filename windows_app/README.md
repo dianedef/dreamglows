@@ -2,20 +2,32 @@
 
 Objectif: livrer l'expérience DreamGlows en application Windows.
 
-## Status
+## Statut
 
-- Implémentation backend en cours.
-- Le client consomme `@dreamglows/path-core`, le même domaine Chemin canonique qu'Obsidian.
+- Client Flutter Windows fonctionnel, orienté backend et hors ligne.
+- Le contrat JSON versionné est partagé avec `@dreamglows/path-core`. TypeScript exécute le domaine dans Obsidian et, plus tard, Convex ; Dart fournit l'implémentation conforme du client Flutter.
 - La première tranche reste locale et hors ligne. Convex, l'identité et la synchronisation sont hors scope jusqu'à spécification de leur protocole.
-- Le design visuel est volontairement différé ; l'interface devra seulement rendre le parcours essentiel fonctionnel et accessible.
+- Le design visuel est volontairement différé ; l'interface Material rend le parcours essentiel utilisable au clavier et par formulaire.
 
 ## Persistance locale
 
-`NodePathFileAdapter` stocke l'enveloppe JSON canonique dans un chemin absolu fourni par le futur hôte Windows. Les écritures passent par un fichier temporaire vidé sur disque, conservent la version précédente dans un fichier `.backup`, puis remplacent le document principal.
+`FilePathStorage` stocke le document de dépôt Chemin canonique dans le répertoire Application Support de Windows. Les écritures sont sérialisées, passent par un fichier temporaire vidé sur disque, conservent la version précédente dans un fichier `.backup`, puis remplacent le document principal.
 
-Une installation vide est migrée par le noyau vers une enveloppe canonique. Un document principal corrompu échoue sans être écrasé et indique si une sauvegarde restaurable existe. Si le document principal manque après une interruption mais que sa sauvegarde existe, celle-ci est chargée avec un état de récupération explicite.
+Une installation vide crée un document canonique v1. Un document principal corrompu échoue sans être écrasé. Si le document principal manque après une interruption mais que sa sauvegarde existe, celle-ci est chargée. La restauration explicite est disponible dans l'adaptateur et sera exposée dans l'interface de récupération dédiée.
+
+## Parcours livré
+
+- créer un objectif ou une action et rattacher l'action à l'objectif sélectionné ;
+- voir le Chemin et la prochaine action ;
+- planifier ou replanifier par date civile ;
+- accomplir ou rouvrir ;
+- consulter l'histoire durable ;
+- retrouver le même document après redémarrage.
 
 ## Vérification
 
-- `pnpm --dir windows_app typecheck`
-- `pnpm --dir windows_app test`
+- `flutter analyze`
+- `flutter test`
+- `pnpm --dir packages/path-core test`
+
+Le fixture `packages/path-core/fixtures/path-repository-v1.json` est chargé sans conversion par les suites TypeScript et Dart.

@@ -276,19 +276,6 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  windows_app:
-    dependencies:
-      '@dreamglows/path-core':
-        specifier: workspace:*
-        version: link:../packages/path-core
-    devDependencies:
-      '@types/node':
-        specifier: ^26.0.0
-        version: 26.1.2
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-
 packages:
 
   '@alloc/quick-lru@5.2.0':
