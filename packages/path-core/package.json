@@ -17,6 +17,7 @@
     "./primitives": "./src/primitives.ts",
     "./projections": "./src/projections.ts",
     "./repository": "./src/repository.ts",
+    "./portable": "./src/portable.ts",
     "./statistics": "./src/statistics.ts"
   },
   "scripts": {

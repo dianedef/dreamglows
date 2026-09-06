@@ -21,6 +21,11 @@ import type { JsonObject, ZonedInstant } from './domain/path/model';
 import { createPathCommandPort, type PathCommandPort } from './domain/path/command-port';
 import { createPathEntityEditor, type PathEntityEditor } from './application/path-entity-editor';
 import { v4 as uuidv4 } from 'uuid';
+import { PortableService } from './application/portable-service';
+import { RecoverableData } from './application/recoverable-data';
+import { AttachmentInventory } from './application/attachment-inventory';
+import { PortableVaultAdapter } from './services/PortableVaultAdapter';
+import { PortableModal } from './components/modals/PortableModal';
 import './styles/dreamglows-tokens.css';
 import './styles/goals/task-modal-content.css';
 import './styles/goals/goals-modal.css';
@@ -42,6 +47,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
     private initialSettings!: JsonObject;
     pathCommands!: PathCommandPort;
     entityEditor!: PathEntityEditor;
+    portable!: PortableService;
 
     // Vue
     private view: DreamGlowsView | null = null;
@@ -85,7 +91,17 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
     }
 
     private async initializePathPersistence() {
-        const repository = new PathRepository(new ObsidianPathRepositoryAdapter(this));
+        if (!this.manifest.dir) throw new Error('Dossier du plugin DreamGlows introuvable.');
+        const dataHost = new RecoverableData(this.app.vault.adapter, `${this.manifest.dir}/data.json`,
+            () => new Notice('DreamGlows : la dernière sauvegarde a été récupérée après une écriture interrompue.'));
+        const inventory = new AttachmentInventory(new RecoverableData(this.app.vault.adapter, `${this.manifest.dir}/portable-attachments.json`, () => {}));
+        const repository = new PathRepository(new ObsidianPathRepositoryAdapter({
+            loadData: () => dataHost.loadData(),
+            saveData: async document => {
+                await inventory.carry(await dataHost.loadData(), document);
+                await dataHost.saveData(document);
+            },
+        }));
         this.pathPersistence = new PathPersistenceCoordinator(repository);
         const loaded = await this.pathPersistence.load();
         this.initialSettings = loaded.document.settings;
@@ -102,6 +118,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
             createId: () => uuidv4()
         });
         this.entityEditor = createPathEntityEditor({ updateDocument: updater => this.pathPersistence.update(updater), afterPersist: document => this.syncCanonicalState(document), now: () => new Date().toISOString() as ZonedInstant, createId: () => uuidv4() });
+        this.portable = new PortableService(this.pathPersistence, new PortableVaultAdapter(this.app, inventory));
     }
 
     private async initializeSettings() {
@@ -189,6 +206,8 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
             });
 
         // Ajouter les commandes
+        this.addCommand({ id: 'export-portable', name: 'Exporter un paquet portable complet', callback: () => this.exportPortable() });
+        this.addCommand({ id: 'import-portable', name: 'Restaurer un paquet portable', callback: () => this.openPortableImport() });
         this.addCommand({
             id: 'open-dreamglows',
             name: 'Ouvrir DreamGlows',
@@ -245,6 +264,28 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
 
     private async syncCanonicalState(document: import('./domain/path/repository').PathRepositoryDocument) {
         this.pathStore.hydrate(document);
+    }
+
+    async exportPortable() {
+        try {
+            const folder = await this.portable.export();
+            new Notice(`Export DreamGlows terminé : ${folder}. Copiez tout ce dossier pour conserver votre sauvegarde.`, 15000);
+        } catch (error) {
+            new Notice(error instanceof Error ? error.message : 'Export DreamGlows impossible.', 12000);
+        }
+    }
+
+    openPortableImport() {
+        const modal = new PortableModal(this.app, this.portable, async document => {
+            this.settings = this.validateSettings(document.settings);
+            this.settingsStore.$patch({ settings: this.settings });
+            this.progressionStore.hydrate(this.settings.gameProgression);
+            this.pathStore.hydrate(document);
+            await this.initializeBaseServices();
+            await this.initializeDependentServices();
+        });
+        modal.open();
+        return modal;
     }
 
     async saveSettings() {

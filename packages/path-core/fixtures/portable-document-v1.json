@@ -1,0 +1,23 @@
+{
+  "repositoryVersion": 1,
+  "futureDocument": { "retain": true },
+  "envelope": {
+    "schemaVersion": 1,
+    "revision": 42,
+    "entities": [
+      { "id": "goal-main", "type": "goal", "title": "Rêve 🌟", "description": "Texte libre\nAvec Unicode et ---", "status": "in-progress", "createdAt": "2026-09-01T08:00:00+02:00", "updatedAt": "2026-09-06T10:00:00Z", "tags": ["été"], "extensions": { "why": "Un projet durable" }, "futureField": [1, null, false] },
+      { "id": "action-live", "type": "action", "title": "Écrire", "description": "", "status": "todo", "parentId": "goal-main", "createdAt": "2026-09-01T08:00:00+02:00", "updatedAt": "2026-09-06T10:00:00Z", "tags": [], "extensions": { "actualMinutes": 7 } },
+      { "id": "action-deleted", "type": "action", "title": "Ancienne tâche", "description": "Conservée", "status": "cancelled", "deletedAt": "2026-09-05T10:00:00Z", "createdAt": "2026-09-01T08:00:00+02:00", "updatedAt": "2026-09-05T10:00:00Z", "tags": [], "extensions": {} },
+      { "id": "focus-done", "type": "focus-session", "title": "Session terminée", "description": "", "status": "done", "parentId": "action-deleted", "occurredAt": "2026-09-02T08:00:00+02:00", "completedAt": "2026-09-02T08:25:00+02:00", "createdAt": "2026-09-02T08:00:00+02:00", "updatedAt": "2026-09-02T08:25:00+02:00", "tags": [], "extensions": { "mode": "creation", "durationMinutes": 25, "handoffNote": "Étape achevée", "future": [false, 3] } },
+      { "id": "focus-interrupted", "type": "focus-session", "title": "Session interrompue", "description": "", "status": "cancelled", "parentId": "missing-task", "occurredAt": "2026-09-03T08:00:00+02:00", "completedAt": "2026-09-03T08:12:00+02:00", "createdAt": "2026-09-03T08:00:00+02:00", "updatedAt": "2026-09-03T08:12:00+02:00", "tags": [], "extensions": { "mode": "administration", "handoffNote": "Où j’en étais", "nextAction": "Relire" } },
+      { "id": "focus-active", "type": "focus-session", "title": "Session en cours", "description": "", "status": "in-progress", "parentId": "action-live", "occurredAt": "2026-09-06T09:00:00Z", "createdAt": "2026-09-06T09:00:00Z", "updatedAt": "2026-09-06T09:00:00Z", "tags": [], "extensions": { "mode": "focus" } }
+    ],
+    "events": [
+      { "id": "event-start", "type": "focus-session-started", "entityId": "focus-done", "occurredAt": "2026-09-02T08:00:00+02:00", "recordedAt": "2026-09-02T08:00:00+02:00", "extensions": { "commandId": "original-start" }, "futureEventField": "kept" },
+      { "id": "event-end", "type": "focus-session-ended", "entityId": "focus-done", "occurredAt": "2026-09-02T08:25:00+02:00", "recordedAt": "2026-09-02T08:25:00+02:00", "extensions": { "commandId": "original-end" } }
+    ],
+    "extensions": { "futureEnvelope": { "keep": "all" } }
+  },
+  "settings": { "monthLanguage": "fr", "futureSetting": { "keep": [1, 2, 3] } },
+  "extensions": { "futureRepositoryField": 42 }
+}

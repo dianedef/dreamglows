@@ -24,6 +24,11 @@ export class DreamGlowsSettingsTab extends PluginSettingTab {
         
         containerEl.empty();
 
+        new Setting(containerEl).setName('Vos données portables')
+            .setDesc('Export complet avec historique, sessions Focus et pièces jointes. Le dossier contient vos données privées et vos paramètres : conservez-le dans un emplacement sûr.')
+            .addButton(button => button.setButtonText('Exporter').onClick(() => this.plugin.exportPortable()))
+            .addButton(button => button.setButtonText('Restaurer…').onClick(() => this.plugin.openPortableImport()));
+
         // Section NOTES
         containerEl.createEl('h3', { text: '📝 Notes' });
 

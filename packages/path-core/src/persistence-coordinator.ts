@@ -52,6 +52,15 @@ export class PathPersistenceCoordinator {
     }
 
     update(buildNext: PathDocumentUpdate): Promise<PathRepositoryDocument> {
+        return this.enqueue(buildNext, false);
+    }
+
+    /** Runs preparation and snapshot replacement under the ordinary writer queue. */
+    restore(buildNext: PathDocumentUpdate): Promise<PathRepositoryDocument> {
+        return this.enqueue(buildNext, true);
+    }
+
+    private enqueue(buildNext: PathDocumentUpdate, exact: boolean): Promise<PathRepositoryDocument> {
         const operation = this.updateTail.then(async () => {
             await this.load();
             if (!this.currentDocument) throw new Error('Chemin repository has not been loaded');
@@ -59,7 +68,9 @@ export class PathPersistenceCoordinator {
             const base = cloneDocument(this.currentDocument);
             const candidate = await buildNext(base);
             if (candidate === undefined) return cloneDocument(this.currentDocument);
-            const saved = await this.repository.save(candidate, this.currentDocument.envelope.revision);
+            const saved = exact
+                ? await this.repository.restore(candidate, this.currentDocument.envelope.revision)
+                : await this.repository.save(candidate, this.currentDocument.envelope.revision);
             this.currentDocument = cloneDocument(saved);
             return cloneDocument(saved);
         });

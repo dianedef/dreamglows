@@ -87,6 +87,14 @@ This is the canonical path-to-document routing map for DreamGlows. Match every t
 - Validation: website build, governance topology audit, changed-path design drift check, and metadata lint.
 - Status: complete pending the operator's human copy review, which is an editorial acceptance step rather than a documentation gap.
 
+## Portable data and recovery
+
+- Primary documentation: `shipglows_data/technical/portable-format.md`.
+- Domain: `packages/path-core/src/portable.ts`, `portable-focus.ts`, exact repository/coordinator restore.
+- Obsidian: `application/portable-service.ts`, `recoverable-data.ts`, `attachment-inventory.ts`, `markdown-references.ts`, `services/PortableVaultAdapter.ts`, `components/modals/PortableModal.ts` and commands/settings in `main.ts`.
+- Proof: core portable tests, plugin portable-service tests, shared Dart document fixture, `tests/portable-lab.mjs` and `shipglows_data/workflow/evidence/portable-round-trip/report.json`.
+- Update this documentation for schema, restoration, integrity, Focus migration, attachment collection, recovery or package UI changes.
+
 ## Maintenance Rule
 
 Update this map whenever a code area, primary documentation owner, validation command, or documentation trigger changes.

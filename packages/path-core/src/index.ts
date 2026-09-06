@@ -11,3 +11,4 @@ export * from './journey-view-model.ts';
 export * from './history-view-model.ts';
 export * from './dashboard-view-model.ts';
 export * from './statistics.ts';
+export * from './portable.ts';

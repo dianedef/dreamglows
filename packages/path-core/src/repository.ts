@@ -142,7 +142,7 @@ function validateEvent(value: unknown, path: string): asserts value is PathEvent
     if (!isObject(value.extensions)) throw new TypeError(`${path}.extensions must be an object`);
 }
 
-function decodeCanonical(input: unknown): PathRepositoryDocument | undefined {
+export function decodeCanonical(input: unknown): PathRepositoryDocument | undefined {
     if (!isObject(input) || input.repositoryVersion !== PATH_REPOSITORY_VERSION) return undefined;
     assertJsonValue(input);
     if (!isObject(input.envelope)) throw new TypeError('$.envelope must be an object');
@@ -199,12 +199,21 @@ export class PathRepository {
     }
 
     save(document: PathRepositoryDocument, expectedRevision: number): Promise<PathRepositoryDocument> {
+        return this.write(document, expectedRevision, false);
+    }
+
+    /** Exact snapshot replacement. Callers must validate and back up the destination first. */
+    restore(document: PathRepositoryDocument, expectedRevision: number): Promise<PathRepositoryDocument> {
+        return this.write(document, expectedRevision, true);
+    }
+
+    private write(document: PathRepositoryDocument, expectedRevision: number, exact: boolean): Promise<PathRepositoryDocument> {
         const operation = this.writeTail.then(async () => {
             if (this.revision === undefined) throw new PathRepositoryConflictError(expectedRevision, -1);
             if (expectedRevision !== this.revision) throw new PathRepositoryConflictError(expectedRevision, this.revision);
             const candidate = cloneJsonSafe(document as unknown as JsonObject) as unknown as PathRepositoryDocument;
             if (candidate.repositoryVersion !== PATH_REPOSITORY_VERSION || candidate.envelope.schemaVersion !== PATH_SCHEMA_VERSION) throw new TypeError('Cannot save an unsupported Chemin document version');
-            candidate.envelope.revision = this.revision + 1;
+            if (!exact) candidate.envelope.revision = this.revision + 1;
             const validated = decodeCanonical(candidate);
             if (!validated) throw new TypeError('Cannot save a malformed Chemin document');
             try {

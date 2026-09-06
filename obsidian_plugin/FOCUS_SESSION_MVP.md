@@ -143,3 +143,11 @@ diagnostic runtime.
 **Reste à livrer :** affichage d'un historique par tâche, présentation d'une
 session orpheline après suppression de sa tâche, agrégation éventuelle vers
 `actualMinutes`, export/import versionné et tests dédiés des transitions.
+
+### Actualisation du 6 septembre 2026 — portabilité
+
+Le cœur partagé représente désormais Focus comme des entités et événements canoniques. L’export/import versionné inclut toutes les sessions, les relations historiques vers les tâches supprimées ou absentes, les notes de reprise et les pièces jointes. Les anciennes sessions sont converties en conservant leurs payloads originaux.
+
+Les tests exercent démarrage, refus d’une seconde session active, interruption, répétition idempotente, persistance et reprise après réimport/redémarrage. Le banc Obsidian isolé exerce l’export natif, la prévisualisation, la restauration, le redémarrage complet et un réexport identique octet par octet. Voir `shipglows_data/technical/portable-format.md` et le reçu `shipglows_data/workflow/evidence/portable-round-trip/report.json`.
+
+L’affichage détaillé de l’historique par tâche et des sessions orphelines reste un chantier d’interface distinct. Aucune agrégation automatique vers `actualMinutes` n’a été ajoutée. Le chargement et les données du coffre personnel ne sont pas couverts par le banc synthétique.
