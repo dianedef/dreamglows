@@ -19,11 +19,12 @@ linked_systems: [packages/path-core, packages/path_core_dart, obsidian_plugin, w
 depends_on: []
 supersedes: []
 evidence:
+  - "2026-09-07 authenticated Convex dashboard: created dedicated dreamglows project, development good-frog-143 in Europe (Ireland); backend/ENVIRONMENT.md records public coordinates. No backend deployed."
   - "Operator confirmed on 2026-09-07: dedicated DreamGlows Convex stores product data; CommandGlows centralizes identity and entitlements, not product data."
   - "Operator approved sync plan and Convex, then confirmed shared identity and entitlements owned by CommandGlows."
   - "Read-only inspection of CommandGlows schema.ts, bridge.ts and api/bridge/entitlement.ts on 2026-09-06."
   - "Portable native round-trip receipt recorded in common-model-adoption.md."
-next_step: resolve-commandglows-server-integration-and-dreamglows-development-configuration
+next_step: implement-commandglows-access-contract-for-dedicated-dreamglows-convex
 ---
 
 # Synchronisation hors ligne et miroir Obsidian
