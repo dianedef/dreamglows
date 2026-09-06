@@ -10,6 +10,8 @@ DreamGlows dans Obsidian est conçu pour t’aider à atteindre tes rêves par u
 ## Ce que propose DreamGlows
 
 - **Pilotage par objectifs**
+  - Créer et modifier rêves, objectifs, jalons, actions, habitudes, preuves et réflexions depuis **Parcours → Nouvel élément** ou la commande **Nouvel élément du parcours**.
+  - Renseigner le pourquoi et la description, choisir un parent compatible et conserver les données non éditées ; l'archivage refuse un élément ayant encore des enfants.
   - Créer, suivre et prioriser des objectifs.
   - Structurer les objectifs par jalons (`milestones`) pour garder un cap clair.
   - Parcourir rêves, objectifs, jalons et actions dans l'arbre canonique **Parcours**, avec sélection et panneau de détail partagés.
@@ -60,7 +62,7 @@ Chaque release BRAT contient les assets suivants :
 
 ## État actuel
 
-Le plugin Obsidian est la première surface active du projet. Le socle Chemin et ses quatre projections y sont implémentés et vérifiés. Chrome persiste désormais dans le noyau TypeScript commun ; Windows utilise son équivalent Dart vérifié avec les mêmes cas de conformité. Android reste à intégrer. Les interfaces n'exposent pas encore toutes les commandes du modèle commun.
+Le plugin Obsidian est la première surface active du projet. Le socle Chemin et ses quatre projections y sont implémentés et vérifiés. Chrome persiste dans le noyau TypeScript commun ; Windows et Android utilisent son équivalent Dart et des écrans Flutter partagés. Les sept types ordinaires sont éditables ; les sessions Focus gardent leur cycle dédié. Ce partage du modèle n'assure pas encore la synchronisation entre appareils.
 
 ## Feuille de route de base
 

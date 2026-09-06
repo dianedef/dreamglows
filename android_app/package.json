@@ -1,9 +1,6 @@
 {
   "name": "dreamglows-android-app",
   "private": true,
-  "version": "0.0.0",
-  "description": "Android app surface for DreamGlows",
-  "scripts": {
-    "todo": "echo \"Scaffold Android app implementation here\""
-  }
+  "version": "0.1.0",
+  "description": "Flutter daily companion using the shared DreamGlows application package"
 }

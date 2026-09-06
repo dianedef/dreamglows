@@ -42,6 +42,41 @@ try {
   expect(document.envelope.entities.find(e => e.id === 'nested-proof').parentId).toBe('action-proof')
   expect(document.envelope.entities.find(e => e.id === 'dream:proof').extensions.chrome.original.future).toEqual({ keep: true })
   expect(document.envelope.events.some(e => e.type === 'entity-updated' && e.entityId === 'dream:proof')).toBe(true)
+  // Create each ordinary type through the actual capture form, then edit details and a compatible relation.
+  for (const type of ['dream', 'objective', 'milestone', 'task', 'habit', 'evidence', 'reflection']) {
+    await page.getByRole('button', { name: 'Ajouter', exact: true }).click()
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
+    await dialog.getByLabel('Type', { exact: true }).selectOption(type)
+    await dialog.getByLabel('Titre', { exact: true }).fill(`Capture ${type}`)
+    await dialog.getByLabel('Pourquoi', { exact: true }).fill(`Pourquoi ${type}`)
+    await dialog.getByLabel('Description', { exact: true }).fill(`Description ${type}`)
+    if (type === 'reflection') await dialog.screenshot({ path: join(profile, 'capture-details.png') })
+    await dialog.getByRole('button', { name: 'Enregistrer', exact: true }).click()
+    await expect(page.getByText('Enregistré sur cet appareil', { exact: true })).toBeVisible()
+    await expect.poll(async () => worker.evaluate(async title => (await chrome.storage.local.get('dreamglows-path-v1'))['dreamglows-path-v1'].envelope.entities.find(e => e.title === title)?.why, `Capture ${type}`)).toBe(`Pourquoi ${type}`)
+  }
+  const habitRow = page.locator('article').filter({ has: page.getByText('Capture habit', { exact: true }) })
+  const editDetailsButton = habitRow.getByRole('button', { name: 'Modifier les détails', exact: true })
+  await editDetailsButton.focus()
+  await editDetailsButton.press('Enter')
+  const details = page.getByRole('dialog')
+  await expect(details).toBeVisible()
+  await details.press('Escape')
+  await expect(details).not.toBeVisible()
+  await expect(editDetailsButton).toBeFocused()
+  await editDetailsButton.press('Enter')
+  await details.getByLabel('Pourquoi', { exact: true }).fill('Updated habit why')
+  await details.getByLabel('Description', { exact: true }).fill('Updated habit description')
+  await details.getByLabel('Rattacher à', { exact: true }).selectOption('goal-proof')
+  await details.getByRole('button', { name: 'Enregistrer', exact: true }).click()
+  await expect.poll(async () => worker.evaluate(async () => (await chrome.storage.local.get('dreamglows-path-v1'))['dreamglows-path-v1'].envelope.entities.find(e => e.title === 'Capture habit')?.parentId)).toBe('goal-proof')
+  await page.reload()
+  await expect(page.getByText('Capture reflection', { exact: true })).toBeVisible()
+  const captures = await worker.evaluate(async () => (await chrome.storage.local.get('dreamglows-path-v1'))['dreamglows-path-v1'].envelope.entities.filter(e => e.title.startsWith('Capture ')))
+  expect(captures).toHaveLength(7)
+  expect(captures.find(e => e.type === 'habit')).toMatchObject({ why: 'Updated habit why', description: 'Updated habit description', parentId: 'goal-proof' })
+  for (const item of captures.filter(e => e.type !== 'habit')) expect(item.description).toBe(`Description ${item.title.slice(8)}`)
   // A second mounted editor must display a failure instead of overwriting newer data.
   const second = await context.newPage()
   await second.goto(`chrome-extension://${id}/src/setup/index.html?type=update`)
@@ -67,9 +102,14 @@ try {
   expect(errors).toEqual([])
   const screenshot = join(profile, 'canonical-editor.png')
   await page.screenshot({ path: screenshot, fullPage: true })
-  const result = { passed: true, personalProfile: 'not-read', syntheticProfile: profile, screenshot, assertions: ['migration backup', 'rendered canonical hydration', 'UI title edit', 'awaited persistence', 'reload', 'nested action relation', 'unknown-field conservation', 'canonical journal', 'no page errors', 'stale window refused visibly', 'pending recovery download'] }
+  const result = { passed: true, personalProfile: 'not-read', syntheticProfile: profile, screenshot, assertions: ['migration backup', 'rendered canonical hydration', 'UI title edit', 'seven-type capture', 'why and description edit', 'details button keyboard activation', 'Escape restores focus', 'compatible parent selection', 'detail reload persistence', 'awaited persistence', 'reload', 'nested action relation', 'unknown-field conservation', 'canonical journal', 'no page errors', 'stale window refused visibly', 'pending recovery download'] }
   await writeFile(join(profile, 'result.json'), JSON.stringify(result, null, 2))
   console.log(JSON.stringify(result, null, 2))
+} catch (error) {
+  const active = context.pages().at(-1)
+  if (active) await active.screenshot({ path: join(profile, 'failure.png'), fullPage: true }).catch(() => {})
+  console.error(`Proof failed; evidence: ${profile}`)
+  throw error
 } finally {
   await context.close()
 }

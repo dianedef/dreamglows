@@ -72,9 +72,11 @@ TypeScript ; Windows consomme le paquet Dart pur, aligné par 19 cas communs.
 Les huit types, le pourquoi, les relations et l'historique sont conservés lors
 d'un aller-retour TypeScript → modification Dart → relecture TypeScript.
 Chrome sauvegarde sa source legacy avant migration et refuse une écriture devenue
-obsolète avec récupération des modifications en attente. Android reste un
-emplacement préparatoire ; l'exposition des commandes dans les interfaces reste
-partielle. Ces preuves locales ne constituent ni une synchronisation entre
+obsolète avec récupération des modifications en attente. La continuation approuvée
+ajoute un hôte Android et des formulaires Flutter partagés avec Windows, ainsi que
+l'édition des sept types ordinaires dans Obsidian et Chrome. Les reçus de cette
+intégration sont consignés dans la spec `common-model-adoption.md`.
+Ces preuves locales ne constituent ni une synchronisation entre
 appareils, ni une résolution des conflits, ni un miroir durable Obsidian.
 Le détail des preuves et limites est dans
 `shipglows_data/technical/common-model-adoption.md`.

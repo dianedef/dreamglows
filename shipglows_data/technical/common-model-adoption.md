@@ -20,7 +20,7 @@ evidence:
   - "Shared document fixtures and actual TypeScript to Dart to TypeScript modification and replay."
   - "Isolated Chromium and native Obsidian proof; managed Windows rendered inspection."
 next_review: "2026-10-06"
-next_step: verify-cross-surface-adoption
+next_step: prove-portable-edit-round-trip
 ---
 
 # Modèle commun et adoption
@@ -60,18 +60,22 @@ et les périodes originales restent récupérables.
 
 ## Surfaces
 
-Obsidian importe directement le cœur TypeScript. Ses formulaires existants ne
-constituent pas encore une interface complète pour tous les types. Windows importe
-le cœur Dart pur `packages/path_core_dart`, indépendant de Flutter et d'Android ;
-les anciens imports Windows restent disponibles par des exports de compatibilité.
+Obsidian importe directement le cœur TypeScript. Ses commandes de création et son
+éditeur commun exposent les sept types ordinaires, leur pourquoi et leurs relations.
+Les sessions Focus conservent leur cycle dédié. Windows et Android importent
+`packages/path_flutter`, qui partage les formulaires adaptatifs et l'adaptateur
+fichier autour du cœur Dart pur `packages/path_core_dart`. Les anciens imports
+Windows restent disponibles par des exports de compatibilité.
 
 Chrome projette le document canonique dans son arbre : `objective`/`task` restent
 des aliases UI de `goal`/`action`. Les données non représentées restent conservées.
 Le stockage legacy est sauvegardé avant le premier document canonique. Le service
 worker est l'unique écrivain ; une révision périmée est refusée.
 
-Android reste un dossier préparatoire. Le package Dart est réutilisable mais
-aucune intégration Android ni preuve sur appareil n'est acquise.
+Android possède un hôte Flutter natif et utilise le même document local que
+Windows, dans son propre espace applicatif. Les preuves de fonctionnement et
+leurs limites sont consignées dans la continuation de la spec. Aucun transfert
+automatique des données entre appareils n'est implicite dans ce partage de code.
 
 ## Preuves et limites
 

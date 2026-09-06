@@ -22,7 +22,7 @@ depends_on: []
 supersedes: []
 evidence:
   - "Approved correction plan, shared fixtures, cross-language runner and isolated native/browser proofs."
-next_step: continue-global-adoption-and-portability
+next_step: prove-portable-edit-round-trip
 ---
 
 # Common model adoption
@@ -91,8 +91,75 @@ pending scope. Do not mark global adoption complete while Android is unimplement
   independent ownership and local proof paths resolved; ready for implementation.
 
 ## Current Chantier Flow
-Approved implementation scope and local verification complete. Git delivery is
-recorded by the commit containing this receipt. Global adoption remains open.
+Both approved adoption batches are implemented and locally verified. Git delivery
+is recorded by the commit containing this receipt. Next: portable edit round-trip.
+
+## Approved continuation — shared Flutter and interface adoption
+
+2026-09-06: user approved shared Windows/Android Flutter foundation and interface
+completion after audit. Ready for implementation. Existing local-only operation
+continues without identity services or protected remote data; no auth bypass.
+
+Contract: create/edit the seven ordinary entity types, including title, description
+and why; choose compatible parents; complete/reopen, plan, delete with live-child
+guard, and use dedicated Focus start/end where appropriate. Hidden or unrepresented
+fields survive edits. Errors preserve pending input and never imply a successful
+save. Chrome remains a capture-oriented surface rather than a full planner.
+Android is a local daily companion using the same widgets/domain as Windows with
+single-column navigation on narrow screens. No remote sync, release, or cloud auth.
+
+Execution Batches (non-overlapping, parent integrates):
+- Flutter agent: packages/path_flutter/** and windows_app/**. Shared app export
+  `DreamGlowsApp`, local storage adapter, adaptive forms and command tests.
+- Chrome agent: chrome_extension/** only. All seven ordinary types and editable
+  meaning/description/compatible relations, canonical persistence, browser proof.
+- Obsidian agent: obsidian_plugin/src/** and obsidian_plugin/tests/** only. Generic
+  creation/editing, why, allowed relations, lifecycle commands and focused proof.
+- Parent: android_app/**, root workspace files, governance, native Android proof,
+  final builds and integration review. Android imports path_flutter; no UI fork.
+
+Proof: meaningful edit/restart persistence cases on each surface, unknown-field
+retention, failure feedback, narrow screen and keyboard access, Flutter analysis
+and tests, native Windows and managed Android emulator, browser and isolated vault.
+Use existing theme primitives; Flutter semantic layout values live in shared theme.
+Delivery: exact-scope commit and ordinary main push after proof; no public release.
+
+### Continuation verification receipt
+
+- 2026-09-06: approved continuation implemented and verified. Domain adoption is
+  complete for the four implemented local surfaces; public journey/release and
+  cross-device synchronization remain separate work.
+- Chrome: 47 tests, typecheck, Chrome/Firefox builds passed. Isolated built Chrome
+  proved seven-type capture, why/description/parent edit, reload, stale recovery,
+  Enter button activation and Escape focus restoration. Receipt:
+  `%TEMP%/dreamglows-canonical-proof-0xMmXP/result.json`; Firefox runtime untested.
+- Obsidian: 134 tests and final production bundle passed. Final native isolated
+  vault proved all seven creates, modification, guarded archive, exact document
+  after process restart and unknown-field retention. Receipt:
+  `%TEMP%/dreamglows-interface-adoption-final/report.json`. Existing unrelated global
+  TypeScript errors remain outside this change; no new application/modal diagnostics.
+- Shared Flutter: 9 behavior tests; Windows: 9 tests; Android: 1 narrow restoration
+  test. Analyses clean in all three Flutter packages. Domain relation conformance,
+  failure/retry, draft preservation, Focus and factual capabilities covered.
+- Native Windows and Android: keyboard/touch create, why modification, real file
+  save and exact document equality after managed process restart passed. Windows
+  dark wide layout and Android light narrow layout visually inspected. Only the
+  synthetic proof documents and their backups were removed after stopping apps.
+  Receipts: `%TEMP%/dreamglows-windows-proof/report.json` and
+  `%TEMP%/dreamglows-android-proof/report.json`.
+- Android first launch lost the emulator before installation, then a transient
+  DevServer registry lock rejected retry. Bounded retry succeeded; Android Gradle
+  heap/workers are capped to leave memory for the emulator. Active target is
+  `emulator-5554` (ShipGlows_API_36), logical `flutter run -d emulator-5554`.
+- Windows logical command: `flutter run -d windows`. Both are managed debug runs,
+  not public distribution. Authentication/service configuration: deliberately
+  local-only, no existing auth bypass and no protected-access claim.
+- Independent review corrected factual command visibility and Chrome Enter
+  bubbling. No new authored raw style values; generated Obsidian CSS changes
+  scoped hashes only. Shared Flutter dimensions live in its theme authority.
+- Documentation/editorial: updated surface READMEs, capability status, model
+  contract, design authority, code map and task tracker. Internal-only milestone.
+  Three bounded agents, prepared parallel implementation plus independent review.
 
 ## Verification Receipt
 

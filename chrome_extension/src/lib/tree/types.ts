@@ -1,4 +1,4 @@
-export type DreamNodeType = 'dream' | 'objective' | 'milestone' | 'task'
+export type DreamNodeType = 'dream' | 'objective' | 'milestone' | 'task' | 'habit' | 'evidence' | 'reflection'
 export type DreamNodeStatus = 'todo' | 'in-progress' | 'done' | 'cancelled'
 
 export interface TreeItem {
@@ -12,6 +12,8 @@ export interface TreeItem {
   type?: DreamNodeType
   status?: DreamNodeStatus
   progress?: number
+  description?: string
+  why?: string
   dueDate?: string
 }
 

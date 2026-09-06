@@ -15,6 +15,7 @@ const emit = defineEmits<{
   'add': [parentId: string]
 }>()
 
+const openNodeDetails = inject<(node: TreeItem) => void>('openNodeDetails', () => {})
 const store = useTreeStore()
 const isDragging = ref(false)
 const isDropTarget = ref(false)
@@ -102,7 +103,7 @@ const handleAddNode = () => handleAdd?.(props.item.id)
     tabindex="0"
     :aria-label="`${typeLabel} : ${item.text}`"
     @click="handleClick"
-    @keydown.enter.prevent="handleClick"
+    @keydown.enter.self.prevent="handleClick"
     @keydown.f2.stop.prevent="startNodeEdit?.(item)"
     @dragstart="handleDragStart"
     @dragend="handleDragEnd"
@@ -148,6 +149,7 @@ const handleAddNode = () => handleAdd?.(props.item.id)
     </div>
 
     <div class="node-actions" @click.stop>
+      <button type="button" aria-label="Modifier les détails" title="Modifier les détails" @click="openNodeDetails?.(item)">✎</button>
       <button type="button" title="Se concentrer sur cette branche" aria-label="Se concentrer sur cette branche" @click="handleZoom">
         ⌕
       </button>

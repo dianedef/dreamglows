@@ -21,6 +21,8 @@ Une installation vide crée un document canonique v1. Un document principal corr
 - voir le Chemin et la prochaine action ;
 - planifier ou replanifier par date civile ;
 - accomplir ou rouvrir ;
+- éditer titre, description et pourquoi, choisir explicitement un parent compatible ;
+- supprimer avec garde des enfants actifs, démarrer/terminer ou interrompre Focus ;
 - consulter l'histoire durable ;
 - retrouver le même document après redémarrage.
 
@@ -36,7 +38,9 @@ Le fixture `packages/path-core/fixtures/path-repository-v1.json` est chargé san
 
 Le cœur Dart expose les requêtes JSON canoniques via `execute`, avec validation,
 rejeu durable, suppression historique, rattachement et planification complète.
-L’interface actuelle n’expose pas encore toutes ces commandes ; son alignement
-produit reste une étape distincte. Le rendu natif et les sept types du sélecteur
-ont été vérifiés dans la session Windows gérée, sans écrire de données personnelles.
+L’interface vit désormais dans `packages/path_flutter`, partagée avec Android ;
+`lib/main.dart` est un point d’entrée mince. Elle expose les sept types ordinaires,
+les relations compatibles, l’édition du sens et les commandes du parcours local.
+Les thèmes clair/sombre suivent le système, et les erreurs gardent la saisie.
+Les preuves natives du présent lot sont consignées séparément dans la spécification.
 Voir `shipglows_data/technical/common-model-adoption.md`.

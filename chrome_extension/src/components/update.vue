@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import { useTreeStore } from '../stores/treeStore'
+import { canContain, getChildType, NODE_TYPE_LABELS } from '../lib/tree/semantics'
+import type { DreamNodeType } from '../lib/tree/types'
 import type { TreeView } from '../lib/tree/types'
 import { useHighlight } from '../composables/useHighlight'
 import VueTreeDnd from './vue-tree-dnd-main/VueTreeDnd.vue'
@@ -219,36 +221,87 @@ const handleDelete = (item: TreeItem) => {
   })
 }
 
-const handleAddNode = () => {
-  const newNode: TreeItem = {
-    id: crypto.randomUUID(),
-    text: 'Nouvel élément',
-    children: []
-  }
-  
-  // Si on a un nœud sélectionné, on ajoute comme enfant
-  const selectedNodes = Array.from(currentView.value?.selectedNodes || [])
-  if (selectedNodes.length === 1) {
-    const parentId = selectedNodes[0]
-    store.addNode(parentId, newNode)
-  } else {
-    // Sinon on ajoute à la racine
-    store.addNode(store.treeDataRef[0].id, newNode) // '1' est l'ID du nœud racine
-  }
-}
-
+const details = ref<{ id?: string; text: string; type: DreamNodeType; description: string; why: string; parentId: string } | null>(null)
+const detailsError = ref('')
+const detailsDialog = ref<HTMLDialogElement | null>(null)
+const closeDetails = () => { detailsDialog.value?.close(); details.value = null }
+watch(details, async value => { if (value) { detailsError.value = ''; await nextTick(); detailsDialog.value?.showModal() } })
+const allNodes = computed(() => {
+  const result: TreeItem[] = []
+  const visit = (nodes: TreeItem[]) => nodes.forEach(node => { result.push(node); visit(node.children) })
+  visit(store.treeDataRef[0]?.children || [])
+  return result
+})
+const compatibleParents = computed(() => {
+  if (!details.value) return []
+  const descendantIds = new Set<string>()
+  const current = allNodes.value.find(node => node.id === details.value?.id)
+  const visit = (node: TreeItem) => { descendantIds.add(node.id); node.children.forEach(visit) }
+  if (current) visit(current)
+  return allNodes.value.filter(node => !descendantIds.has(node.id) && canContain(node.type || 'dream', details.value!.type))
+})
+watch(() => details.value?.type, () => {
+  if (details.value?.parentId && !details.value.id && !compatibleParents.value.some(node => node.id === details.value?.parentId)) details.value.parentId = ''
+})
 const handleAdd = (parentId: string) => {
-  const newNode: TreeItem = {
-    id: crypto.randomUUID(),
-    text: 'Nouvel élément',
-    children: []
+  const parent = allNodes.value.find(node => node.id === parentId)
+  details.value = { text: '', type: parent ? getChildType(parent) : 'dream', description: '', why: '', parentId: parent?.id || '' }
+}
+const handleAddNode = () => handleAdd('')
+provide('openNodeDetails', (node: TreeItem) => {
+  const parent = allNodes.value.find(parent => parent.children.some(child => child.id === node.id))
+  details.value = { id: node.id, text: node.text, type: node.type || 'dream', description: node.description || '', why: node.why || '', parentId: parent?.id || '' }
+})
+const saveDetails = () => {
+  const draft = details.value
+  if (!draft?.text.trim()) return
+  const original = allNodes.value.find(node => node.id === draft.id)
+  const fields = { text: draft.text, type: draft.type, description: draft.description, ...(draft.why || original?.why !== undefined ? { why: draft.why } : {}) }
+  // Apply the edit and relation together, so a watcher never saves a half-reparented tree.
+  const clone = (node: TreeItem): TreeItem => { const { parent, ...fields } = node; return { ...fields, children: node.children.map(clone) } }
+  const tree = store.treeDataRef.map(clone)
+  let previousParent: TreeItem | undefined
+  let previousIndex = -1
+  const take = (nodes: TreeItem[]): TreeItem | undefined => {
+    const index = nodes.findIndex(node => node.id === draft.id)
+    if (index >= 0) { previousIndex = index; return nodes.splice(index, 1)[0] }
+    for (const node of nodes) { const found = take(node.children); if (found) { previousParent ||= node; return found } }
   }
-  store.addNode(parentId, newNode)
+  const node = draft.id ? take(tree[0].children) : { id: crypto.randomUUID(), children: [], text: '' }
+  if (!node) return
+  Object.assign(node, fields)
+  const find = (nodes: TreeItem[]): TreeItem | undefined => {
+    for (const node of nodes) { if (node.id === draft.parentId) return node; const found = find(node.children); if (found) return found }
+  }
+  const parent = draft.parentId ? find(tree) : tree[0]
+  if (!parent) return
+  if ((previousParent || tree[0]) === parent && previousIndex >= 0) parent.children.splice(previousIndex, 0, node)
+  else parent.children.push(node)
+  try {
+    store.initializeStore(tree)
+    closeDetails()
+  } catch (error) { detailsError.value = error instanceof Error ? error.message : 'Modification refusée ; votre saisie est conservée.' }
 }
 </script>
 
 <template>
   <div>
+    <dialog v-if="details" ref="detailsDialog" aria-labelledby="details-title" class="bg-base-100 text-base-content rounded-lg shadow-xl p-6 w-full max-w-lg" @cancel.prevent="closeDetails">
+      <form class="flex flex-col gap-3" @submit.prevent="saveDetails">
+        <h2 id="details-title" class="text-lg font-semibold">{{ details.id ? 'Modifier l’élément' : 'Capturer un élément' }}</h2>
+        <label class="flex flex-col gap-1">Type
+          <select aria-label="Type" v-model="details.type" class="select select-bordered" :disabled="!!details.id"><option v-for="(label, type) in NODE_TYPE_LABELS" :key="type" :value="type">{{ label }}</option></select>
+        </label>
+        <label class="flex flex-col gap-1">Titre<input v-model="details.text" class="input input-bordered" required autofocus></label>
+        <label class="flex flex-col gap-1">Pourquoi<textarea v-model="details.why" class="textarea textarea-bordered" rows="2" /></label>
+        <label class="flex flex-col gap-1">Description<textarea v-model="details.description" class="textarea textarea-bordered" rows="3" /></label>
+        <label class="flex flex-col gap-1">Rattacher à
+          <select aria-label="Rattacher à" v-model="details.parentId" class="select select-bordered"><option value="">Sans parent visible</option><option v-for="node in compatibleParents" :key="node.id" :value="node.id">{{ NODE_TYPE_LABELS[node.type || 'dream'] }} : {{ node.text }}</option></select>
+        </label>
+        <p v-if="detailsError" role="alert" class="text-error">{{ detailsError }}</p>
+        <div class="flex justify-end gap-2"><button type="button" class="btn btn-ghost" @click="closeDetails">Annuler</button><button type="submit" class="btn btn-primary" :disabled="!details.text.trim()">Enregistrer</button></div>
+      </form>
+    </dialog>
     <div
       class="flex flex-col gap-y-4"
       style="grid-area: title"

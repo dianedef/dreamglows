@@ -1,3 +1,4 @@
+import { EntityModal } from './components/modals/EntityModal';
 import { Plugin, WorkspaceLeaf, TFile, Notice, ItemView, App } from 'obsidian';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
@@ -209,6 +210,7 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
             });
 
         // Ajouter les commandes
+        this.addCommand({ id: 'new-path-entity', name: 'Nouvel élément du parcours', callback: () => new EntityModal(this.app, { pinia: this.pinia, pathCommands: this.pathCommands, entityEditor: this.entityEditor }).open() });
         this.addCommand({ id: 'export-portable', name: 'Exporter un paquet portable complet', callback: () => this.exportPortable() });
         this.addCommand({ id: 'import-portable', name: 'Restaurer un paquet portable', callback: () => this.openPortableImport() });
         this.addCommand({

@@ -1,0 +1,18 @@
+name: path_flutter
+description: Shared local DreamGlows interface for Windows and Android.
+version: 1.0.0
+publish_to: none
+environment:
+  sdk: ^3.13.1
+dependencies:
+  flutter:
+    sdk: flutter
+  path_core_dart:
+    path: ../path_core_dart
+  path_provider: ^2.1.5
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true

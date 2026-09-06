@@ -4,14 +4,14 @@ export const NODE_TYPE_LABELS: Record<DreamNodeType, string> = {
   dream: 'Rêve',
   objective: 'Objectif',
   milestone: 'Jalon',
-  task: 'Tâche'
+  task: 'Action', habit: 'Habitude', evidence: 'Preuve', reflection: 'Réflexion'
 }
 
 const NEXT_TYPE: Record<DreamNodeType, DreamNodeType> = {
   dream: 'objective',
   objective: 'milestone',
   milestone: 'task',
-  task: 'task'
+  task: 'task', habit: 'evidence', evidence: 'reflection', reflection: 'reflection'
 }
 
 export const inferNodeType = (depth: number): DreamNodeType => {
@@ -25,7 +25,7 @@ export const getChildType = (parent: TreeItem, parentDepth = 0): DreamNodeType =
   NEXT_TYPE[getNodeType(parent, parentDepth)]
 
 export const canContain = (parentType: DreamNodeType, childType: DreamNodeType): boolean =>
-  NEXT_TYPE[parentType] === childType
+  ({ dream: [], objective: ['dream', 'objective'], milestone: ['objective'], task: ['objective', 'milestone', 'task'], habit: ['objective'], evidence: ['dream', 'objective', 'milestone', 'task', 'habit'], reflection: ['dream', 'objective', 'milestone', 'task', 'habit'] } as Record<DreamNodeType, DreamNodeType[]>)[childType].includes(parentType)
 
 export const normalizeStatus = (node: TreeItem): DreamNodeStatus => {
   if (node.status) return node.status

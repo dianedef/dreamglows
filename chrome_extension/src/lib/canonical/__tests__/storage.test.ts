@@ -109,7 +109,7 @@ describe('shared command adoption', () => {
   })
   it('refuses deletion with hidden live children and incompatible type edits atomically', () => {
     const doc = migrateTree(legacy, now)
-    doc.envelope.entities.push({ ...doc.envelope.entities[0], id: 'hidden', type: 'evidence', parentId: 'action' })
+    doc.envelope.entities.push({ ...doc.envelope.entities[0], id: 'hidden', type: 'focus-session', parentId: 'action' })
     const tree = projectTree(doc); tree[0].children[0].children[0].children = []
     expect(() => applyTree(doc, tree, now, ids)).toThrow('has-children')
     expect(doc.envelope.entities.every(e => !e.deletedAt)).toBe(true)
@@ -122,5 +122,32 @@ describe('shared command adoption', () => {
     const tree = projectTree(doc); tree[0].children[0].children[0].children[0].dueDate = '2026-09-08'
     const result = applyTree(doc, tree, now, ids)
     expect(result.envelope.events[0]).toMatchObject({ type: 'planned-period-changed', previousPlanned: { end: '2026-09-07', future: 'keep' }, nextPlanned: { end: '2026-09-08', future: 'keep' } })
+  })
+})
+
+
+describe('seven type capture adoption', () => {
+  it.each(['dream', 'objective', 'milestone', 'task', 'habit', 'evidence', 'reflection'] as const)('creates and edits %s including why and description without losing extensions', type => {
+    const doc = migrateTree(null, now)
+    const tree = projectTree(doc)
+    tree[0].children.push({ id: 'capture', text: 'Capture', type, description: 'Original description', why: 'Original why', children: [] })
+    const created = applyTree(doc, tree, now, ids)
+    expect(created.envelope.entities[0]).toMatchObject({ description: 'Original description', why: 'Original why' })
+    created.envelope.entities[0].extensions.future = { keep: ['value'] }
+    const edited = projectTree(created)
+    edited[0].children[0].description = 'Updated description'
+    edited[0].children[0].why = 'Updated why'
+    const result = applyTree(created, edited, now, ids)
+    expect(result.envelope.entities[0]).toMatchObject({ description: 'Updated description', why: 'Updated why', extensions: { future: { keep: ['value'] } } })
+    expect(applyTree(result, projectTree(result), now, ids)).toEqual(result)
+  })
+  it('preserves evidence attached to an invisible Focus session during a detail edit', () => {
+    const doc = migrateTree(null, now)
+    const base = { title: 'Item', description: '', status: 'todo' as const, createdAt: now as any, updatedAt: now as any, tags: [], extensions: {} }
+    doc.envelope.entities.push({ ...base, id: 'focus', type: 'focus-session' }, { ...base, id: 'evidence', type: 'evidence', parentId: 'focus', why: 'Kept' })
+    const tree = projectTree(doc)
+    tree[0].children[0].description = 'New detail'
+    const result = applyTree(doc, tree, now, ids)
+    expect(result.envelope.entities[1]).toMatchObject({ parentId: 'focus', why: 'Kept', description: 'New detail' })
   })
 })

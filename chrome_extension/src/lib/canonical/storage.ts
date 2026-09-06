@@ -4,9 +4,9 @@ import type { TreeItem } from '../tree/types'
 export const CANONICAL_KEY = 'dreamglows-path-v1'
 export const BACKUP_KEY = 'dreamglows-tree-backup-v1'
 export const LEGACY_KEY = 'tree-store'
-const visibleTypes = new Set(['dream', 'goal', 'milestone', 'action'])
-const aliases: Record<string, PathEntityType> = { dream: 'dream', objective: 'goal', goal: 'goal', milestone: 'milestone', task: 'action', action: 'action' }
-const uiTypes = { dream: 'dream', goal: 'objective', milestone: 'milestone', action: 'task' } as const
+const visibleTypes = new Set(['dream', 'goal', 'milestone', 'action', 'habit', 'evidence', 'reflection'])
+const aliases: Record<string, PathEntityType> = { dream: 'dream', objective: 'goal', goal: 'goal', milestone: 'milestone', task: 'action', action: 'action', habit: 'habit', evidence: 'evidence', reflection: 'reflection' }
+const uiTypes = { dream: 'dream', goal: 'objective', milestone: 'milestone', action: 'task', habit: 'habit', evidence: 'evidence', reflection: 'reflection' } as const
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value))
 const object = (value: unknown): value is Record<string, any> => !!value && typeof value === 'object' && !Array.isArray(value)
 export function requireDocument(value: unknown): PathRepositoryDocument {
@@ -56,6 +56,8 @@ export function projectTree(document: PathRepositoryDocument): TreeItem[] {
   for (const entity of entities) {
     const chrome = entity.extensions.chrome as JsonObject | undefined
     const node: TreeItem = { id: entity.id, text: entity.title, type: uiTypes[entity.type as keyof typeof uiTypes], children: [], status: entity.status, isChecked: entity.status === 'done' }
+    node.description = entity.description
+    if (entity.why !== undefined) node.why = entity.why
     if (typeof chrome?.progress === 'number') node.progress = chrome.progress
     if (entity.status === 'done') node.progress = 100
     if (isCivilDate(entity.planned?.end)) node.dueDate = entity.planned.end
@@ -118,13 +120,15 @@ export function applyTree(document: PathRepositoryDocument, tree: TreeItem[], no
     if (!type || !visibleTypes.has(type)) throw new Error('Type de nœud invalide.')
     if (prior && node.type !== prior.node.type) throw new Error('Le changement de type exige une migration explicite.')
     if (!existing) {
-      accept(createEntity(next.envelope, { id, type: type as 'dream' | 'goal' | 'milestone' | 'action', title: node.text,
+      accept(createEntity(next.envelope, { id, type: type as Exclude<PathEntityType, 'focus-session'>, title: node.text, description: node.description || '', ...(node.why === undefined ? {} : { why: node.why }),
         ...(parentId === undefined ? {} : { parentId }), extensions: { chrome: { order } } }, dependencies()))
     } else if (parentId !== prior!.parentId) {
       accept(reparent(next.envelope, id, parentId, dependencies()))
     }
-    const patch: { title?: string; extensions?: JsonObject } = {}
+    const patch: { title?: string; description?: string; why?: string; extensions?: JsonObject } = {}
     if (prior && node.text !== prior.node.text) patch.title = node.text
+    if (prior && node.description !== prior.node.description) patch.description = node.description || ''
+    if (prior && node.why !== prior.node.why) patch.why = node.why || ''
     const chrome = { ...((current(id).extensions.chrome as JsonObject) || {}) }
     let chromeChanged = false
     if (prior && (prior.order !== order || prior.parentId !== parentId)) { chrome.order = order; chromeChanged = true }

@@ -1,0 +1,19 @@
+name: dreamglows_android
+description: Le compagnon quotidien local de DreamGlows.
+publish_to: none
+version: 0.1.0+1
+environment:
+  sdk: ^3.13.1
+dependencies:
+  flutter:
+    sdk: flutter
+  path_flutter:
+    path: ../packages/path_flutter
+  path_core_dart:
+    path: ../packages/path_core_dart
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true

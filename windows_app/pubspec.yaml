@@ -28,6 +28,8 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  path_flutter:
+    path: ../packages/path_flutter
   path_core_dart:
     path: ../packages/path_core_dart
   flutter:

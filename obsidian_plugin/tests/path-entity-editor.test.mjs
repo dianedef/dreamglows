@@ -5,3 +5,22 @@ test('create and multi-field edit each use one write',async()=>{const r=harness(
 test('middle rejection abandons candidate',async()=>{const r=harness(document([entity('action','action',{title:'Avant',planned:{start:'2026-09-02'}})])),before=r.snapshot();assert.deepEqual(await r.editor.saveAction(draft('action',{title:'Après',planned:undefined}),'bad'),{accepted:false,reason:'invalid-command'});assert.deepEqual(r.snapshot(),before);assert.deepEqual(r.counts(),{writes:0,after:0})});
 test('failure retry and replay preserve id',async()=>{const r=harness(document([])),x=draft('stable');r.fail(new Error('disk'));await assert.rejects(()=>r.editor.saveGoal(x,'cmd'),/disk/);assert.deepEqual(r.counts(),{writes:0,after:0});r.fail();assert.equal((await r.editor.saveGoal(x,'cmd')).entityId,'stable');assert.equal((await r.editor.saveGoal(x,'cmd')).replayed,true);assert.deepEqual(r.counts(),{writes:1,after:1});assert.deepEqual(await r.editor.saveGoal({...x,title:'Other'},'cmd'),{accepted:false,reason:'invalid-command'})});
 test('archive refuses living children then tombstones leaf',async()=>{const r=harness(document([entity('goal'),entity('action','action',{parentId:'goal'})]));assert.deepEqual(await r.editor.archive('goal','g'),{accepted:false,reason:'has-children'});assert.equal((await r.editor.archive('action','a')).accepted,true);assert.equal(r.snapshot().envelope.entities.find(x=>x.id==='action').deletedAt,NOW)});
+
+test('seven ordinary types retain why and unknown fields through edit and reload',async()=>{
+ const r=harness(document([]));
+ for(const type of ['dream','goal','milestone','action','habit','evidence','reflection']) {
+  const d=draft(type,{why:'Pourquoi '+type,extensions:{future:{kept:true}}});
+  assert.equal((await r.editor.saveEntity(type,d,'create-'+type)).accepted,true);
+  assert.equal((await r.editor.saveEntity(type,{...d,title:'Modifié '+type,why:'Sens '+type},'edit-'+type)).accepted,true);
+ }
+ const reloaded=harness(r.snapshot());
+ for(const e of reloaded.snapshot().envelope.entities){assert.equal(e.why,'Sens '+e.type);assert.equal(e.title,'Modifié '+e.type);assert.deepEqual(e.extensions,{future:{kept:true}})}
+});
+test('generic edit atomically refuses an incompatible parent and preserves unknown entity keys',async()=>{
+ const r=harness(document([entity('dream','dream'),entity('action','action',{future:{kept:true},why:'Avant'})]));
+ const before=r.snapshot();
+ assert.equal((await r.editor.saveEntity('action',draft('action',{why:'Après',parentId:'dream'}),'bad-parent')).accepted,false);
+ assert.deepEqual(r.snapshot(),before);
+ assert.equal((await r.editor.saveEntity('action',draft('action',{why:'Après'}),'good-edit')).accepted,true);
+ assert.deepEqual(r.snapshot().envelope.entities.find(e=>e.id==='action').future,{kept:true});
+});

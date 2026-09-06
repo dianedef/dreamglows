@@ -1,6 +1,6 @@
 <template>
   <div class="dreamglows-goals-view" data-dg-goals-canonical>
-    <header><div><h2>Objectifs</h2><p>Du rêve à l’action, dans une seule arborescence.</p></div><button type="button" @click="openNewGoalModal">+ Nouvel objectif</button></header>
+    <header><div><h2>Objectifs</h2><p>Du rêve à l’action, dans une seule arborescence.</p></div><button type="button" @click="openNewGoalModal">+ Nouvel élément</button></header>
     <section class="metrics" aria-label="Vue d’ensemble"><article v-for="metric in goalMetrics" :key="metric.label"><strong>{{ metric.value }}</strong><span>{{ metric.label }}</span></article></section>
     <p v-if="projection?.selectionVisibility === 'filtered'" role="status">La sélection reste ouverte mais est masquée par les filtres.</p>
     <div class="layout">
@@ -15,22 +15,17 @@ import { computed,onMounted,onUnmounted,ref } from 'vue';
 import PathJourneyTree from '@/components/PathJourneyTree.vue';
 import PathDetailPanel from '@/components/PathDetailPanel.vue';
 import { flattenJourney,type JourneyRow } from '@/domain/path/journey-view-model';
-import type { PathEntity } from '@/domain/path/model';
 import { usePathStore } from '@/stores/pathStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useDreamGlowsUiContext } from '@/application/ui-context';
-import { GoalModal } from '@/components/modals/GoalModal';
-import { TaskModal } from '@/components/modals/TaskModal';
-import type { Goal } from '@/types/goals'; import type { Task } from '@/types/tasks';
+import { EntityModal } from '@/components/modals/EntityModal';
 const props=defineProps<{contentFiles:any[];app:any}>(); const pathStore=usePathStore(); const settingsStore=useSettingsStore(); const uiContext=useDreamGlowsUiContext();
 const projection=computed(()=>pathStore.journeyProjection); const rows=computed(()=>projection.value?flattenJourney(projection.value):[]); const entities=computed(()=>projection.value?.entities??[]);
 const goals=computed(()=>entities.value.filter(e=>e.type==='goal'||e.type==='milestone')); const actions=computed(()=>entities.value.filter(e=>e.type==='action'));
-const selectedEntity=computed(()=>pathStore.document?.envelope.entities.find(e=>e.id===pathStore.selectedId&&!e.deletedAt)); const editable=computed(()=>selectedEntity.value?.type==='goal'||selectedEntity.value?.type==='action'); const canAddAction=computed(()=>selectedEntity.value?.type==='goal'||selectedEntity.value?.type==='milestone');
+const selectedEntity=computed(()=>pathStore.document?.envelope.entities.find(e=>e.id===pathStore.selectedId&&!e.deletedAt)); const editable=computed(()=>!!selectedEntity.value && selectedEntity.value.type!=='focus-session'); const canAddAction=computed(()=>['goal','milestone','action'].includes(selectedEntity.value?.type ?? ''));
 const goalMetrics=computed(()=>[{label:'Objectifs actifs',value:goals.value.filter(e=>e.status!=='done'&&e.status!=='cancelled').length},{label:'Objectifs terminés',value:goals.value.filter(e=>e.status==='done').length},{label:'Actions en cours',value:actions.value.filter(e=>e.status==='in-progress').length},{label:'À planifier',value:projection.value?.unscheduled.length??0}]);
 const selectRow=(row:JourneyRow)=>pathStore.select(row.id);
-const asGoal=(e:PathEntity)=>({id:e.id,title:e.title,description:e.description,status:e.status==='in-progress'?'in_progress':e.status,priority:e.priority,tags:[...e.tags],parentGoalId:e.parentId,startDate:e.planned?.start,dueDate:e.planned?.end,createdAt:e.createdAt,updatedAt:e.updatedAt} as Goal);
-const asTask=(e:PathEntity)=>({id:e.id,title:e.title,description:e.description,status:e.status,priority:e.priority,tags:[...e.tags],goalId:e.parentId,startDate:e.planned?.start,dueDate:e.planned?.end,createdAt:e.createdAt,updatedAt:e.updatedAt} as Task);
-const editSelected=()=>{const e=selectedEntity.value;if(e?.type==='goal')new GoalModal(props.app,uiContext,asGoal(e)).open();if(e?.type==='action')new TaskModal(props.app,uiContext,asTask(e)).open()}; const openNewGoalModal=()=>new GoalModal(props.app,uiContext).open(); const createTaskForGoal=()=>{if(canAddAction.value&&selectedEntity.value)new TaskModal(props.app,uiContext,undefined,selectedEntity.value.id).open()};
+const editSelected=()=>{if(selectedEntity.value)new EntityModal(props.app,uiContext,selectedEntity.value).open()}; const openNewGoalModal=()=>new EntityModal(props.app,uiContext).open(); const createTaskForGoal=()=>{if(canAddAction.value&&selectedEntity.value)new EntityModal(props.app,uiContext,undefined,'action',selectedEntity.value.id).open()};
 const mainWidth=ref(55),resizing=ref(false),startX=ref(0),startWidth=ref(0); const resizeBy=(d:number)=>{mainWidth.value=Math.max(35,Math.min(70,mainWidth.value+d));settingsStore.updateSettings({lastMainWidth:mainWidth.value})}; const startResize=(e:MouseEvent)=>{resizing.value=true;startX.value=e.clientX;startWidth.value=mainWidth.value;document.addEventListener('mousemove',move);document.addEventListener('mouseup',stop)}; const move=(e:MouseEvent)=>{if(!resizing.value)return;const w=document.querySelector('.layout')?.clientWidth||0;if(w)mainWidth.value=Math.max(35,Math.min(70,startWidth.value+(e.clientX-startX.value)/w*100))}; const stop=()=>{if(resizing.value)settingsStore.updateSettings({lastMainWidth:mainWidth.value});resizing.value=false;document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',stop)}; onMounted(()=>{mainWidth.value=settingsStore.settings.lastMainWidth||55});onUnmounted(stop);
 </script>
 <style scoped>

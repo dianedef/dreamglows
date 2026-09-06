@@ -17,6 +17,7 @@ shipglows_data/technical/*
 !shipglows_data/technical/code-docs-map.md
 !shipglows_data/technical/obsidian-path-system.md
 !shipglows_data/technical/common-model-adoption.md
+!shipglows_data/technical/design-system-authority.md
 !shipglows_data/editorial/
 shipglows_data/editorial/*
 !shipglows_data/editorial/README.md

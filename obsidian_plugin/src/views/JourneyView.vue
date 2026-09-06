@@ -1,6 +1,6 @@
 <template>
   <div class="dreamglows-journey-view" data-dg-journey-view>
-    <header class="journey-header"><div><h2>Parcours</h2><p>Du rêve à l'action, selon une seule hiérarchie.</p></div></header>
+    <header class="journey-header"><div><h2>Parcours</h2><p>Du rêve à l'action, selon une seule hiérarchie.</p></div><button type="button" @click="createEntity">+ Nouvel élément</button><button v-if="selectedEntity && selectedEntity.type !== 'focus-session'" type="button" @click="editEntity">Modifier la sélection</button></header>
     <section class="journey-metrics" aria-label="Vue d'ensemble"><article><strong>{{ goals.length }}</strong><span>objectifs et jalons</span></article><article><strong>{{ actions.length }}</strong><span>actions</span></article><article><strong>{{ done.length }}</strong><span>éléments accomplis</span></article><article><strong>{{ unscheduled.length }}</strong><span>à planifier</span></article></section>
     <p v-if="projection?.selectionVisibility === 'filtered'" role="status">La sélection reste ouverte mais est masquée par les filtres.</p>
     <div class="journey-layout">
@@ -12,12 +12,19 @@
 </template>
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { EntityModal } from '@/components/modals/EntityModal';
+import { useDreamGlowsUiContext } from '@/application/ui-context';
+import type { App } from 'obsidian';
 import PathJourneyTree from '@/components/PathJourneyTree.vue';
 import PathDetailPanel from '@/components/PathDetailPanel.vue';
 import { usePathStore } from '@/stores/pathStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { flattenJourney, type JourneyRow } from '@/domain/path/journey-view-model';
+const props=defineProps<{app:App}>(); const context=useDreamGlowsUiContext();
 const pathStore=usePathStore(); const settingsStore=useSettingsStore();
+const selectedEntity=computed(()=>pathStore.document?.envelope.entities.find(entity=>entity.id===pathStore.selectedId&&!entity.deletedAt));
+const createEntity=()=>new EntityModal(props.app,context).open();
+const editEntity=()=>{if(selectedEntity.value)new EntityModal(props.app,context,selectedEntity.value).open()};
 const projection=computed(()=>pathStore.journeyProjection); const rows=computed(()=>projection.value?flattenJourney(projection.value):[]);
 const entities=computed(()=>projection.value?.entities??[]); const goals=computed(()=>entities.value.filter(e=>e.type==='goal'||e.type==='milestone')); const actions=computed(()=>entities.value.filter(e=>e.type==='action')); const done=computed(()=>entities.value.filter(e=>e.status==='done')); const unscheduled=computed(()=>projection.value?.unscheduled??[]);
 const select=(row:JourneyRow)=>pathStore.select(row.id);
