@@ -1,10 +1,10 @@
 ---
 artifact: editorial_content_context
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: DreamGlows
 created: "2026-09-02"
-updated: "2026-09-02"
+updated: "2026-09-06"
 status: active
 source_skill: sg-docs
 scope: editorial-governance-index
@@ -46,9 +46,20 @@ This directory owns the routing and review rules for public DreamGlows content. 
 
 ## Claim boundary
 
-DreamGlows may describe its product method, current Obsidian availability, and declared future surfaces. It must not imply that Chrome, Windows, or Android are available while they remain in preparation, or claim measured product outcomes without supporting evidence. Strong aspirational encouragement such as “Tes rêves vont se réaliser” belongs to the brand voice and must not be presented as measured product proof. The copy must never frame the offering as limiting a user’s ambition; we should reinforce that no dream is too large for the method to support.
+DreamGlows may describe its product method, current Obsidian availability, and declared future surfaces. It must not imply that Chrome, Windows, or Android are available while they remain in preparation, or claim measured product outcomes without supporting evidence. Strong aspirational encouragement such as “Tes rêves vont se réaliser” belongs to the brand voice and must not be presented as measured product proof. The governing brand principle is: “On ne donne pas de limites aux rêves de nos clients.” Support each person's ambition and help them understand why and how to advance.
 
 The primary audience is the general public. Public language must remain understandable without professional productivity vocabulary, avoid assuming a specific job or expertise level, welcome personal as well as professional dreams without segmenting the homepage by persona, and encourage people with confidence rather than defensive qualification.
+
+## Confirmed wording and voice
+
+The operator confirmed the following wording in the copy discussion; this decision record preserves it while `website/src/data/copy.ts` remains the runtime source:
+
+- “Un rêve, ce n’est que le début”
+- “Avance vers ce qui compte.”
+- “DreamGlows transforme un rêve impalpable en un chemin clair, semé d’actions compréhensibles.”
+- “Tes rêves vont se réaliser.”
+
+Preserve these formulations; correct spelling and agreement without unsolicited rewrites. Keep the voice direct, contemporary, warm, and confidently encouraging. Start with what matters to the person and their why, then explain the path and understandable actions. Time estimates, lists, and productivity mechanics must not lead the promise. Do not introduce “rêve flou” or diagnose confusion on the person's behalf. Do not dilute encouragement with defensive qualifications or judge the size of a dream. Factual availability and measured-result statements still require evidence.
 
 ## Maintenance Rule
 

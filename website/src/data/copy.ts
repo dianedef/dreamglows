@@ -8,7 +8,7 @@
   hero: {
     eyebrow: 'Un rêve, ce n’est que le début',
     title: 'Avance vers ce qui compte.',
-    lead: 'DreamGlows transforme un rêve impalpable en un chemin clair, semé d’actions compréhensibles. Nous ne mettons pas de limites à tes rêves.'
+    lead: 'DreamGlows transforme un rêve impalpable en un chemin clair, semé d’actions compréhensibles. Nous ne mettons pas de limites à tes rêves.',
     primaryAction: { label: 'Découvrir le plugin Obsidian', href: 'https://github.com/dianedef/dreamglows' },
     secondaryAction: { label: 'Voir la méthode', href: '#methode' }
   },
@@ -26,9 +26,9 @@
   product: {
     eyebrow: 'Ton chemin, au même endroit',
     title: 'Comprends où tu vas. Vois comment avancer.',
-    body: 'DreamGlows rassemble tes rêves, tes objectifs, tes étapes, tes actions et tes habitudes dans un même chemin. Tu ne fais pas les choses pour les cocher : tu avances parce que tu sais ce qu’elles rendent possible, sans poser de limite à l’ampleur de ton ambition.'
+    body: 'DreamGlows rassemble tes rêves, tes objectifs, tes étapes, tes actions et tes habitudes dans un même chemin. Tu ne fais pas les choses pour les cocher : tu avances parce que tu sais ce qu’elles rendent possible, sans poser de limite à l’ampleur de ton ambition.',
     features: [
-      { title: 'Ton pourquoi reste visible', body: 'Chaque action garde le lien avec le rêve qui lui donne du sens.' }
+      { title: 'Ton pourquoi reste visible', body: 'Chaque action garde le lien avec le rêve qui lui donne du sens.' },
       { title: 'Tu sais comment avancer', body: 'Les grandes ambitions deviennent des étapes claires et des actions compréhensibles.' },
       { title: 'Chaque progrès nourrit le suivant', body: 'Tu vois le chemin parcouru et l’élan que tu es déjà en train de créer.' }
     ]
@@ -47,7 +47,7 @@
   closing: {
     eyebrow: 'Un progrès qui rayonne',
     title: 'Tes rêves vont se réaliser.',
-    body: 'Commence par ce qui compte. Trace ton chemin. On ne donne pas de limites à tes rêves, juste des passages.'
+    body: 'Commence par ce qui compte. Trace ton chemin. On ne donne pas de limites à tes rêves, juste des passages.',
     action: { label: 'Explorer DreamGlows sur GitHub', href: 'https://github.com/dianedef/dreamglows' }
   }
 } as const;

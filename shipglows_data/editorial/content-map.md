@@ -1,10 +1,10 @@
 ---
 artifact: content_map
 metadata_schema_version: "1.0"
-artifact_version: "1.0.0"
+artifact_version: "1.1.0"
 project: DreamGlows
 created: "2026-09-02"
-updated: "2026-09-02"
+updated: "2026-09-06"
 status: active
 source_skill: sg-docs
 scope: content-map
@@ -60,6 +60,7 @@ This map identifies the public content surfaces, their jobs, and the evidence th
 - Product identity, method, surface status, and next product step: `shipglows_data/business/dreamglows-product.md`.
 - Primary audience: general public, without profession, expertise, or productivity-identity prerequisites.
 - Brand encouragement: “Tes rêves vont se réaliser” is an aspirational conviction, not a measured product-performance claim.
+- Confirmed wording and voice: `README.md#confirmed-wording-and-voice`; preserve the operator's formulations, encourage without restraint, and impose no ceiling on clients' dreams. Lead with why and how; do not introduce “rêve flou”.
 - Installation and repository facts: verified root and package READMEs plus release configuration.
 - Visual expression: `shipglows_data/technical/design-system-authority.md`.
 - No pricing, security, privacy, AI reliability, speed, or measured outcome claim is currently authorized by this map.
