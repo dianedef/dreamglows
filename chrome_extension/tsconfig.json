@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "incremental": true,
-    "target": "ES6",
+    "target": "ES2022",
     "jsx": "preserve",
-    "lib": ["ES6", "DOM", "WebWorker"],
+    "lib": ["ES2022", "DOM", "WebWorker"],
     "useDefineForClassFields": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",

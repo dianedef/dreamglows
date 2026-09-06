@@ -169,7 +169,7 @@ export const useTreeStore = defineStore('tree', {
           id: crypto.randomUUID(),
           text: newNode.text || 'Nouveau nœud',
           children: [],
-          type: newNode.type || (parent.text === 'Root' ? 'dream' : getChildType(parent, parentDepth)),
+          type: newNode.type || (parent.id === this.treeDataRef[0]?.id ? 'dream' : getChildType(parent, parentDepth)),
           status: newNode.status || 'todo',
           ...newNode,
         }, parentDepth + 1)
@@ -179,6 +179,7 @@ export const useTreeStore = defineStore('tree', {
           return
         }
 
+        node.parent = parent
         parent.children.push(node)
         this.updateHierarchicalIds(this.treeDataRef, '')
         this.treeDataRef = [...this.treeDataRef]
@@ -277,7 +278,7 @@ export const useTreeStore = defineStore('tree', {
       }
 
       const futureParent = mutation.position.includes('CHILD') ? targetNode : targetNode.parent
-      if (futureParent && futureParent.text !== 'Root') {
+      if (futureParent && futureParent.id !== this.treeDataRef[0]?.id) {
         const parentDepth = Math.max(0, (futureParent.hierarchicalId?.split('.').length || 1) - 1)
         const childDepth = Math.max(0, (draggedNode.hierarchicalId?.split('.').length || 1) - 1)
         if (!canContain(getNodeType(futureParent, parentDepth), getNodeType(draggedNode, childDepth))) {
@@ -286,7 +287,8 @@ export const useTreeStore = defineStore('tree', {
         }
       }
 
-      const previousState = [...this.treeDataRef]
+      const clean = (nodes: TreeItem[]): TreeItem[] => nodes.map(({ parent, ...node }) => ({ ...node, children: clean(node.children) }))
+      const previousState = clean(this.treeDataRef)
 
       try {
         const nodeCopy = { ...draggedNode }
@@ -394,8 +396,7 @@ export const useTreeStore = defineStore('tree', {
             }
             const maxDepth = 10
             if (getDepth(draggedNode) + getDepth(targetNode) > maxDepth) {
-              console.warn('moveNode: Profondeur maximale dépassée')
-              return
+              throw new Error('moveNode: Profondeur maximale dépassée')
             }
             
             movedNode.parent = targetNode
@@ -412,8 +413,7 @@ export const useTreeStore = defineStore('tree', {
           }
           
           default:
-            console.warn(`moveNode: Position invalide ${mutation.position}`)
-            return
+            throw new Error(`moveNode: Position invalide ${mutation.position}`)
         }
 
         reconstructParents(this.$state.treeDataRef)
@@ -436,6 +436,7 @@ export const useTreeStore = defineStore('tree', {
         this.eventManager.onNodeMove(mutation)
       } catch (error) {
         console.error('moveNode: Erreur lors du déplacement', error)
+        this.reconstructParents(previousState)
         this.$state.treeDataRef = previousState
       }
     },
@@ -446,10 +447,11 @@ export const useTreeStore = defineStore('tree', {
       }
 
       const sanitizedData = initialData.map(node => this.sanitizeNode(node, node.text === 'Root' ? -1 : 0))
+      this.reconstructParents(sanitizedData)
+      this.updateHierarchicalIds(sanitizedData, '')
       
       if (!this.validateTreeStructure(sanitizedData)) {
-        console.error('initializeStore: Structure des données initiales invalide')
-        return
+        throw new Error('Structure des données invalide ; édition interrompue.')
       }
 
       const reconstructParents = (nodes: TreeItem[], parent: TreeItem | null = null): void => {
@@ -491,6 +493,7 @@ export const useTreeStore = defineStore('tree', {
         this.$state.treeDataRef.push(newNode)
       }
       
+      this.reconstructParents(this.$state.treeDataRef)
       this.updateHierarchicalIds(this.$state.treeDataRef)
     },
 
@@ -553,8 +556,9 @@ export const useTreeStore = defineStore('tree', {
     sanitizeNode(node: TreeItem, depth: number = 0): TreeItem {
       const status = normalizeStatus(node)
       const sanitized: TreeItem = {
+        ...node,
         id: node.id,
-        text: String(node.text || '').slice(0, 1000),
+        text: String(node.text ?? ''),
         children: Array.isArray(node.children) ? node.children.map(child => this.sanitizeNode(child, depth + 1)) : [],
         hierarchicalId: node.hierarchicalId,
         isChecked: Boolean(node.isChecked)
@@ -657,55 +661,6 @@ export const useTreeStore = defineStore('tree', {
       const maxDepth = getMaxDepth(this.treeDataRef)
       
       this.performance.trackTreeMetrics(nodeCount, maxDepth)
-    }
-  },
-
-  persist: {
-    key: 'tree-store',
-    storage: {
-      getItem: (_key: string): string | null => {
-        if ((window as any).__INITIAL_TREE_STORE_DATA__) {
-          return (window as any).__INITIAL_TREE_STORE_DATA__
-        }
-        return null
-      },
-      setItem: (key: string, value: string): void => {
-        chrome.storage.local.set({ [key]: value })
-      }
-    },
-    serializer: {
-      deserialize: (value: string) => {
-        const state = JSON.parse(value)
-        
-        if (state.treeViews) {
-          Object.entries(state.treeViews).forEach(([key, view]: [string, any]) => {
-            state.treeViews[key] = {
-              ...view,
-              expandedNodes: new Set(view.expandedNodes || []),
-              selectedNodes: new Set(view.selectedNodes || [])
-            }
-          })
-        }
-        
-        return state
-      },
-      serialize: (state: any) => {
-        const serializedState = {
-          ...state,
-          treeViews: Object.fromEntries(
-            Object.entries(state.treeViews).map(([key, view]: [string, any]) => {
-              const serializedView = {
-                ...view,
-                expandedNodes: Array.from(view.expandedNodes),
-                selectedNodes: Array.from(view.selectedNodes)
-              }
-              return [key, serializedView]
-            })
-          )
-        }
-        
-        return JSON.stringify(serializedState)
-      }
     }
   }
 })

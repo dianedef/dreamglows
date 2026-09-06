@@ -56,10 +56,11 @@ Chaque release BRAT contient les assets suivants :
 - Aucun service de notes ou de métriques ne peut écrire directement le document global du plugin.
 - Les anciennes formes Goal/Task sont décodées de façon permissive : les ambiguïtés sont diagnostiquées et les champs inconnus restent récupérables.
 - Les anciens fichiers Goal/Task sont migrés à la première ouverture, mais aucun store ou pont legacy ne reste actif ensuite.
+- Une ancienne période invalide issue d'une migration Goal/Task est conservée dans `extensions.legacy.invalidPlanned`, retirée de la planification active et signalée à l'ouverture. Les autres documents canoniques invalides sont refusés avant écriture.
 
 ## État actuel
 
-Le plugin Obsidian est la première surface active du projet. Le socle Chemin et ses quatre projections y sont implémentés et vérifiés. Les autres surfaces (`chrome_extension`, `android_app`, `windows_app`) sont alignées sur la même vision produit, mais ne consomment pas encore toutes ce modèle commun.
+Le plugin Obsidian est la première surface active du projet. Le socle Chemin et ses quatre projections y sont implémentés et vérifiés. Chrome persiste désormais dans le noyau TypeScript commun ; Windows utilise son équivalent Dart vérifié avec les mêmes cas de conformité. Android reste à intégrer. Les interfaces n'exposent pas encore toutes les commandes du modèle commun.
 
 ## Feuille de route de base
 

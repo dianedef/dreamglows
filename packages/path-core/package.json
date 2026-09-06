@@ -21,6 +21,7 @@
     "./statistics": "./src/statistics.ts"
   },
   "scripts": {
+    "test:dart-round-trip": "node tools/cross-language-round-trip.mjs",
     "test": "node --test \"tests/*.test.mjs\"",
     "typecheck": "tsc --noEmit"
   },

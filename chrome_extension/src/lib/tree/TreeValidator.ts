@@ -21,18 +21,6 @@ export class TreeValidator {
       return false
     }
 
-    if (!this.isTestMode) {
-      if (!/^[\w-]+$/.test(node.id)) {
-        console.warn('validateNodeStructure: Format d\'ID invalide')
-        return false
-      }
-
-      if (node.text.length > 1000) {
-        console.warn('validateNodeStructure: Texte trop long')
-        return false
-      }
-    }
-
     if (!Array.isArray(node.children)) {
       console.warn('validateNodeStructure: children doit être un tableau')
       return false
@@ -118,8 +106,6 @@ export class TreeValidator {
 
     return nodes.every((node, index) => 
       this.validateNodeStructure(node, null) &&
-      checkDepth(node) &&
-      checkChildrenCount(node) &&
       checkCircularRefs(node) &&
       checkHierarchicalIds(node, `${index + 1}`) &&
       checkParentChildRefs(node)

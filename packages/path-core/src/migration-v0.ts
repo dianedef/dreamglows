@@ -8,6 +8,7 @@ import type {
     ZonedInstant,
 } from './model.ts';
 import { PATH_SCHEMA_VERSION } from './model.ts';
+import { isCivilDate } from './primitives.ts';
 import type { LegacyV0Envelope, LegacyV0Record } from './legacy-v0.ts';
 
 export type MigrationV0DiagnosticCode =
@@ -15,6 +16,7 @@ export type MigrationV0DiagnosticCode =
     | 'duplicate-id'
     | 'unknown-status-preserved'
     | 'invalid-priority-preserved'
+    | 'invalid-period-preserved'
     | 'missing-created-at'
     | 'missing-updated-at'
     | 'ambiguous-inverse-relation'
@@ -197,7 +199,7 @@ function entity(
         message: 'Invalid priority was preserved without coercion',
     });
     const { createdAt, updatedAt } = timestamps(item, diagnostics);
-    const planned = item.record.dates.start || item.record.dates.end
+    let planned = item.record.dates.start || item.record.dates.end
         ? { ...(item.record.dates.start ? { start: item.record.dates.start } : {}), ...(item.record.dates.end ? { end: item.record.dates.end } : {}) }
         : undefined;
     const legacy = jsonObject({
@@ -207,6 +209,12 @@ function entity(
         relations: parent.legacy,
         ...(rawStatus && !status ? { unmappedStatus: rawStatus } : {}),
     });
+    if (planned?.start && planned.end && (isCivilDate(planned.start) !== isCivilDate(planned.end)
+        || (isCivilDate(planned.start) ? planned.start > planned.end : Date.parse(planned.start) > Date.parse(planned.end)))) {
+        legacy.invalidPlanned = planned;
+        planned = undefined;
+        diagnostics.push({ code: 'invalid-period-preserved', path: `${item.path}.planned`, message: 'Legacy invalid period retained in extensions.legacy.invalidPlanned; no valid schedule was guessed' });
+    }
 
     return {
         id: item.id,

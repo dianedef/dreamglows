@@ -14,8 +14,9 @@ Le même langage produit s’applique à toutes les surfaces du projet.
 - `obsidian_plugin/` : surface Obsidian (plugin opérationnel).
 - `chrome_extension/` : surface navigateur Chrome (alignement actif).
 - `windows_app/` : surface Windows (alignement actif).
-- `android_app/` : surface Android (alignement actif).
-- `packages/path-core/` : noyau TypeScript tech-agnostique du document Chemin canonique.
+- `android_app/` : application Android à implémenter ; cœur Dart réutilisable préparé.
+- `packages/path-core/` : noyau TypeScript indépendant des surfaces, utilisé par Obsidian et Chrome.
+- `packages/path_core_dart/` : document et commandes Dart partagés par Windows et la future application Android.
 
 ## Ce que propose DreamGlows, globalement
 

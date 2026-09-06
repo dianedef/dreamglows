@@ -35,6 +35,7 @@ This directory is the canonical technical documentation layer for the DreamGlows
 
 | Document | Use it when |
 | --- | --- |
+| `common-model-adoption.md` | Shared model, cross-language conformance and surface adoption |
 | `code-docs-map.md` | Any source, package, build, or shared-workspace path changes |
 | `design-system-authority.md` | A visual, layout, interaction, token, accessibility, or theme decision changes |
 | `obsidian-interface-design-reference.md` | The Obsidian plugin interface changes |

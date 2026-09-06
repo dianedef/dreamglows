@@ -88,7 +88,9 @@ function assertOptions(options: PathProjectionOptions): void {
 function parseCivilDate(value: string): Date {
     const match = civilPattern.exec(value);
     if (!match) throw new RangeError(`Invalid civil date: ${value}`);
-    const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+    const date = new Date(0);
+    date.setUTCFullYear(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    date.setUTCHours(0, 0, 0, 0);
     if (formatUtcDate(date) !== value) throw new RangeError(`Invalid civil date: ${value}`);
     return date;
 }

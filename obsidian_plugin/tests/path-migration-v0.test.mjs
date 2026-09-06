@@ -78,8 +78,15 @@ test('reviewed canonical summaries and diagnostic order match the golden fixture
   const expectedBytes = await readFile(expectedUrl);
   assert.equal(createHash('sha256').update(expectedBytes).digest('hex'), 'bce3568f841e324ee15b6d0c0f3ec7b968aeac9f43f8b3c551356ac975d26e1a');
   const expected = JSON.parse(expectedBytes.toString('utf8'));
+  // The historical golden remains immutable. Adoption quarantines this known
+  // inverted period while retaining its exact values for explicit replanning.
+  expected['view-dialect-conflicts.json'].planned[1] = [null, null];
+  expected['view-dialect-conflicts.json'].diagnostics.push('invalid-period-preserved');
   for (const name of Object.keys(expected)) {
     const result = migrate(await load(name));
+    if (name === 'view-dialect-conflicts.json') assert.deepEqual(result.value.entities[1].extensions.legacy.invalidPlanned, {
+      start: '2026-04-01T00:00:00.000Z', end: '2026-03-01T00:00:00.000Z',
+    });
     const actual = {
       schemaVersion: result.value.schemaVersion,
       revision: result.value.revision,

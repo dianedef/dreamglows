@@ -91,3 +91,12 @@ Run `pnpm --dir obsidian_plugin test`, then `pnpm --dir obsidian_plugin build`. 
 Update this document whenever the envelope, legacy decoder, repository transaction rules, command families, projections, selection behavior, compatibility bridge, or host-proof contract changes. Do not mark cross-platform adoption complete from Obsidian-only evidence.
 
 The canonical implementation now lives in `packages/path-core`. Files under `obsidian_plugin/src/domain/path` are compatibility entrypoints plus the Obsidian host adapter; they must not become a second implementation.
+
+## Adoption commune — 2026-09-06
+
+Le complément du contrat v1 est décrit dans `common-model-adoption.md` : sens du
+rêve dans `why`, créations génériques, sous-actions, conservation des champs
+inconnus et validation partagée TypeScript/Dart. Les anciennes périodes invalides
+issues de la migration sont conservées sous `extensions.legacy.invalidPlanned`
+et annoncées comme à replanifier. Les formulaires Obsidian existants restent un
+sous-ensemble du contrat ; la refonte du parcours est une étape séparée.

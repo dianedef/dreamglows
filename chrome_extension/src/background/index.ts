@@ -1,98 +1,23 @@
-chrome.runtime.onInstalled.addListener(async (opt) => {
-  if (opt.reason === 'install') {
-    await chrome.storage.local.clear()
-    
-    // Initialiser les données de l'arbre
-    const initialData = {
-      treeDataRef: [{
-        id: '1',
-        text: 'Root',
-        children: [
-          {
-            id: '1-1',
-            text: 'Frontend',
-            children: [
-              {
-                id: '1-1-1',
-                text: 'Vue',
-                children: [
-                  {
-                    id: '1-1-1-1',
-                    text: 'Components',
-                    children: []
-                  },
-                  {
-                    id: '1-1-1-2',
-                    text: 'Router',
-                    children: []
-                  }
-                ]
-              },
-              {
-                id: '1-1-2',
-                text: 'React',
-                children: [
-                  {
-                    id: '1-1-2-1',
-                    text: 'Hooks',
-                    children: []
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            id: '1-2',
-            text: 'Backend',
-            children: [
-              {
-                id: '1-2-1',
-                text: 'Node.js',
-                children: []
-              },
-              {
-                id: '1-2-2',
-                text: 'Python',
-                children: []
-              }
-            ]
-          }
-        ]
-      }],
-      treeViews: {
-        'update-view': {
-          id: 'update-view',
-          zoomedNodeId: null,
-          currentPath: [],
-          expandedNodes: ['1', '1-1', '1-1-1', '1-1-2', '1-2'],
-          selectedNodes: []
-        }
-      }
-    }
-    
-    console.log('🌱 [Install] Initialisation des données:', initialData)
-    await chrome.storage.local.set({ 'tree-store': JSON.stringify(initialData) })
+import { CanonicalStorage } from '../lib/canonical/storage'
 
-    chrome.tabs.create({
-      active: true,
-      url: chrome.runtime.getURL('src/setup/index.html?type=install'),
-    })
-  }
-
-  if (opt.reason === 'update') {
-    chrome.tabs.create({
-      active: true,
-      url: chrome.runtime.getURL('src/setup/index.html?type=update'),
-    })
-  }
+const repository = new CanonicalStorage({
+  get: keys => chrome.storage.local.get(keys),
+  set: values => chrome.storage.local.set(values)
 })
 
-console.log('hello world from background')
+// One writer for all extension windows. Keep the message channel alive until disk acknowledgement.
+chrome.runtime.onMessage.addListener((message, sender, respond) => {
+  if (sender.id !== chrome.runtime.id || message?.namespace !== 'dreamglows-path-v1') return false
+  const request = message.action === 'load' ? repository.load()
+    : message.action === 'commit' ? repository.commit(message.expectedRevision, message.tree, message.views)
+    : Promise.reject(new Error('Requête DreamGlows inconnue.'))
+  request.then(document => respond({ ok: true, document }), error => respond({ ok: false, error: error instanceof Error ? error.message : String(error) }))
+  return true
+})
 
-self.onerror = function (message, source, lineno, colno, error) {
-  console.info(
-    `Error: ${message}\nSource: ${source}\nLine: ${lineno}\nColumn: ${colno}\nError object: ${error}`
-  )
-}
-
-export {}
+chrome.runtime.onInstalled.addListener(async (event) => {
+  // Never clear storage, including when reinstalled over retained data.
+  if (event.reason === 'install' || event.reason === 'update') {
+    await chrome.tabs.create({ active: true, url: chrome.runtime.getURL('src/setup/index.html?type=update') })
+  }
+})

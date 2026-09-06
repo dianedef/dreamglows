@@ -1,0 +1,1251 @@
+{
+  "cases": [
+    {
+      "name": "canonical-with-meaning-and-unknown-fields",
+      "valid": true,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "historical-missing-parent",
+      "valid": true,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "missing",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "historical-tombstone",
+      "valid": true,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {},
+              "deletedAt": "2026-09-06T12:00:00Z"
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "invalid-type",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "objective",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "invalid-status",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "finished",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "invalid-priority",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi",
+              "priority": "urgent"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "missing-description",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "non-string-tag",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [
+                42
+              ],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "non-string-why",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": 42
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "duplicate-entity-id",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            },
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "empty-identity",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": " ",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "unsafe-revision",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 9007199254740992,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "invalid-civil-date",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi",
+              "planned": {
+                "start": "2026-02-30"
+              }
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "invalid-zoned-date",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-02-30T12:00:00Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "missing-zone",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-06T12:00:00",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "inverted-period",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi",
+              "planned": {
+                "start": "2026-09-07",
+                "end": "2026-09-06"
+              }
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "mixed-date-kinds",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi",
+              "planned": {
+                "start": "2026-09-06",
+                "end": "2026-09-07T12:00:00Z"
+              }
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    },
+    {
+      "name": "unsafe-json-key",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 1,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42,
+          "__proto__": {
+            "x": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "unsupported-version",
+      "valid": false,
+      "document": {
+        "repositoryVersion": 2,
+        "envelope": {
+          "schemaVersion": 1,
+          "revision": 2,
+          "entities": [
+            {
+              "id": "goal-shared",
+              "type": "goal",
+              "title": "Cap partagÃ©",
+              "description": "",
+              "status": "in-progress",
+              "createdAt": "2026-09-03T08:00:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {
+                "futureEntityField": "preserved"
+              },
+              "why": "Ce rêve compte pour moi"
+            },
+            {
+              "id": "action-shared",
+              "type": "action",
+              "title": "Prochaine Ã©tape",
+              "description": "",
+              "status": "todo",
+              "parentId": "goal-shared",
+              "planned": {
+                "start": "2026-09-04"
+              },
+              "createdAt": "2026-09-03T08:30:00.000Z",
+              "updatedAt": "2026-09-03T09:00:00.000Z",
+              "tags": [],
+              "extensions": {}
+            }
+          ],
+          "events": [
+            {
+              "id": "event-shared",
+              "type": "planned-period-changed",
+              "entityId": "action-shared",
+              "occurredAt": "2026-09-03T09:00:00.000Z",
+              "recordedAt": "2026-09-03T09:00:00.000Z",
+              "nextPlanned": {
+                "start": "2026-09-04"
+              },
+              "extensions": {
+                "commandId": "fixture-plan"
+              }
+            }
+          ],
+          "extensions": {
+            "futureEnvelopeField": true
+          }
+        },
+        "settings": {},
+        "extensions": {
+          "futureRepositoryField": 42
+        }
+      }
+    }
+  ]
+}

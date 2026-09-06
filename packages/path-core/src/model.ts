@@ -27,6 +27,8 @@ export interface PathEntity {
     type: PathEntityType;
     title: string;
     description: string;
+    /** The meaning of a dream; absent in documents created before adoption. */
+    why?: string;
     status: PathStatus;
     priority?: PathPriority;
     parentId?: string;

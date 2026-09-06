@@ -105,6 +105,9 @@ export default class DreamGlows extends Plugin implements IDreamGlows {
         this.pathPersistence = new PathPersistenceCoordinator(repository);
         const loaded = await this.pathPersistence.load();
         this.initialSettings = loaded.document.settings;
+        if (loaded.diagnostics.some(item => item.code === 'invalid-period-preserved')) {
+            new Notice('DreamGlows : des anciennes périodes invalides ont été conservées dans les données historiques. Les éléments concernés sont à replanifier.');
+        }
 
         // A successful legacy read is checkpointed once as a canonical document.
         // Corrupt or unreadable input throws before this point and is never replaced.

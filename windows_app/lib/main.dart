@@ -56,6 +56,9 @@ class _PathHomeState extends State<PathHome> {
       if (mounted) {
         setState(() {
           repository = repo;
+          if (repo.recoveredLegacyPlanning) {
+            message = 'Une ancienne planification invalide a été conservée dans les données historiques. Elle sera enregistrée avec votre prochaine modification.';
+          }
           busy = false;
         });
       }
@@ -149,8 +152,22 @@ class _PathHomeState extends State<PathHome> {
                     initialValue: type,
                     decoration: const InputDecoration(labelText: 'Type'),
                     items: const [
+                      DropdownMenuItem(value: 'dream', child: Text('Rêve')),
                       DropdownMenuItem(value: 'goal', child: Text('Objectif')),
+                      DropdownMenuItem(
+                        value: 'milestone',
+                        child: Text('Jalon'),
+                      ),
                       DropdownMenuItem(value: 'action', child: Text('Action')),
+                      DropdownMenuItem(value: 'habit', child: Text('Habitude')),
+                      DropdownMenuItem(
+                        value: 'evidence',
+                        child: Text('Preuve'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'reflection',
+                        child: Text('Réflexion'),
+                      ),
                     ],
                     onChanged: (value) => setState(() => type = value!),
                   ),
@@ -237,7 +254,29 @@ class _PathHomeState extends State<PathHome> {
   }
 
   Future<void> create() => run((repo) async {
-    final parent = type == 'action' && selected?['type'] == 'goal'
+    const allowedParents = {
+      'goal': {'dream', 'goal'},
+      'milestone': {'goal'},
+      'action': {'goal', 'milestone', 'action'},
+      'habit': {'goal'},
+      'evidence': {
+        'dream',
+        'goal',
+        'milestone',
+        'action',
+        'habit',
+        'focus-session',
+      },
+      'reflection': {
+        'dream',
+        'goal',
+        'milestone',
+        'action',
+        'habit',
+        'focus-session',
+      },
+    };
+    final parent = allowedParents[type]?.contains(selected?['type']) == true
         ? selectedId
         : null;
     final entity = await repo.createEntity(

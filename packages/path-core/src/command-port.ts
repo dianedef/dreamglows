@@ -53,12 +53,14 @@ export interface PathCommandPort {
 }
 
 function matchingReplay(event: PathEvent, command: PathUiCommand): boolean {
+    // New events retain the exact request, including omitted versus supplied fields.
+    if (event.extensions.commandRequest !== undefined) return stableJson(event.extensions.commandRequest) === stableJson(command);
     const entityId = command.type === 'create-entity' || command.type === 'start-focus-session' ? command.input.id : command.entityId;
     if (event.entityId !== entityId) return false;
-    if (command.type === 'create-entity' || command.type === 'start-focus-session') return event.type === (command.type === 'create-entity' ? 'entity-created' : 'focus-session-started') && JSON.stringify(event.extensions.intent) === JSON.stringify(command.input);
-    if (command.type === 'update-entity') return event.type === 'entity-updated' && JSON.stringify(event.extensions.intent) === JSON.stringify(command.patch);
+    if (command.type === 'create-entity' || command.type === 'start-focus-session') return event.type === (command.type === 'create-entity' ? 'entity-created' : 'focus-session-started') && stableJson(event.extensions.intent) === stableJson(command.input);
+    if (command.type === 'update-entity') return event.type === 'entity-updated' && stableJson(event.extensions.intent) === stableJson(command.patch);
     if (command.type === 'delete-entity') return event.type === 'entity-deleted';
-    if (command.type === 'end-focus-session') return event.type === 'focus-session-ended' && JSON.stringify(event.extensions.intent) === JSON.stringify(command.input);
+    if (command.type === 'end-focus-session') return event.type === 'focus-session-ended' && stableJson(event.extensions.intent) === stableJson(command.input);
     if (command.type === 'complete') return event.type === 'entity-completed';
     if (command.type === 'reopen') return event.type === 'entity-reopened';
     if (command.type === 'reparent') {
@@ -70,6 +72,12 @@ function matchingReplay(event: PathEvent, command: PathUiCommand): boolean {
         && event.extensions.command === command.type
         && (requested.start === undefined || event.nextPlanned?.start === requested.start)
         && (requested.end === undefined || event.nextPlanned?.end === requested.end);
+}
+
+function stableJson(value: unknown): string | undefined {
+    if (Array.isArray(value)) return JSON.stringify(value.map(item => JSON.parse(stableJson(item) ?? 'null')));
+    if (value !== null && typeof value === 'object') return JSON.stringify(Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([key, item]) => [key, JSON.parse(stableJson(item) ?? 'null')])));
+    return JSON.stringify(value);
 }
 
 function applyCommand(
@@ -121,6 +129,8 @@ export function createPathCommandPort(dependencies: PathCommandPortDependencies)
                     outcome = { accepted: false, reason: result.reason };
                     return undefined;
                 }
+
+                result.event.extensions = { ...result.event.extensions, commandRequest: JSON.parse(JSON.stringify(command)) };
 
                 persisted = true;
                 outcome = {

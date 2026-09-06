@@ -141,3 +141,13 @@ describe('tree Store', () => {
     })
   })
 })
+
+it('hydrates canonical ids and long titles without dropping unknown fields outside test mode', () => {
+  setActivePinia(createPinia())
+  const store = useTreeStore()
+  const input = [{ id: 'synthetic', text: 'Root', children: [{ id: 'dream:unicode.1', text: 'x'.repeat(1200), type: 'dream' as const, future: { keep: true }, children: [] }] }]
+  store.initializeStore(input)
+  expect(store.treeDataRef[0].children[0].text).toHaveLength(1200)
+  expect((store.treeDataRef[0].children[0] as any).future).toEqual({ keep: true })
+  expect(store.treeDataRef[0].children[0].parent).toBe(store.treeDataRef[0])
+})

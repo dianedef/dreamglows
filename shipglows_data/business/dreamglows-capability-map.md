@@ -4,7 +4,7 @@ metadata_schema_version: "1.0"
 artifact_version: "1.0.0"
 project: DreamGlows
 created: "2026-09-02"
-updated: "2026-09-02"
+updated: "2026-09-06"
 status: active
 source_skill: sg-planning
 scope: cross-platform-capabilities
@@ -27,7 +27,7 @@ linked_artifacts:
 depends_on: []
 supersedes: []
 next_review: "2026-10-02"
-next_step: "Définir le premier parcours Windows construit sur la fondation commune."
+next_step: "Terminer l'adoption du modèle commun, puis compléter les preuves de portabilité."
 ---
 
 # Carte des capacités DreamGlows
@@ -67,6 +67,18 @@ La gamification existante (XP, or, séries) est une couche d’engagement option
 
 ## Contrat de données ouvertes
 
+État vérifié au 6 septembre 2026 : Obsidian et Chrome consomment le noyau
+TypeScript ; Windows consomme le paquet Dart pur, aligné par 19 cas communs.
+Les huit types, le pourquoi, les relations et l'historique sont conservés lors
+d'un aller-retour TypeScript → modification Dart → relecture TypeScript.
+Chrome sauvegarde sa source legacy avant migration et refuse une écriture devenue
+obsolète avec récupération des modifications en attente. Android reste un
+emplacement préparatoire ; l'exposition des commandes dans les interfaces reste
+partielle. Ces preuves locales ne constituent ni une synchronisation entre
+appareils, ni une résolution des conflits, ni un miroir durable Obsidian.
+Le détail des preuves et limites est dans
+`shipglows_data/technical/common-model-adoption.md`.
+
 Le modèle partagé doit représenter au minimum : rêve, pourquoi, objectif, jalon, action, habitude, note ou preuve de progrès, bilan et relation entre ces objets.
 
 Chaque objet possède un identifiant stable, une version de schéma, ses dates de création et de modification, sa source, son état et, pour la synchronisation, une révision ainsi qu’une trace de suppression. Les relations utilisent les identifiants et non les chemins de fichiers.
@@ -104,6 +116,12 @@ Commencer directement par le bidirectionnel augmenterait fortement le risque de 
 
 ## Ordre de livraison
 
+Ordre global confirmé le 6 septembre 2026 : modèle commun adopté par chaque
+surface ; export → modification → réimport sans perte ; synchronisation hors
+ligne et miroir durable Obsidian ; parcours rêve → chemin → prochaine action
+aligné ; Windows grand public puis Chrome capture et Android quotidien ; enfin
+édition bidirectionnelle Obsidian et résolution visible des conflits.
+
 ### P1 — Fondation de confiance
 
 - figer le modèle de domaine ouvert et ses règles de migration ;
@@ -125,11 +143,11 @@ Commencer directement par le bidirectionnel augmenterait fortement le risque de 
 - adapter ensuite Chrome à la capture contextuelle ;
 - livrer ensuite Android comme compagnon quotidien ;
 - harmoniser onboarding, langage, progression, encouragement et accessibilité ;
-- ajouter la résolution visible des conflits.
 
 ### P3 — Maturité
 
 - édition bidirectionnelle Obsidian ;
+- résolution visible des conflits ;
 - parité fonctionnelle choisie entre Windows et Android ;
 - personnalisation avancée, automatisations et couches d’engagement validées par l’usage.
 

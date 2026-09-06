@@ -12,6 +12,9 @@ importers:
 
   chrome_extension:
     dependencies:
+      '@dreamglows/path-core':
+        specifier: workspace:*
+        version: link:../packages/path-core
       dockview-core:
         specifier: ^2.1.4
         version: 2.1.4

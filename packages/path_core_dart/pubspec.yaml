@@ -1,0 +1,8 @@
+name: path_core_dart
+description: Pure Dart canonical DreamGlows document and commands shared by Windows and future Android.
+version: 1.0.0
+publish_to: none
+environment:
+  sdk: ^3.13.1
+dev_dependencies:
+  test: ^1.26.0

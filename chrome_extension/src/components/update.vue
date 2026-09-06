@@ -107,18 +107,19 @@ const displayedData = computed({
   get: () => {
     const data = store.getViewData(VIEW_ID)
     // Si on a des données et que le premier nœud est Root, on affiche ses enfants
-    if (data.length > 0 && data[0].text === 'Root') {
+    if (data.length > 0 && data[0].id === store.treeDataRef[0]?.id) {
       return data[0].children || []
     }
     return data
   },
   set: (value) => {
-    // Quand on met à jour les données, on les remet sous le nœud Root
-    store.initializeStore([{
-      id: '1',
-      text: 'Root',
-      children: value
-    }])
+    const zoomedId = currentView.value?.zoomedNodeId
+    if (zoomedId) {
+      const edited = value.find(node => node.id === zoomedId)
+      if (edited) store.updateNode(zoomedId, edited)
+    } else {
+      store.initializeStore([{ id: store.treeDataRef[0].id, text: 'Root', children: value }])
+    }
   }
 })
 
@@ -140,47 +141,6 @@ onMounted(() => {
       }
 
       view = store.createTreeView(VIEW_ID)
-      
-      if (!store.treeDataRef || store.treeDataRef.length === 0) {
-        const initialData: TreeItem[] = [{
-          id: '1',
-          text: 'Root',
-          children: [
-            {
-              id: '1-1',
-              text: 'Créer une activité qui me ressemble',
-              type: 'dream',
-              status: 'in-progress',
-              progress: 35,
-              children: [
-                {
-                  id: '1-1-1',
-                  text: 'Atteindre 5 000 € par mois',
-                  type: 'objective',
-                  status: 'in-progress',
-                  progress: 35,
-                  children: [{
-                    id: '1-1-1-1',
-                    text: 'Valider l’offre',
-                    type: 'milestone',
-                    status: 'in-progress',
-                    progress: 50,
-                    children: [{
-                      id: '1-1-1-1-1',
-                      text: 'Interroger 10 prospects',
-                      type: 'task',
-                      status: 'todo',
-                      progress: 0,
-                      children: []
-                    }]
-                  }]
-                }
-              ]
-            }
-          ]
-        }]
-        store.initializeStore(initialData)
-      }
       
       const initialNodes = ['1', '1-1', '1-1-1', '1-1-1-1']
       initialNodes.forEach(id => {
@@ -244,11 +204,11 @@ const handleMove = (moveData: MoveMutation) => {
 }
 
 const handleDuplicate = (item: TreeItem) => {
-  const timestamp = Date.now()
-  const duplicatedNode = {
-    ...item,
-    id: `${item.id}-copy-${timestamp}`
+  const clone = (node: TreeItem): TreeItem => {
+    const { parent, ...fields } = node
+    return { ...fields, id: crypto.randomUUID(), children: node.children.map(clone) }
   }
+  const duplicatedNode = clone(item)
   store.duplicateNode(item.id, duplicatedNode)
 }
 
@@ -273,7 +233,7 @@ const handleAddNode = () => {
     store.addNode(parentId, newNode)
   } else {
     // Sinon on ajoute à la racine
-    store.addNode('1', newNode) // '1' est l'ID du nœud racine
+    store.addNode(store.treeDataRef[0].id, newNode) // '1' est l'ID du nœud racine
   }
 }
 

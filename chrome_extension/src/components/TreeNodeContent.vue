@@ -20,6 +20,7 @@ const isDragging = ref(false)
 const isDropTarget = ref(false)
 const isSelected = ref(false)
 const destroy$ = new Subject<void>()
+const startNodeEdit = inject<(node: TreeItem) => void>('startNodeEdit')
 const editingNodeId = inject<Ref<string | null>>('editingNodeId')!
 const editingNodeText = inject<Ref<string>>('editingNodeText')!
 const handleNodeTextSubmit = inject<() => void>('handleNodeTextSubmit')!
@@ -102,6 +103,7 @@ const handleAddNode = () => handleAdd?.(props.item.id)
     :aria-label="`${typeLabel} : ${item.text}`"
     @click="handleClick"
     @keydown.enter.prevent="handleClick"
+    @keydown.f2.stop.prevent="startNodeEdit?.(item)"
     @dragstart="handleDragStart"
     @dragend="handleDragEnd"
     @dragover.prevent="handleDragOver"
@@ -132,7 +134,7 @@ const handleAddNode = () => handleAdd?.(props.item.id)
         @click.stop
       >
       <template v-else>
-        <span class="node-text">{{ item.text || `Nouvelle ${typeLabel.toLowerCase()}` }}</span>
+        <span class="node-text" title="Modifier : double-clic ou F2" @dblclick.stop="startNodeEdit?.(item)">{{ item.text || `Nouvelle ${typeLabel.toLowerCase()}` }}</span>
         <span class="node-meta">
           <span class="type-label">{{ typeLabel }}</span>
           <span v-if="item.dueDate" class="due-date">{{ formattedDueDate }}</span>

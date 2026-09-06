@@ -520,6 +520,7 @@ const handleNodeTextSubmit = () => {
   editingNodeText.value = ''
 }
 
+provide('startNodeEdit', (node: TreeItem) => { editingNodeId.value = node.id; editingNodeText.value = node.text })
 provide('editingNodeId', editingNodeId)
 provide('editingNodeText', editingNodeText)
 provide('handleNodeTextSubmit', handleNodeTextSubmit)

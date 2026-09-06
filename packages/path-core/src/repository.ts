@@ -1,4 +1,5 @@
 import { decodeLegacyV0, type LegacyDiagnostic } from './legacy-v0.ts';
+import { isCivilDate, isZonedInstant } from './primitives.ts';
 import { migrateLegacyV0, type MigrationV0Diagnostic } from './migration-v0.ts';
 import {
     PATH_SCHEMA_VERSION,
@@ -103,6 +104,13 @@ function validatePeriod(value: unknown, path: string): void {
     if (!isObject(value)) throw new TypeError(`${path} must be an object`);
     if (value.start !== undefined) requireString(value.start, `${path}.start`);
     if (value.end !== undefined) requireString(value.end, `${path}.end`);
+    for (const field of ['start', 'end']) if (value[field] !== undefined && !isCivilDate(value[field]) && !isZonedInstant(value[field])) throw new TypeError(`${path}.${field} is not a valid date`);
+    if (value.start !== undefined && value.end !== undefined) {
+        if (isCivilDate(value.start) !== isCivilDate(value.end)) throw new TypeError(`${path} mixes date kinds`);
+        const start = isCivilDate(value.start) ? value.start : Date.parse(value.start as string);
+        const end = isCivilDate(value.end) ? value.end : Date.parse(value.end as string);
+        if (start > end) throw new TypeError(`${path} is inverted`);
+    }
 }
 
 function validateEntity(value: unknown, path: string): asserts value is PathEntity {
@@ -112,12 +120,13 @@ function validateEntity(value: unknown, path: string): asserts value is PathEnti
     if (!entityTypes.has(value.type)) throw new TypeError(`${path}.type is unsupported`);
     requireString(value.title, `${path}.title`);
     requireString(value.description, `${path}.description`);
+    if (value.why !== undefined) requireString(value.why, `${path}.why`);
     requireString(value.status, `${path}.status`);
     if (!statuses.has(value.status)) throw new TypeError(`${path}.status is unsupported`);
     if (value.priority !== undefined && (typeof value.priority !== 'string' || !priorities.has(value.priority))) throw new TypeError(`${path}.priority is unsupported`);
     if (value.parentId !== undefined) requireString(value.parentId, `${path}.parentId`);
     if (value.planned !== undefined) validatePeriod(value.planned, `${path}.planned`);
-    for (const key of ['completedAt', 'deletedAt', 'occurredAt', 'createdAt', 'updatedAt'] as const) if (value[key] !== undefined) requireString(value[key], `${path}.${key}`);
+    for (const key of ['completedAt', 'deletedAt', 'occurredAt', 'createdAt', 'updatedAt'] as const) if (value[key] !== undefined && !isZonedInstant(value[key])) throw new TypeError(`${path}.${key} is not a valid instant`);
     requireString(value.createdAt, `${path}.createdAt`);
     requireString(value.updatedAt, `${path}.updatedAt`);
     requireStringArray(value.tags, `${path}.tags`);
@@ -132,6 +141,7 @@ function validateEvent(value: unknown, path: string): asserts value is PathEvent
     requireString(value.entityId, `${path}.entityId`);
     requireString(value.occurredAt, `${path}.occurredAt`);
     requireString(value.recordedAt, `${path}.recordedAt`);
+    if (!isZonedInstant(value.occurredAt) || !isZonedInstant(value.recordedAt)) throw new TypeError(`${path} has an invalid instant`);
     if (value.previousPlanned !== undefined) validatePeriod(value.previousPlanned, `${path}.previousPlanned`);
     if (value.nextPlanned !== undefined) validatePeriod(value.nextPlanned, `${path}.nextPlanned`);
     if (value.relatedEntityId !== undefined) requireString(value.relatedEntityId, `${path}.relatedEntityId`);
@@ -153,13 +163,38 @@ export function decodeCanonical(input: unknown): PathRepositoryDocument | undefi
     envelope.entities.forEach((entity, index) => validateEntity(entity, `$.envelope.entities[${index}]`));
     if (!Array.isArray(envelope.events)) throw new TypeError('$.envelope.events must be an array');
     envelope.events.forEach((event, index) => validateEvent(event, `$.envelope.events[${index}]`));
+    const identities = new Set<string>();
+    for (const record of [...envelope.entities, ...envelope.events] as Array<{ id: string }>) {
+        if (!record.id.trim() || identities.has(record.id)) throw new TypeError('Canonical identities must be non-empty and unique');
+        identities.add(record.id);
+    }
     if (!isObject(envelope.extensions) || !isObject(input.settings) || !isObject(input.extensions)) throw new TypeError('Canonical extensions and settings must be objects');
     return cloneJsonSafe(input as unknown as JsonObject) as unknown as PathRepositoryDocument;
 }
 
 function decode(input: unknown): PathRepositoryLoadResult {
+    // Repair only a known old migration output, retaining every original period.
+    // Arbitrary malformed canonical input remains a hard error.
+    const recoveryDiagnostics: MigrationV0Diagnostic[] = [];
+    if (isObject(input) && input.repositoryVersion === PATH_REPOSITORY_VERSION
+        && isObject(input.envelope) && input.envelope.schemaVersion === PATH_SCHEMA_VERSION
+        && Array.isArray(input.envelope.entities)) {
+        input = cloneJsonSafe(input as JsonObject);
+        for (const [index, entity] of ((input as any).envelope.entities as unknown[]).entries()) {
+            if (!isObject(entity) || entity.planned === undefined || !isObject(entity.extensions)) continue;
+            const legacy = entity.extensions.legacy;
+            if (!isObject(legacy) || !['goal', 'task'].includes(legacy.kind as string) || !isObject(legacy.fields)) continue;
+            try { validatePeriod(entity.planned, '$.planned'); }
+            catch {
+                if (legacy.invalidPlanned !== undefined && JSON.stringify(legacy.invalidPlanned) !== JSON.stringify(entity.planned)) throw new TypeError('Legacy period recovery conflicts with preserved data');
+                legacy.invalidPlanned = entity.planned;
+                delete entity.planned;
+                recoveryDiagnostics.push({ code: 'invalid-period-preserved', path: `$.envelope.entities[${index}].planned`, message: 'Old migrated period retained in extensions.legacy.invalidPlanned; replan explicitly' });
+            }
+        }
+    }
     const canonical = decodeCanonical(input);
-    if (canonical) return { document: canonical, migrated: false, diagnostics: [] };
+    if (canonical) return { document: canonical, migrated: recoveryDiagnostics.length > 0, diagnostics: recoveryDiagnostics };
     if (isObject(input) && ('repositoryVersion' in input || 'schemaVersion' in input)) {
         throw new TypeError('Unsupported or malformed Chemin repository document');
     }

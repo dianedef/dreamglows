@@ -40,20 +40,22 @@ export interface RecordedEntityInput {
     extensions?: JsonObject;
 }
 
-export interface CreateEntityInput { id: string; type: 'goal' | 'action'; title: string; description?: string; priority?: 'low' | 'medium' | 'high'; tags?: string[]; parentId?: string; planned?: PlannedPeriod; extensions?: JsonObject }
-export interface UpdateEntityInput { title?: string; description?: string; priority?: 'low' | 'medium' | 'high'; tags?: string[]; extensions?: JsonObject }
+export interface CreateEntityInput { id: string; type: Exclude<PathEntityType, 'focus-session'>; title: string; description?: string; why?: string; priority?: 'low' | 'medium' | 'high'; tags?: string[]; parentId?: string; planned?: PlannedPeriod; extensions?: JsonObject }
+export interface UpdateEntityInput { title?: string; description?: string; why?: string; priority?: 'low' | 'medium' | 'high'; tags?: string[]; extensions?: JsonObject }
 export interface StartFocusInput { id: string; actionId: string; mode: 'focus' | 'creation' | 'administration' }
 export interface EndFocusInput { outcome: 'completed' | 'interrupted'; handoffNote?: string; nextAction?: string }
 
 const schedulable = new Set<PathEntityType>(['dream', 'goal', 'milestone', 'action', 'habit', 'focus-session']);
 const completable = new Set<PathEntityType>(['dream', 'goal', 'milestone', 'action', 'habit', 'focus-session']);
-const childTypes = new Set<PathEntityType>(['goal', 'milestone', 'action', 'habit']);
+const childTypes = new Set<PathEntityType>(['dream', 'goal', 'milestone', 'action', 'habit', 'evidence', 'reflection']);
 
 const allowedParents: Partial<Record<PathEntityType, ReadonlySet<PathEntityType>>> = {
     goal: new Set(['dream', 'goal']),
     milestone: new Set(['goal']),
-    action: new Set(['goal', 'milestone']),
+    action: new Set(['goal', 'milestone', 'action']),
     habit: new Set(['goal']),
+    evidence: new Set(['dream', 'goal', 'milestone', 'action', 'habit', 'focus-session']),
+    reflection: new Set(['dream', 'goal', 'milestone', 'action', 'habit', 'focus-session']),
 };
 
 function reject(envelope: PathEnvelope, reason: PathCommandRejection): PathCommandResult {
@@ -138,7 +140,7 @@ function changePlanned(
 ): PathCommandResult {
     const duplicate = preflight(envelope, dependencies);
     if (duplicate) return duplicate;
-    const entity = envelope.entities.find(item => item.id === entityId);
+    const entity = envelope.entities.find(item => item.id === entityId && !item.deletedAt);
     if (!entity) return reject(envelope, 'entity-not-found');
     if (!schedulable.has(entity.type)) return reject(envelope, 'incompatible-type');
     if (nextPlanned.start === undefined) return reject(envelope, 'invalid-command');
@@ -152,11 +154,13 @@ function changePlanned(
     if (samePeriod(entity.planned, resolvedPlanned)) return reject(envelope, 'no-op');
     const now = instant(dependencies);
     if (!now) return reject(envelope, 'invalid-date');
-    const updated = { ...entity, planned: { ...resolvedPlanned }, updatedAt: now };
+    const { start: _start, end: _end, ...periodExtensions } = entity.planned ?? {};
+    const persistedPlanned = { ...periodExtensions, ...resolvedPlanned };
+    const updated = { ...entity, planned: persistedPlanned, updatedAt: now };
     const event: PathEvent = {
         id: dependencies.createId(), type: 'planned-period-changed', entityId, occurredAt: now, recordedAt: now,
         ...(entity.planned ? { previousPlanned: { ...entity.planned } } : {}),
-        nextPlanned: { ...resolvedPlanned }, extensions: eventExtensions(dependencies, { command: mode }),
+        nextPlanned: { ...persistedPlanned }, extensions: eventExtensions(dependencies, { command: mode }),
     };
     return accepted(envelope, updated, event);
 }
@@ -172,7 +176,7 @@ export function reschedule(envelope: PathEnvelope, entityId: string, planned: Pl
 export function resize(envelope: PathEnvelope, entityId: string, patch: PlannedPeriod, dependencies: PathCommandDependencies): PathCommandResult {
     const duplicate = preflight(envelope, dependencies);
     if (duplicate) return duplicate;
-    const entity = envelope.entities.find(item => item.id === entityId);
+    const entity = envelope.entities.find(item => item.id === entityId && !item.deletedAt);
     if (!entity) return reject(envelope, 'entity-not-found');
     if (!schedulable.has(entity.type)) return reject(envelope, 'incompatible-type');
     if (!entity.planned) return reject(envelope, 'no-op');
@@ -194,7 +198,7 @@ export function resize(envelope: PathEnvelope, entityId: string, patch: PlannedP
 export function complete(envelope: PathEnvelope, entityId: string, dependencies: PathCommandDependencies): PathCommandResult {
     const duplicate = preflight(envelope, dependencies);
     if (duplicate) return duplicate;
-    const entity = envelope.entities.find(item => item.id === entityId);
+    const entity = envelope.entities.find(item => item.id === entityId && !item.deletedAt);
     if (!entity) return reject(envelope, 'entity-not-found');
     if (!completable.has(entity.type)) return reject(envelope, 'incompatible-type');
     if (entity.status === 'done') return reject(envelope, 'no-op');
@@ -209,10 +213,11 @@ export function complete(envelope: PathEnvelope, entityId: string, dependencies:
 export function reopen(envelope: PathEnvelope, entityId: string, dependencies: PathCommandDependencies): PathCommandResult {
     const duplicate = preflight(envelope, dependencies);
     if (duplicate) return duplicate;
-    const entity = envelope.entities.find(item => item.id === entityId);
+    const entity = envelope.entities.find(item => item.id === entityId && !item.deletedAt);
     if (!entity) return reject(envelope, 'entity-not-found');
     if (!completable.has(entity.type)) return reject(envelope, 'incompatible-type');
     if (entity.status !== 'done') return reject(envelope, 'no-op');
+    if (entity.type === 'focus-session' && envelope.entities.some(item => item.id !== entityId && item.type === 'focus-session' && item.status === 'in-progress' && !item.deletedAt)) return reject(envelope, 'active-session-exists');
     const now = instant(dependencies);
     if (!now) return reject(envelope, 'invalid-date');
     const { completedAt: _completedAt, ...rest } = entity;
@@ -224,12 +229,12 @@ export function reopen(envelope: PathEnvelope, entityId: string, dependencies: P
 export function reparent(envelope: PathEnvelope, entityId: string, nextParentId: string | undefined, dependencies: PathCommandDependencies): PathCommandResult {
     const duplicate = preflight(envelope, dependencies);
     if (duplicate) return duplicate;
-    const entity = envelope.entities.find(item => item.id === entityId);
+    const entity = envelope.entities.find(item => item.id === entityId && !item.deletedAt);
     if (!entity) return reject(envelope, 'entity-not-found');
     if (!childTypes.has(entity.type)) return reject(envelope, 'incompatible-type');
     if (entity.parentId === nextParentId) return reject(envelope, 'no-op');
     if (nextParentId !== undefined) {
-        const parent = envelope.entities.find(item => item.id === nextParentId);
+        const parent = envelope.entities.find(item => item.id === nextParentId && !item.deletedAt);
         if (!parent) return reject(envelope, 'parent-not-found');
         if (!allowedParents[entity.type]?.has(parent.type)) return reject(envelope, 'incompatible-type');
         let cursor: PathEntity | undefined = parent;
@@ -263,7 +268,7 @@ function record(
 ): PathCommandResult {
     const duplicate = preflight(envelope, dependencies);
     if (duplicate) return duplicate;
-    const target = envelope.entities.find(item => item.id === targetId);
+    const target = envelope.entities.find(item => item.id === targetId && !item.deletedAt);
     if (!target) return reject(envelope, 'entity-not-found');
     if (target.type === 'evidence' || target.type === 'reflection') return reject(envelope, 'incompatible-type');
     if (!input.title.trim()) return reject(envelope, 'no-op');
@@ -294,21 +299,22 @@ export function addReflection(envelope: PathEnvelope, targetId: string, input: R
 function intent(dependencies: PathCommandDependencies, command: string, value: JsonObject): JsonObject {
     return eventExtensions(dependencies, { command, intent: JSON.parse(JSON.stringify(value)) as JsonObject });
 }
-function validParent(envelope: PathEnvelope, type: 'goal' | 'action', parentId?: string): PathCommandRejection | undefined {
+function validParent(envelope: PathEnvelope, type: PathEntityType, parentId?: string): PathCommandRejection | undefined {
     if (!parentId) return;
     const parent = envelope.entities.find(item => item.id === parentId && !item.deletedAt);
     if (!parent) return 'parent-not-found';
-    if (!(type === 'goal' ? parent.type === 'dream' || parent.type === 'goal' : parent.type === 'goal' || parent.type === 'milestone')) return 'incompatible-type';
+    if (!allowedParents[type]?.has(parent.type)) return 'incompatible-type';
 }
 
 export function createEntity(envelope: PathEnvelope, input: CreateEntityInput, dependencies: PathCommandDependencies): PathCommandResult {
     const duplicate = preflight(envelope, dependencies); if (duplicate) return duplicate;
+    if (!childTypes.has(input.type) || typeof input.id !== 'string' || typeof input.title !== 'string' || (input.why !== undefined && typeof input.why !== 'string')) return reject(envelope, 'invalid-command');
     if (!input.id.trim() || !input.title.trim()) return reject(envelope, 'invalid-command');
     if (envelope.entities.some(item => item.id === input.id) || envelope.events.some(item => item.id === input.id)) return reject(envelope, 'id-collision');
     const parentError = validParent(envelope, input.type, input.parentId); if (parentError) return reject(envelope, parentError);
     if (input.planned) { const error = periodError(input.planned); if (error) return reject(envelope, error); }
     const now = instant(dependencies); if (!now) return reject(envelope, 'invalid-date');
-    const entity: PathEntity = { id: input.id, type: input.type, title: input.title, description: input.description ?? '', status: 'todo', ...(input.priority ? { priority: input.priority } : {}), ...(input.parentId ? { parentId: input.parentId } : {}), ...(input.planned ? { planned: { ...input.planned } } : {}), createdAt: now, updatedAt: now, tags: [...(input.tags ?? [])], extensions: { ...(input.extensions ?? {}) } };
+    const entity: PathEntity = { id: input.id, type: input.type, title: input.title, description: input.description ?? '', ...(input.why !== undefined ? { why: input.why } : {}), status: 'todo', ...(input.priority ? { priority: input.priority } : {}), ...(input.parentId ? { parentId: input.parentId } : {}), ...(input.planned ? { planned: { ...input.planned } } : {}), createdAt: now, updatedAt: now, tags: [...(input.tags ?? [])], extensions: { ...(input.extensions ?? {}) } };
     const event: PathEvent = { id: dependencies.createId(), type: 'entity-created', entityId: entity.id, occurredAt: now, recordedAt: now, extensions: intent(dependencies, 'create-entity', input as unknown as JsonObject) };
     return accepted(envelope, entity, event);
 }
@@ -316,10 +322,10 @@ export function createEntity(envelope: PathEnvelope, input: CreateEntityInput, d
 export function updateEntity(envelope: PathEnvelope, entityId: string, patch: UpdateEntityInput, dependencies: PathCommandDependencies): PathCommandResult {
     const duplicate = preflight(envelope, dependencies); if (duplicate) return duplicate;
     const entity = envelope.entities.find(item => item.id === entityId && !item.deletedAt); if (!entity) return reject(envelope, 'entity-not-found');
-    if (entity.type !== 'goal' && entity.type !== 'action') return reject(envelope, 'incompatible-type');
+    if (patch.why !== undefined && typeof patch.why !== 'string') return reject(envelope, 'invalid-command');
     if (patch.title !== undefined && !patch.title.trim()) return reject(envelope, 'invalid-command');
-    const next: PathEntity = { ...entity, ...(patch.title !== undefined ? { title: patch.title } : {}), ...(patch.description !== undefined ? { description: patch.description } : {}), ...(patch.priority !== undefined ? { priority: patch.priority } : {}), ...(patch.tags !== undefined ? { tags: [...patch.tags] } : {}), ...(patch.extensions !== undefined ? { extensions: patch.extensions } : {}) };
-    const keys = ['title','description','priority','tags','extensions'] as const; const before: JsonObject = {}, after: JsonObject = {};
+    const next: PathEntity = { ...entity, ...(patch.title !== undefined ? { title: patch.title } : {}), ...(patch.description !== undefined ? { description: patch.description } : {}), ...(patch.why !== undefined ? { why: patch.why } : {}), ...(patch.priority !== undefined ? { priority: patch.priority } : {}), ...(patch.tags !== undefined ? { tags: [...patch.tags] } : {}), ...(patch.extensions !== undefined ? { extensions: { ...entity.extensions, ...patch.extensions } } : {}) };
+    const keys = ['title','description','why','priority','tags','extensions'] as const; const before: JsonObject = {}, after: JsonObject = {};
     for (const key of keys) if (patch[key] !== undefined && JSON.stringify(entity[key]) !== JSON.stringify(next[key])) { before[key] = (entity[key] ?? null) as any; after[key] = (next[key] ?? null) as any; }
     if (!Object.keys(after).length) return reject(envelope, 'no-op');
     const now = instant(dependencies); if (!now) return reject(envelope, 'invalid-date'); next.updatedAt = now;
@@ -329,7 +335,7 @@ export function updateEntity(envelope: PathEnvelope, entityId: string, patch: Up
 
 export function deleteEntity(envelope: PathEnvelope, entityId: string, dependencies: PathCommandDependencies): PathCommandResult {
     const duplicate = preflight(envelope, dependencies); if (duplicate) return duplicate;
-    const entity = envelope.entities.find(item => item.id === entityId); if (!entity) return reject(envelope, 'entity-not-found'); if (entity.deletedAt) return reject(envelope, 'no-op');
+    const entity = envelope.entities.find(item => item.id === entityId && !item.deletedAt); if (!entity) return reject(envelope, 'entity-not-found'); if (entity.deletedAt) return reject(envelope, 'no-op');
     if (envelope.entities.some(item => item.parentId === entityId && !item.deletedAt)) return reject(envelope, 'has-children');
     const now = instant(dependencies); if (!now) return reject(envelope, 'invalid-date');
     const updated = { ...entity, status: 'cancelled' as const, deletedAt: now, updatedAt: now };

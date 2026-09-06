@@ -4,7 +4,7 @@ export type Position = 'LEFT' | 'RIGHT' | 'FIRST_CHILD' | 'LAST_CHILD'
 
 export type TreeItemId = string
 export type DreamNodeType = 'dream' | 'objective' | 'milestone' | 'task'
-export type DreamNodeStatus = 'todo' | 'in-progress' | 'done'
+export type DreamNodeStatus = 'todo' | 'in-progress' | 'done' | 'cancelled'
 
 export interface TreeItem {
   id: TreeItemId
