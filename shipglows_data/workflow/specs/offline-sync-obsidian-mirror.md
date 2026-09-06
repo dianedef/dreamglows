@@ -5,7 +5,7 @@ artifact_version: "1.0.0"
 project: DreamGlows
 status: draft
 created: "2026-09-06"
-updated: "2026-09-06"
+updated: "2026-09-07"
 source_skill: sg-engineering
 source_model: GPT-6
 scope: offline-sync-obsidian-mirror
@@ -19,17 +19,19 @@ linked_systems: [packages/path-core, packages/path_core_dart, obsidian_plugin, w
 depends_on: []
 supersedes: []
 evidence:
+  - "Operator confirmed on 2026-09-07: dedicated DreamGlows Convex stores product data; CommandGlows centralizes identity and entitlements, not product data."
   - "Operator approved sync plan and Convex, then confirmed shared identity and entitlements owned by CommandGlows."
   - "Read-only inspection of CommandGlows schema.ts, bridge.ts and api/bridge/entitlement.ts on 2026-09-06."
   - "Portable native round-trip receipt recorded in common-model-adoption.md."
-next_step: resolve-convex-data-placement-and-server-integration-contract
+next_step: resolve-commandglows-server-integration-and-dreamglows-development-configuration
 ---
 
 # Synchronisation hors ligne et miroir Obsidian
 
 ## Décisions validées
 
-Convex porte la synchronisation distante. CommandGlows reste propriétaire de
+Un déploiement Convex dédié à DreamGlows porte ses données métier et la
+synchronisation distante. CommandGlows reste propriétaire de
 l'identité commune et du registre d'entitlements. Aucun registre de comptes ou
 de droits parallèle dans DreamGlows. L'édition bidirectionnelle des notes et
 l'interface de résolution des conflits sont différées à l'étape 6.
@@ -112,12 +114,12 @@ Documentation prévue : contrat de données, sécurité et comptes, procédure d
 reprise, README des surfaces et suivi des capacités. Éditorial : aucune promesse
 publique de synchronisation ou de sauvegarde distante avant preuve hébergée.
 
-## Décision restante avant raccordement distant
+## Placement validé et configuration à résoudre
 
-Placement des données métier : Convex dédié à DreamGlows, avec contrôle d'identité
-et d'accès délégué à CommandGlows (recommandé pour isoler données et déploiements),
-ou tables DreamGlows dans le déploiement Convex central. Cette décision détermine
-la frontière serveur, la propagation des révocations et la configuration déclarée.
+Placement validé le 2026-09-07 : Convex dédié à DreamGlows, avec contrôle d'identité
+et d'accès délégué à CommandGlows. Les rêves, chemins, actions, historique et pièces
+jointes appartiennent au stockage DreamGlows ; ils ne sont pas centralisés dans
+CommandGlows. Le compte reste commun. Ce choix architectural est clos.
 Ne pas choisir un déploiement ou une portée Doppler par supposition.
 
 Le produit central exact, l'émetteur/audience de session et l'origine de développement
