@@ -22,10 +22,26 @@ depends_on: []
 supersedes: []
 evidence:
   - "Approved correction plan, shared fixtures, cross-language runner and isolated native/browser proofs."
-next_step: prove-portable-edit-round-trip
+next_step: define-offline-sync-and-durable-obsidian-mirror
 ---
 
 # Common model adoption
+
+## Portable edit continuation receipt — 2026-09-06
+
+- Native isolated Windows Obsidian proof passed: export, external Markdown title
+  and description edits, strict integrity refusal, explicit edit acceptance,
+  complete destination backup, restore, full process restart and reexport.
+- The entire resulting package equals the expected package byte for byte. Only
+  the two intended fields change; the six-entity fixture retains its three Focus
+  sessions, two history events, relationships, unknown fields and settings. Three
+  binary attachments survive, including one without a textual reference.
+- The destination backup equals the complete pre-edit package byte for byte.
+- Reproducer: `obsidian_plugin/tests/portable-lab.mjs`; receipt:
+  `%TEMP%/dreamglows-portable-edit-proof/report.json`; preview capture:
+  `%TEMP%/dreamglows-portable-edit-proof/edited-import-preview.png`.
+- All assertions passed, diagnostics empty, successful temporary vault cleaned.
+  No personal vault read. No sync, automatic bidirectional editing or release claim.
 
 ## Outcome and authority
 User approved the five correction steps after the read-only cross-surface audit.

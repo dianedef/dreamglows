@@ -12,7 +12,7 @@
 
 🟠 [DreamGlows] task: Définir et versionner le modèle de données ouvert commun | status: done | area: product-foundation | id: open-domain-model | depends_on: dreamglows-capability-map | status_note: Contrat v1 documenté et adopté par Obsidian/Chrome (TypeScript) et Windows/Android (Dart et formulaires Flutter partagés); sept types ordinaires éditables, pourquoi et relations conservés; création/modification/redémarrage prouvés sur les quatre surfaces; synchronisation, parcours grand public et portabilité complète restent des chantiers distincts | acceptance: Schéma documenté pour rêve, pourquoi, objectif, jalon, action, habitude, preuve, bilan, relations, révisions et migrations
 
-🟠 [DreamGlows] task: Prouver l’export, le réimport et la migration Obsidian sans perte | status: todo | area: data-portability | id: portable-round-trip | depends_on: open-domain-model | acceptance: Un paquet exporté reste lisible dans Obsidian et recrée objets, relations, pièces jointes et historique
+🟢 [DreamGlows] task: Prouver l’export, le réimport et la migration Obsidian sans perte | status: done | area: data-portability | id: portable-round-trip | depends_on: open-domain-model | acceptance: Un paquet exporté reste lisible dans Obsidian et recrée objets, relations, pièces jointes et historique | evidence: specs/common-model-adoption.md, ../../obsidian_plugin/tests/portable-lab.mjs
 
 🟠 [DreamGlows] task: Livrer la synchronisation multiplateforme et le miroir durable vers Obsidian | status: todo | area: sync | id: cross-platform-sync-obsidian-mirror | depends_on: open-domain-model,portable-round-trip | acceptance: Fonctionnement hors ligne, reprise, historique, suppressions et absence de perte silencieuse prouvés
 

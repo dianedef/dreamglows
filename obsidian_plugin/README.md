@@ -64,6 +64,23 @@ Chaque release BRAT contient les assets suivants :
 
 Le plugin Obsidian est la première surface active du projet. Le socle Chemin et ses quatre projections y sont implémentés et vérifiés. Chrome persiste dans le noyau TypeScript commun ; Windows et Android utilisent son équivalent Dart et des écrans Flutter partagés. Les sept types ordinaires sont éditables ; les sessions Focus gardent leur cycle dédié. Ce partage du modèle n'assure pas encore la synchronisation entre appareils.
 
+## Preuve de portabilité
+
+Le laboratoire `tests/portable-lab.mjs` vérifie dans un coffre Obsidian Windows
+temporaire l'export natif, la modification extérieure d'un titre et de sa
+description Markdown, le refus en mode strict puis l'acceptation explicite.
+Après sauvegarde et restauration par le dialogue natif, un redémarrage complet
+précède le réexport : tous les fichiers sont comparés octet par octet au paquet
+attendu. Relations, historique, paramètres et champs non modifiés restent intacts,
+ainsi que trois pièces jointes binaires, dont une sans lien textuel.
+
+Exécution : définir `DREAMGLOWS_OBSIDIAN_EXE`, `DREAMGLOWS_PLAYWRIGHT_MODULE`
+(module Playwright résolu) et `DREAMGLOWS_LAB_EVIDENCE` (dossier des preuves),
+puis lancer `node obsidian_plugin/tests/portable-lab.mjs` depuis la racine.
+Le reçu et les captures sont écrits dans ce dossier. Le coffre personnel reste
+hors du test. Cette preuve porte sur le format portable v1 et l'hôte Obsidian ;
+elle ne prouve ni la synchronisation ni l'édition bidirectionnelle automatique.
+
 ## Feuille de route de base
 
 - Étendre la continuité d’expérience et l'enveloppe Chemin sur les autres surfaces.
