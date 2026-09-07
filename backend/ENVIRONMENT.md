@@ -23,10 +23,10 @@ The operator rejected Europe and its surcharge. The team's region setting is
 now `Ask every time`, verified after reloading the page. Existing projects were
 not migrated. The original empty European deployment `good-frog-143` was deleted
 with explicit confirmation. The dashboard retry resulted in another European
-deployment `dapper-seal-161`; it is paused (dashboard verified), not selected for
-the repository CLI, and still requires deletion confirmation. It remains the
-dashboard's personal dev default until removed; use `dev/us-east` explicitly.
-Never use either European deployment for implementation.
+deployment `dapper-seal-161`; it was also deleted on 2026-09-07 after explicit
+operator confirmation. The dashboard confirmed `Deleted deployment.`
+Both European deployments are retired. Use `dev/us-east` explicitly for the
+repository CLI and dashboard; do not recreate a personal default implicitly.
 
 Backend configuration must use the verified US development coordinates. Session
 issuer, audience, server-to-server access contract and secret-store binding remain
