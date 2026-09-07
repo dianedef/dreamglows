@@ -19,6 +19,7 @@ linked_systems: [packages/path-core, packages/path_core_dart, obsidian_plugin, w
 depends_on: []
 supersedes: []
 evidence:
+  - "2026-09-07 correction: operator rejected Europe surcharge; US East sensible-parakeet-353 created and selected, dashboard region verified. Team default changed to Ask every time. See backend/ENVIRONMENT.md for cleanup status."
   - "2026-09-07 authenticated Convex dashboard: created dedicated dreamglows project, development good-frog-143 in Europe (Ireland); backend/ENVIRONMENT.md records public coordinates. No backend deployed."
   - "Operator confirmed on 2026-09-07: dedicated DreamGlows Convex stores product data; CommandGlows centralizes identity and entitlements, not product data."
   - "Operator approved sync plan and Convex, then confirmed shared identity and entitlements owned by CommandGlows."

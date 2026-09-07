@@ -39,3 +39,5 @@ shipglows_data/workflow/specs/*
 **/coverage
 
 # Lock files are kept at workspace root intentionally
+
+.env.local

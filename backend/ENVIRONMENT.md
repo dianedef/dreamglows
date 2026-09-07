@@ -4,28 +4,30 @@ Verified in the authenticated Convex dashboard on 2026-09-07.
 
 - Team: `diane-defores`
 - Project: `dreamglows` (DreamGlows)
-- Deployment: pending US East replacement; no active deployment selected.
-- Required region: US East (N. Virginia).
-- Cloud URL: pending; do not use the deleted European deployment.
-- HTTP Actions URL: pending.
-- Dashboard: `https://dashboard.convex.dev/t/diane-defores/dreamglows/settings`
-- Observed state: `good-frog-143` deleted with explicit operator confirmation;
-  no tables, files or application code existed before deletion.
+- Deployment: `dev:sensible-parakeet-353`, reference `dev/us-east`.
+- Region: US East (N. Virginia), explicitly selected with CLI `--region us`.
+- Cloud URL: `https://sensible-parakeet-353.convex.cloud`
+- HTTP Actions URL: `https://sensible-parakeet-353.convex.site`
+- Dashboard: `https://dashboard.convex.dev/t/diane-defores/dreamglows/sensible-parakeet-353`
+- Observed state: created and selected for the repository CLI, never deployed.
+- Local CLI coordinates live in ignored `.env.local` at the repository root.
 
 This is the dedicated DreamGlows product-data deployment. CommandGlows remains
 the owner of shared identity and entitlements. No credential or deployment key
 belongs in this file. No production deployment is selected or authorized here.
 
-Europe was the team's existing default region. The dashboard states that Europe
-has no included usage allowance and a 30% regional surcharge. Creating this
-deployment is not evidence of a working sync service, verified login, entitlement
-enforcement, backup, or protected access.
+Creating this deployment is not evidence of a working sync service, verified
+application login, entitlement enforcement, backup, or protected access.
 
-The operator rejected Europe and its surcharge. The team's default remained
-Europe at inspection; changing that team-wide setting is awaiting a separate
-choice. The dashboard's initial attempt to recreate the development deployment
-returned deployment_not_found; no replacement has been verified.
+The operator rejected Europe and its surcharge. The team's region setting is
+now `Ask every time`, verified after reloading the page. Existing projects were
+not migrated. The original empty European deployment `good-frog-143` was deleted
+with explicit confirmation. The dashboard retry resulted in another European
+deployment `dapper-seal-161`; it is paused (dashboard verified), not selected for
+the repository CLI, and still requires deletion confirmation. It remains the
+dashboard's personal dev default until removed; use `dev/us-east` explicitly.
+Never use either European deployment for implementation.
 
-Backend configuration must wait for verified US development coordinates. Session
+Backend configuration must use the verified US development coordinates. Session
 issuer, audience, server-to-server access contract and secret-store binding remain
 to be configured before any protected endpoint is deployed.
